@@ -1,0 +1,147 @@
+// Following https://www.verilog.com/VerilogBNF.html
+
+// 1. Source Text
+start: description*
+
+?description: module
+
+module: "module" name_of_module list_of_ports? ";" module_item* "endmodule"
+
+?name_of_module: IDENTIFIER
+
+list_of_ports: "(" port ("," port)* ")"
+
+?port: IDENTIFIER
+
+?module_item: input_declaration
+            | output_declaration
+            | net_declaration
+            | module_instantiation
+            | continuous_assign
+
+
+// 2. Declarations
+input_declaration:  "input"  [vector_declaration] list_of_variables ";"
+
+output_declaration: "output" [vector_declaration] list_of_variables ";"
+
+net_declaration:    "wire"   [vector_declaration] list_of_variables ";"
+
+continuous_assign:  "assign" list_of_assignments ";"
+
+list_of_variables: IDENTIFIER ("," IDENTIFIER)*
+
+list_of_assignments: assignment ("," assignment)*
+
+vector_declaration: "[" INT ":" INT "]"
+
+// 3. Primitive Instances
+// These are merged with module instantiations
+
+// 4. Module Instantiations
+// DFFARX1 DFF_0_Q_reg (.CLK (clk),.D (n_12), .Q (G5), .RSTB(1'b1));
+//
+module_instantiation: name_of_module module_instance ("," module_instance)* ";"
+
+// DFF_0_Q_reg (.CLK (clk),.D (n_12), .Q (G5), .RSTB(1'b1)
+//
+module_instance: name_of_instance "(" list_of_module_connections ")"
+
+?name_of_instance: IDENTIFIER
+
+// named_port_connection ==> .CLK (clk),.D (n_12), .Q (G5), .RSTB(1'b1)
+//
+list_of_module_connections: module_port_connection ("," module_port_connection)*
+                          | named_port_connection ("," named_port_connection)*
+
+// G0
+module_port_connection: expression
+
+// .CLK (clk) or .Q (G5) or .QN() unused flipflop output
+named_port_connection: "." IDENTIFIER "(" ")" 
+                     | "." IDENTIFIER "(" expression ")"
+
+
+// 5. Behavioral Statements
+assignment: lvalue "=" expression
+
+
+// 6. Specify Section
+
+
+// 7. Expressions
+?lvalue: identifier
+
+expression: condition
+
+?constant_value: constant_zero
+               | constant_one
+               | constant_x
+
+constant_zero: "1'b0"
+             | "1'h0"
+
+constant_one: "1'b1"
+            | "1'h1"
+
+constant_x: "1'bx"
+          | "1'hx"
+
+?condition : or
+           | ternary
+
+?ternary: or "?" or ":" or
+
+?or : xor
+    | or_gate
+
+?or_gate: or "|" xor
+
+?xor : and
+     | xor_gate
+     | xnor_gate
+
+?xor_gate: xor "^" and
+
+?xnor_gate: xor "~^" and
+          | xor "^~" and
+
+?and : unary
+     | and_gate
+
+?and_gate: and "&" unary
+
+?unary : primary
+       | not_gate
+
+not_gate: ( "!" | "~" ) primary
+
+?primary : IDENTIFIER
+         | constant_value
+         | "(" or ")"
+
+
+// 8. General
+?identifier: IDENTIFIER
+
+IDENTIFIER: CNAME | CNAME "[" INT "]"
+          | ESCAPED_IDENTIFIER | ESCAPED_IDENTIFIER "[" INT "]"
+
+
+// Lark
+ESCAPED_IDENTIFIER: /\\([^\s]+)/
+COMMENT: "//" /[^\n]*/ NEWLINE
+NEWLINE: "\n"
+MULTILINE_COMMENT: /\/\*(\*(?!\/)|[^*])*\*\//
+
+%import common.CNAME
+%import common.ESCAPED_STRING
+%import common.WS
+
+%ignore WS
+%ignore COMMENT
+%ignore MULTILINE_COMMENT
+%ignore NEWLINE
+
+%import common.INT
+

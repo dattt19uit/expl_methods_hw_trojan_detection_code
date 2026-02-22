@@ -1,0 +1,64 @@
+# Pipeline configuration
+pipeline:
+  phases:
+    - name: "data_acquisition"
+      enabled: true
+      skip_if_exists: true
+    
+    - name: "circuit_processing"
+      enabled: true
+      skip_if_exists: true
+      batch_size: 10
+    
+    - name: "hyperparameter_tuning"
+      enabled: true
+      skip_if_exists: true
+      n_jobs: -1  # Use all CPU cores
+    
+    - name: "model_training"
+      enabled: true
+      skip_if_exists: false  # Always retrain
+    
+    - name: "kb_processing"
+      enabled: true
+      skip_if_exists: false
+    
+    - name: "explanation_generation"
+      enabled: true
+      skip_if_exists: false
+
+directories:
+  data:
+    raw: "data/raw"
+    processed: "data/processed"
+    models: "data/models"
+  logs: "logs"
+  outputs: "outputs"
+
+methods:
+  method1:
+    name: "Property-Based XAI"
+    enabled: true
+    n_models: 31
+    ensemble_voting: true
+  
+  method2:
+    name: "Case-Based Reasoning"
+    enabled: false
+  
+  method3:
+    name: "LIME"
+    enabled: false
+  
+  method4:
+    name: "SHAP"
+    enabled: false
+  
+  method5:
+    name: "Gradient Attribution"
+    enabled: false
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/pipeline.log"
