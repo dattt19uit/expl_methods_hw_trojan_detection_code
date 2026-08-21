@@ -1,7 +1,18 @@
 #!/bin/bash
 # Run the complete XAI pipeline
 
-set -e  # Exit on error
+set -e
+
+# Log configuration
+LOG_DIR="logs"
+mkdir -p "$LOG_DIR"
+
+LOG_FILE="$LOG_DIR/pipeline_$(date '+%Y%m%d_%H%M%S').log"
+
+# Log both terminal output and file
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo "Log file: $LOG_FILE"  # Exit on error
 
 echo "========================================="
 echo "XAI Hardware Trojan Detection Pipeline"
