@@ -189,26 +189,82 @@ class _VerilogCircuitGraphTransformer(Transformer):
                 self.warn(f"{n} doesn't have any drivers.")
 
     def write_graph_csv(self):
-        """Write all NetworkX node and edge attributes for the parsed graph."""
+        """Write a structural graph that preserves Verilog nets and cell instances.
+
+        CircuitGraph represents a blackbox instance through separate
+        ``bb_input`` and ``bb_output`` pin nodes, without an edge through the
+        blackbox. That representation is appropriate for the parser, but it
+        splits a netlist visualisation into many disconnected components. The
+        CSV representation instead uses the original instance as one node and
+        records the connected pin name and direction on every edge.
+        """
         if self.csv_output_dir is None:
             return
 
         self.csv_output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Attributes are not necessarily uniform across graph elements (for
-        # example, black-box ports can differ from ordinary gates). Build the
-        # complete schema first so no attribute is discarded.
+        raw_nodes = {}
+        raw_edges = []
+
+        # Keep every real signal node and its attributes. bb_* nodes are
+        # parser-internal port nodes and are represented by the ``port`` edge
+        # attribute below rather than as separate CSV nodes.
+        for node, attributes in self.c.graph.nodes(data=True):
+            if attributes.get("type") not in {"bb_input", "bb_output"}:
+                raw_nodes[str(node)] = {"kind": "net", **attributes}
+
+        for instance, blackbox in self.c.blackboxes.items():
+            instance = str(instance)
+            if instance in raw_nodes:
+                raise ValueError(
+                    f"Cannot export structural CSV: instance name '{instance}' "
+                    "collides with a signal name."
+                )
+            raw_nodes[instance] = {
+                "kind": "cell",
+                "type": blackbox.name,
+                "cell_type": blackbox.name,
+            }
+
+            # Reconstruct each original named/positional port connection:
+            # net -> instance for input ports and instance -> net for outputs.
+            for port in blackbox.inputs():
+                port_node = f"{instance}.{port}"
+                if port_node in self.c.graph:
+                    for source, _ in self.c.graph.in_edges(port_node):
+                        raw_edges.append(
+                            (str(source), instance, {"kind": "connection", "port": port, "direction": "input"})
+                        )
+            for port in blackbox.outputs():
+                port_node = f"{instance}.{port}"
+                if port_node in self.c.graph:
+                    for _, target in self.c.graph.out_edges(port_node):
+                        raw_edges.append(
+                            (instance, str(target), {"kind": "connection", "port": port, "direction": "output"})
+                        )
+
+        # Preserve direct connections created by continuous assignments and
+        # primitive expressions. Connections touching bb_* pins were already
+        # emitted above with their original cell instance and port.
+        for source, target, attributes in self.c.graph.edges(data=True):
+            source_type = self.c.graph.nodes[source].get("type")
+            target_type = self.c.graph.nodes[target].get("type")
+            if source_type not in {"bb_input", "bb_output"} and target_type not in {"bb_input", "bb_output"}:
+                raw_edges.append((str(source), str(target), {"kind": "direct", **attributes}))
+
+        # Attributes are not necessarily uniform. Build a complete schema so
+        # no source attribute is discarded from either CSV.
         node_attributes = sorted(
             {
                 attribute
-                for _, attributes in self.c.graph.nodes(data=True)
+                for attributes in raw_nodes.values()
                 for attribute in attributes
             }
         )
         edge_attributes = sorted(
             {
                 attribute
-                for _, _, attributes in self.c.graph.edges(data=True)
+                for _, _, attributes in raw_edges
                 for attribute in attributes
             }
         )
@@ -216,15 +272,15 @@ class _VerilogCircuitGraphTransformer(Transformer):
         with open(self.csv_output_dir / "nodes.csv", "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(["node", *node_attributes])
-            for node in sorted(self.c.graph.nodes, key=str):
-                attributes = self.c.graph.nodes[node]
+            for node in sorted(raw_nodes):
+                attributes = raw_nodes[node]
                 writer.writerow([str(node), *(attributes.get(attribute, "") for attribute in node_attributes)])
 
         with open(self.csv_output_dir / "edges.csv", "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(["source", "target", *edge_attributes])
             for source, target, attributes in sorted(
-                self.c.graph.edges(data=True), key=lambda edge: (str(edge[0]), str(edge[1]))
+                raw_edges, key=lambda edge: (edge[0], edge[1], edge[2].get("port", ""))
             ):
                 writer.writerow(
                     [str(source), str(target), *(attributes.get(attribute, "") for attribute in edge_attributes)]
