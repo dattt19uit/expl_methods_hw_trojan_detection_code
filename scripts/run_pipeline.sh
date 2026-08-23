@@ -81,6 +81,16 @@ else
     echo "Training data already exists. Skipping..."
 fi
 
+# Versions created before graph-CSV export have feature files but no parsed
+# graph data. Generate it once when an existing pipeline cache is reused.
+GRAPH_CSV_COUNT=$(find "$DATA_DIR/circuits/graphs" -type f -name nodes.csv 2>/dev/null | wc -l)
+if [ "$CIRCUIT_COUNT" -gt 0 ] && [ "$GRAPH_CSV_COUNT" -eq 0 ]; then
+    echo "Exporting nodes.csv and edges.csv for each Verilog netlist..."
+    NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) - 1 ))
+    [ "$NCORES" -lt 1 ] && NCORES=1
+    xai-process-circuit --batch --config "$CIRCUIT_CONFIGS" --output-dir "$DATA_DIR/circuits" --skip-graph -j "$NCORES"
+fi
+
 # Display data split validation
 if [ -f "$PROCESSED_DIR/aggregation_summary.json" ]; then
     echo ""

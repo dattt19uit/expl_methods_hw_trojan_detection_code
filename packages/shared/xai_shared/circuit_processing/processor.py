@@ -230,11 +230,15 @@ def process_circuit(config, output_dir='.', skip_graph=False):
         timing = {}
         parse_start = time.perf_counter()
         logger.debug(f"Reading netlist from {verilog_path}")
+        graph_csv_output = output_path / 'graphs' / base_name
         
         try:
             # First try: Standard parsing with default netlistx settings
             logger.debug(f"Attempting standard parsing with default library")
-            c = nl.read_netlist(str(vpath), name=verilog_name, fmt='verilog', techlib=netlistx_techlib)
+            c = nl.read_netlist(
+                str(vpath), name=verilog_name, fmt='verilog', techlib=netlistx_techlib,
+                csv_output_dir=graph_csv_output,
+            )
             timing['parse'] = time.perf_counter() - parse_start
             logger.debug(f"[OK] Successfully parsed with default settings in {timing['parse']:.3f}s")
             
@@ -267,7 +271,8 @@ def process_circuit(config, output_dir='.', skip_graph=False):
                             str(vpath), 
                             name=verilog_name, 
                             fmt='verilog', 
-                            techlib=netlistx_techlib
+                            techlib=netlistx_techlib,
+                            csv_output_dir=graph_csv_output,
                         )
                         timing['parse'] = time.perf_counter() - parse_start
                         logger.info(f"[OK] Successfully parsed after extraction discovery in {timing['parse']:.3f}s")
@@ -319,6 +324,7 @@ def process_circuit(config, output_dir='.', skip_graph=False):
         # Sum only numeric timing values (exclude dict breakdowns)
         total_time = sum(v for v in timing.values() if isinstance(v, (int, float)))
         logger.info(f'[OK] {base_name} complete - CSV saved to {csv_output}')
+        logger.info(f'  Parsed graph CSVs: {graph_csv_output / "nodes.csv"}, {graph_csv_output / "edges.csv"}')
         logger.info(f'  Timing: Parse={timing.get("parse", 0):.2f}s, Merge={timing["merge_cells"]:.2f}s, Metrics={timing["extract_metrics"]:.2f}s, Total={total_time:.2f}s')
         return True
         

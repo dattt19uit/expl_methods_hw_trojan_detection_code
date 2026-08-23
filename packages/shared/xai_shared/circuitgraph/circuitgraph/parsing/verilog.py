@@ -1,4 +1,5 @@
 """Utils for parsing verilog with Lark."""
+import csv
 from pathlib import Path
 
 from lark import Lark, Transformer
@@ -60,7 +61,9 @@ class VerilogParsingWarning(Exception):
 class _VerilogCircuitGraphTransformer(Transformer):
     """A lark.Transformer for parsing a verilog netlist."""
 
-    def __init__(self, text, blackboxes, warnings=False, error_on_warning=False):
+    def __init__(
+        self, text, blackboxes, warnings=False, error_on_warning=False, csv_output_dir=None
+    ):
         """
         Initialize a new transformer.
 
@@ -76,6 +79,9 @@ class _VerilogCircuitGraphTransformer(Transformer):
         error_on_warning: bool
                 If True, unused nets will cause raise `VerilogParsingWarning`
                 exceptions.
+        csv_output_dir: str or pathlib.Path, optional
+                Directory in which to write ``nodes.csv`` and ``edges.csv``
+                for the parsed circuit.
 
         """
         super().__init__()
@@ -84,6 +90,7 @@ class _VerilogCircuitGraphTransformer(Transformer):
         self.blackboxes = blackboxes
         self.warnings = warnings
         self.error_on_warning = error_on_warning
+        self.csv_output_dir = Path(csv_output_dir) if csv_output_dir else None
         self.tie_0 = self.c.add("tie_0", "0")
         self.tie_1 = self.c.add("tie_1", "1")
         self.tie_x = self.c.add("tie_x", "x")
@@ -181,6 +188,48 @@ class _VerilogCircuitGraphTransformer(Transformer):
             ] and not self.c.fanin(n):
                 self.warn(f"{n} doesn't have any drivers.")
 
+    def write_graph_csv(self):
+        """Write all NetworkX node and edge attributes for the parsed graph."""
+        if self.csv_output_dir is None:
+            return
+
+        self.csv_output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Attributes are not necessarily uniform across graph elements (for
+        # example, black-box ports can differ from ordinary gates). Build the
+        # complete schema first so no attribute is discarded.
+        node_attributes = sorted(
+            {
+                attribute
+                for _, attributes in self.c.graph.nodes(data=True)
+                for attribute in attributes
+            }
+        )
+        edge_attributes = sorted(
+            {
+                attribute
+                for _, _, attributes in self.c.graph.edges(data=True)
+                for attribute in attributes
+            }
+        )
+
+        with open(self.csv_output_dir / "nodes.csv", "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["node", *node_attributes])
+            for node in sorted(self.c.graph.nodes, key=str):
+                attributes = self.c.graph.nodes[node]
+                writer.writerow([str(node), *(attributes.get(attribute, "") for attribute in node_attributes)])
+
+        with open(self.csv_output_dir / "edges.csv", "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["source", "target", *edge_attributes])
+            for source, target, attributes in sorted(
+                self.c.graph.edges(data=True), key=lambda edge: (str(edge[0]), str(edge[1]))
+            ):
+                writer.writerow(
+                    [str(source), str(target), *(attributes.get(attribute, "") for attribute in edge_attributes)]
+                )
+
     # 1. Source text
     def start(self, description):
         return description
@@ -235,6 +284,9 @@ class _VerilogCircuitGraphTransformer(Transformer):
         # Check for warnings
         if self.warnings:
             self.check_for_warnings()
+
+        # Export before downstream processing merges cells or removes wire nodes.
+        self.write_graph_csv()
 
         return self.c
 
@@ -627,7 +679,9 @@ class _VerilogCircuitGraphTransformer(Transformer):
         return node
 
 
-def parse_verilog_netlist(netlist, blackboxes, warnings=False, error_on_warning=False):
+def parse_verilog_netlist(
+    netlist, blackboxes, warnings=False, error_on_warning=False, csv_output_dir=None
+):
     """
     Parse a verilog netlist into a Circuit.
 
@@ -642,6 +696,8 @@ def parse_verilog_netlist(netlist, blackboxes, warnings=False, error_on_warning=
     error_on_warning: bool
             If True, unused nets will cause raise `VerilogParsingWarning`
             exceptions.
+    csv_output_dir: str or pathlib.Path, optional
+            Directory in which to write ``nodes.csv`` and ``edges.csv``.
 
     Returns
     -------
@@ -650,7 +706,7 @@ def parse_verilog_netlist(netlist, blackboxes, warnings=False, error_on_warning=
 
     """
     transformer = _VerilogCircuitGraphTransformer(
-        netlist, blackboxes, warnings, error_on_warning
+        netlist, blackboxes, warnings, error_on_warning, csv_output_dir
     )
     with open(Path(__file__).parent.absolute() / "verilog.lark") as f:
         parser = Lark(f, parser="lalr", transformer=transformer)

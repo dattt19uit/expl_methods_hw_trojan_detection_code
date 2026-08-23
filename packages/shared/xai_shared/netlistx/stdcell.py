@@ -642,7 +642,9 @@ def write_metrics(c, trojans, filename):
     return timing_breakdown
 
 # c = nl.read_netlist('./s27_90nm.v', name='s27', fmt='verilog', blackboxes=BB, techlib='90nm')
-def read_netlist(filename, name, fmt='verilog', blackboxes=None, techlib='default'):
+def read_netlist(
+    filename, name, fmt='verilog', blackboxes=None, techlib='default', csv_output_dir=None
+):
     BB = []
     if techlib == '180nm':
         BUFX1   = cg.BlackBox(name="BUFX1",    inputs=["A"], outputs=["Y"])
@@ -766,7 +768,7 @@ def read_netlist(filename, name, fmt='verilog', blackboxes=None, techlib='defaul
         BB.append(blackboxes)
 
     c = cg.from_file(filename, name=name, fmt=fmt, 
-                     blackboxes=BB, warnings=False, error_on_warning=False, fast=False)
+                     blackboxes=BB, warnings=False, error_on_warning=False, fast=False,
+                     csv_output_dir=csv_output_dir)
     return c
-
 

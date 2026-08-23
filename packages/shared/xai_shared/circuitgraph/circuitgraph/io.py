@@ -30,6 +30,7 @@ def from_file(
     warnings=False,
     error_on_warning=False,
     fast=False,
+    csv_output_dir=None,
 ):
     """
     Create a new `Circuit` from a verilog file.
@@ -57,6 +58,8 @@ def from_file(
             the docstring for `fast_parse_verilog_netlist` in order to
             confirm that `netlist` adheres to these assumptions before
             using this flag.
+    csv_output_dir: str or pathlib.Path, optional
+            Directory for parsed-Verilog ``nodes.csv`` and ``edges.csv``.
 
     Returns
     -------
@@ -80,6 +83,7 @@ def from_file(
             warnings,
             error_on_warning,
             fast,
+            csv_output_dir,
         )
     if fmt == "bench" or path.suffix == ".bench":
         return bench_to_circuit(netlist, name)
@@ -178,6 +182,7 @@ def verilog_to_circuit(
     warnings=False,
     error_on_warning=False,
     fast=False,
+    csv_output_dir=None,
 ):
     """
     Create a new Circuit from a module inside Verilog code.
@@ -235,7 +240,9 @@ def verilog_to_circuit(
         else:
             raise ValueError(f"Could not read netlist: {name} module not found") from e1
 
-    return parse_verilog_netlist(module, blackboxes, warnings, error_on_warning)
+    return parse_verilog_netlist(
+        module, blackboxes, warnings, error_on_warning, csv_output_dir
+    )
 
 
 def to_file(c, path, fmt="verilog", behavioral=False):
