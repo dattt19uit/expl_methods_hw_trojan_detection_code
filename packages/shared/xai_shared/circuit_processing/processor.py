@@ -237,7 +237,7 @@ def process_circuit(config, output_dir='.', skip_graph=False):
             logger.debug(f"Attempting standard parsing with default library")
             c = nl.read_netlist(
                 str(vpath), name=verilog_name, fmt='verilog', techlib=netlistx_techlib,
-                csv_output_dir=graph_csv_output,
+                csv_output_dir=graph_csv_output, trojans=nodes,
             )
             timing['parse'] = time.perf_counter() - parse_start
             logger.debug(f"[OK] Successfully parsed with default settings in {timing['parse']:.3f}s")
@@ -273,6 +273,7 @@ def process_circuit(config, output_dir='.', skip_graph=False):
                             fmt='verilog', 
                             techlib=netlistx_techlib,
                             csv_output_dir=graph_csv_output,
+                            trojans=nodes,
                         )
                         timing['parse'] = time.perf_counter() - parse_start
                         logger.info(f"[OK] Successfully parsed after extraction discovery in {timing['parse']:.3f}s")

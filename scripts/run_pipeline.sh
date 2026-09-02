@@ -71,8 +71,9 @@ elif [ ! -f "$PROCESSED_DIR/train.csv" ]; then
     echo "Processing circuits and extracting features..."
     # Use --skip-graph to avoid slow GraphViz visualization generation
     # Use all but one CPU core for parallel circuit processing
-    NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) - 1 ))
-    [ "$NCORES" -lt 1 ] && NCORES=1
+    # NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) - 1 ))
+    # [ "$NCORES" -lt 1 ] && NCORES=1
+    NCORES=2
     xai-process-circuit --batch --config "$CIRCUIT_CONFIGS" --output-dir "$DATA_DIR/circuits" --skip-graph -j "$NCORES"
     
     echo "Aggregating training data..."
@@ -81,15 +82,40 @@ else
     echo "Training data already exists. Skipping..."
 fi
 
-# Versions created before structural graph export have feature files but no
-# graph data (or use the old, disconnected pin-level schema). Regenerate once
-# when an existing pipeline cache is reused.
-STRUCTURAL_GRAPH_COUNT=$(find "$DATA_DIR/circuits/graphs" -type f -name nodes.csv -exec grep -l 'cell_type' {} + 2>/dev/null | wc -l)
+# Versions created before structural graph export or before trojan labeling
+# need regeneration. Regenerate once when an existing pipeline cache is reused.
+STRUCTURAL_GRAPH_COUNT=$(find "$DATA_DIR/circuits/graphs" -type f -name nodes.csv -exec grep -l 'is_trojan' {} + 2>/dev/null | wc -l)
 if [ "$CIRCUIT_COUNT" -gt 0 ] && [ "$STRUCTURAL_GRAPH_COUNT" -lt "$CIRCUIT_COUNT" ]; then
-    echo "Exporting structural nodes.csv and edges.csv for each Verilog netlist..."
-    NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) - 1 ))
-    [ "$NCORES" -lt 1 ] && NCORES=1
+    echo "Exporting structural nodes.csv and edges.csv with is_trojan labels for each Verilog netlist ($STRUCTURAL_GRAPH_COUNT/$CIRCUIT_COUNT updated)..."
+    # NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) - 1 ))
+    # [ "$NCORES" -lt 1 ] && NCORES=1
+    NCORES=2
     xai-process-circuit --batch --config "$CIRCUIT_CONFIGS" --output-dir "$DATA_DIR/circuits" --skip-graph -j "$NCORES"
+fi
+
+echo ""
+echo "========================================="
+echo "Phase 1b: Graph IR Feature Extraction & Aggregation"
+echo "========================================="
+GRAPH_IR_CIRCUITS="$DATA_DIR/circuits_graph_ir"
+GRAPH_IR_PROCESSED="$DATA_DIR/processed_graph_ir"
+mkdir -p "$GRAPH_IR_CIRCUITS" "$GRAPH_IR_PROCESSED"
+
+GIR_CIRCUIT_COUNT=$(ls -1 "$GRAPH_IR_CIRCUITS"/*.csv 2>/dev/null | wc -l)
+if [ "$GIR_CIRCUIT_COUNT" -lt "$CIRCUIT_COUNT" ] || [ ! -f "$GRAPH_IR_PROCESSED/train.csv" ]; then
+    echo "Extracting 5 Hasegawa metrics from structural nodes.csv and edges.csv for all circuits..."
+    # NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) - 1 ))
+    # [ "$NCORES" -lt 1 ] && NCORES=1
+    NCORES=2
+    python3 -m xai_shared.circuit_processing.compute_graph_metrics_cli \
+        --graphs-dir "$DATA_DIR/circuits/graphs" \
+        --output-dir "$GRAPH_IR_CIRCUITS" \
+        -j "$NCORES"
+    
+    echo "Aggregating Graph IR training data..."
+    xai-aggregate-data --folder "$GRAPH_IR_CIRCUITS" --output "$GRAPH_IR_PROCESSED"
+else
+    echo "Graph IR feature data already exists ($GIR_CIRCUIT_COUNT files). Skipping..."
 fi
 
 # Display data split validation
@@ -229,6 +255,12 @@ if [ ! -f "$MODELS_DIR/method2/optimal_threshold.json" ]; then
 else
     echo "Threshold optimization already completed. Skipping..."
 fi
+
+echo ""
+echo "========================================="
+echo "Phase 8b: Benchmark Comparison - Baseline vs Graph IR XGBoost"
+echo "========================================="
+python3 "$REPO_DIR/scripts/compare_baseline_vs_graph_ir.py"
 
 echo ""
 echo "========================================="

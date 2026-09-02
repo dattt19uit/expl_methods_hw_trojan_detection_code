@@ -34,9 +34,14 @@ import csv
 import json
 import logging
 import argparse
+import random
 from pathlib import Path
 from datetime import datetime
-from sklearn.utils import shuffle
+
+def shuffle(arr, random_state=42):
+    res = list(arr)
+    random.Random(random_state).shuffle(res)
+    return res
 
 # ============================================================================
 # Configuration
@@ -133,17 +138,12 @@ def load_csv_file(filepath, logger):
                     logger.debug(f"  Numeric features: {header}")
                 else:
                     try:
-                        # Extract only numeric columns (4-9: LGFi, ffi, ffo, PI, PO, Trojan)
+                        # Extract only numeric columns
                         numeric_values = row[NUMERIC_FEATURE_START:]
                         
-                        # Convert to integers
-                        int_row = [int(v) for v in numeric_values]
-                        
-                        # Fix 99999 values (legacy csv_01 behavior)
-                        # 99999 represents "no path" - we'll keep it as-is for now
-                        # The legacy script replaced with max+1, but that happens per-column
-                        
-                        rows.append(int_row)
+                        # Convert to float (or int for label)
+                        parsed_row = [int(float(v)) if i == len(numeric_values) - 1 else float(v) for i, v in enumerate(numeric_values)]
+                        rows.append(parsed_row)
                     except (ValueError, IndexError) as e:
                         skipped_count += 1
                         logger.warning(f"  Skipping malformed row {row_count} in {filepath}: {row[:4]}... Error: {e}")
@@ -219,10 +219,6 @@ def aggregate_csv_files(input_dir, logger):
 def fix_max_values(rows, header, logger):
     """
     Replace 99999 sentinel values with next_max + 1
-    
-    This replicates the csv_01_fix_max.py legacy behavior.
-    99999 is used to indicate "no path exists" in circuit metrics.
-    We replace it with the next maximum value + 1 for each column.
     """
     logger.info(f"\nFixing sentinel values (99999):")
     
@@ -238,8 +234,9 @@ def fix_max_values(rows, header, logger):
     for col_idx in range(num_features):
         col_data = list(columns[col_idx])
         
-        # Check if this column has 99999 values
-        if 99999 in col_data:
+        # Check if this column has >= 99999 values
+        has_sentinel = any(v >= 99999 for v in col_data)
+        if has_sentinel:
             # Find next_max (maximum value below 99999)
             next_max = 0
             for val in col_data:
@@ -248,14 +245,14 @@ def fix_max_values(rows, header, logger):
             
             # Replace 99999 with next_max + 1
             replacement_value = next_max + 1
-            count_in_col = col_data.count(99999)
+            count_in_col = sum(1 for v in col_data if v >= 99999)
             
             if count_in_col > 0:
                 logger.info(f"  Column {col_idx} ({header[col_idx]}): Replacing {count_in_col} values of 99999 with {replacement_value}")
                 fixed_count += count_in_col
             
             # Update the column
-            columns[col_idx] = tuple(replacement_value if v == 99999 else v for v in col_data)
+            columns[col_idx] = tuple(replacement_value if v >= 99999 else v for v in col_data)
     
     # Transpose back to row format
     if fixed_count > 0:

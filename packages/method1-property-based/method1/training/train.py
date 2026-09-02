@@ -91,7 +91,7 @@ def load_rows(file):
         csv_reader = csv.reader(csvfile)
         for row in csv_reader:
             if row_count > 0:
-                int_r = [int(v) for v in row]
+                int_r = [int(float(v)) for v in row]
                 rows.append(int_r)
             else:
                 header = row

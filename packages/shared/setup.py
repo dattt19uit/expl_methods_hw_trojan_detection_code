@@ -55,6 +55,7 @@ setup(
         "console_scripts": [
             "xai-process-circuit=xai_shared.circuit_processing.cli:main",
             "xai-aggregate-data=xai_shared.data_handling.cli:main",
+            "xai-compute-graph-metrics=xai_shared.circuit_processing.compute_graph_metrics_cli:main",
         ],
     },
 )

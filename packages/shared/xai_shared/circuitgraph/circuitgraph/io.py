@@ -31,6 +31,7 @@ def from_file(
     error_on_warning=False,
     fast=False,
     csv_output_dir=None,
+    trojans=None,
 ):
     """
     Create a new `Circuit` from a verilog file.
@@ -84,6 +85,7 @@ def from_file(
             error_on_warning,
             fast,
             csv_output_dir,
+            trojans,
         )
     if fmt == "bench" or path.suffix == ".bench":
         return bench_to_circuit(netlist, name)
@@ -183,6 +185,7 @@ def verilog_to_circuit(
     error_on_warning=False,
     fast=False,
     csv_output_dir=None,
+    trojans=None,
 ):
     """
     Create a new Circuit from a module inside Verilog code.
@@ -241,7 +244,7 @@ def verilog_to_circuit(
             raise ValueError(f"Could not read netlist: {name} module not found") from e1
 
     return parse_verilog_netlist(
-        module, blackboxes, warnings, error_on_warning, csv_output_dir
+        module, blackboxes, warnings, error_on_warning, csv_output_dir, trojans
     )
 
 

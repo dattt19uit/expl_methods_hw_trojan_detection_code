@@ -62,7 +62,7 @@ class _VerilogCircuitGraphTransformer(Transformer):
     """A lark.Transformer for parsing a verilog netlist."""
 
     def __init__(
-        self, text, blackboxes, warnings=False, error_on_warning=False, csv_output_dir=None
+        self, text, blackboxes, warnings=False, error_on_warning=False, csv_output_dir=None, trojans=None
     ):
         """
         Initialize a new transformer.
@@ -82,7 +82,8 @@ class _VerilogCircuitGraphTransformer(Transformer):
         csv_output_dir: str or pathlib.Path, optional
                 Directory in which to write ``nodes.csv`` and ``edges.csv``
                 for the parsed circuit.
-
+        trojans: list of str, optional
+                List of trojan instances or pins.
         """
         super().__init__()
         self.c = Circuit()
@@ -91,6 +92,7 @@ class _VerilogCircuitGraphTransformer(Transformer):
         self.warnings = warnings
         self.error_on_warning = error_on_warning
         self.csv_output_dir = Path(csv_output_dir) if csv_output_dir else None
+        self.trojans = trojans or []
         self.tie_0 = self.c.add("tie_0", "0")
         self.tie_1 = self.c.add("tie_1", "1")
         self.tie_x = self.c.add("tie_x", "x")
@@ -251,6 +253,50 @@ class _VerilogCircuitGraphTransformer(Transformer):
             target_type = self.c.graph.nodes[target].get("type")
             if source_type not in {"bb_input", "bb_output"} and target_type not in {"bb_input", "bb_output"}:
                 raw_edges.append((str(source), str(target), {"kind": "direct", **attributes}))
+
+        # Build set of trojan instances/pins for matching
+        trojan_inst_set = set()
+        for t in (self.trojans or []):
+            inst = t.split('.', 1)[0] if '.' in str(t) else str(t)
+            trojan_inst_set.add(inst)
+            trojan_inst_set.add(str(t))
+
+        # Annotate nodes with Trojan label
+        for node, attributes in raw_nodes.items():
+            node_str = str(node)
+            node_inst = node_str.split('.', 1)[0] if '.' in node_str else node_str
+            is_t = 1 if (node_inst in trojan_inst_set or node_str in trojan_inst_set) else 0
+            attributes["is_trojan"] = is_t
+            attributes["trojan"] = is_t
+
+        # Control ports for clock/reset
+        CONTROL_PORTS = {"CLK", "CK", "RSTB", "RN", "SETB", "SN", "test_se"}
+
+        # Annotate edges with control, trojan_edge, and trojan_context
+        for source, target, attributes in raw_edges:
+            src_str = str(source)
+            dst_str = str(target)
+            src_inst = src_str.split('.', 1)[0] if '.' in src_str else src_str
+            dst_inst = dst_str.split('.', 1)[0] if '.' in dst_str else dst_str
+
+            src_is_t = (src_inst in trojan_inst_set or src_str in trojan_inst_set)
+            dst_is_t = (dst_inst in trojan_inst_set or dst_str in trojan_inst_set)
+
+            port_name = attributes.get("port", "")
+            attributes["is_control"] = 1 if port_name in CONTROL_PORTS else 0
+
+            if src_is_t and dst_is_t:
+                attributes["is_trojan_edge"] = 1
+                attributes["trojan_context"] = "internal"
+            elif dst_is_t:
+                attributes["is_trojan_edge"] = 1
+                attributes["trojan_context"] = "trigger_input"
+            elif src_is_t:
+                attributes["is_trojan_edge"] = 1
+                attributes["trojan_context"] = "payload_output"
+            else:
+                attributes["is_trojan_edge"] = 0
+                attributes["trojan_context"] = "normal"
 
         # Attributes are not necessarily uniform. Build a complete schema so
         # no source attribute is discarded from either CSV.
@@ -736,7 +782,7 @@ class _VerilogCircuitGraphTransformer(Transformer):
 
 
 def parse_verilog_netlist(
-    netlist, blackboxes, warnings=False, error_on_warning=False, csv_output_dir=None
+    netlist, blackboxes, warnings=False, error_on_warning=False, csv_output_dir=None, trojans=None
 ):
     """
     Parse a verilog netlist into a Circuit.
@@ -754,6 +800,8 @@ def parse_verilog_netlist(
             exceptions.
     csv_output_dir: str or pathlib.Path, optional
             Directory in which to write ``nodes.csv`` and ``edges.csv``.
+    trojans: list of str, optional
+            List of trojan instances or pins.
 
     Returns
     -------
@@ -762,7 +810,7 @@ def parse_verilog_netlist(
 
     """
     transformer = _VerilogCircuitGraphTransformer(
-        netlist, blackboxes, warnings, error_on_warning, csv_output_dir
+        netlist, blackboxes, warnings, error_on_warning, csv_output_dir, trojans
     )
     with open(Path(__file__).parent.absolute() / "verilog.lark") as f:
         parser = Lark(f, parser="lalr", transformer=transformer)
