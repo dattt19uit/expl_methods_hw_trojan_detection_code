@@ -94,7 +94,7 @@ Sự đứt đoạn biểu diễn trực quan như sau:
 Quy trình tiền xử lý phá hủy của Baseline tồn tại 4 khiếm khuyết cấu trúc lớn:
 1. **Mất bản sắc thực thể linh kiện (Cell Instance Identity):**
    * Bản thân cổng logic hay flip-flop không tồn tại độc lập như một đỉnh trong đồ thị mà bị ép đồng nhất thành một chân output (ví dụ cổng Trojan `U293` bị thay thế bằng node `U293.QN`).
-   * **Lỗi bất đối xứng ở phần tử tuần tự:** Với các linh kiện có 2 ngõ ra như Flip-Flop (`Q` và `QN`), hàm `merge_cells` gặp lỗi nghiêm trọng (được tác giả baseline chú thích là *Bug #2* trong mã nguồn [`stdcell.py`]): tín hiệu ngõ vào chỉ được nối vào chân `.QN`, còn chân `.Q` hoàn toàn không nhận ngõ vào, làm mất tính đối xứng của mạch số.
+   * **Lỗi bất đối xứng ở phần tử tuần tự:** Với các linh kiện có 2 ngõ ra như Flip-Flop (`Q` và `QN`), hàm `merge_cells` gặp lỗi nghiêm trọng (được tác giả baseline chú thích là *Bug #2* trong mã nguồn): tín hiệu ngõ vào chỉ được nối vào chân `.QN`, còn chân `.Q` hoàn toàn không nhận ngõ vào, làm mất tính đối xứng của mạch số.
 2. **Mất trắng ngữ nghĩa chân cổng (Port/Pin Semantics):**
    * Việc xóa bỏ các node chân vào khiến đồ thị mất toàn bộ thông tin về tên chân (`A`, `B`, `D`, `CLK`, `RSTB`, `EN`).
    * Trên đồ thị, một cạnh từ xung nhịp Clock (`CLK`), cạnh từ tín hiệu Reset (`RSTB`), và cạnh từ đường dữ liệu (`D`) đi vào Flip-Flop hoàn toàn giống hệt nhau, không có thuộc tính phân biệt.
@@ -121,9 +121,9 @@ Trong an ninh phần cứng thực tế, bên kiểm định vi mạch phải đ
 Khi bước sang bài toán LOFO, bản chất hạn chế của Baseline bị phơi bày toàn diện:
 * Khi cấu trúc mạch thay đổi (mạch `RS232` chỉ có 35 flip-flop trong khi `s35932` có tới 1.728 flip-flop), độ sâu logic và quy mô cây Clock khác nhau hoàn toàn. Toàn bộ phân phối khoảng cách của Baseline bị trôi lệch (*severe domain shift*). Đường tắt học vẹt mà mô hình ghi nhớ trước đó trở nên hoàn toàn vô hiệu.
 * **Số liệu thực nghiệm kiểm chứng:**
-  * Baseline (5 đặc trưng Hasegawa) **sụp đổ hoàn toàn trên LOFO**: Macro $F_1$ rơi tự do từ **$0.7559$** xuống còn vỏn vẹn **$0.0297$**.
-  * Riêng trên họ mạch `RS232`, độ nhạy (Recall) của Baseline chỉ đạt **$1.25\%$** (bỏ lọt 236 trên tổng số 239 node Trojan, ROC-AUC chỉ đạt $0.427$ — tệ hơn cả đoán ngẫu nhiên).
-  * Ngưỡng cực đoan $\tau^* \approx 0.98$ được tối ưu cục bộ trước đó khiến mô hình trở nên "tê liệt", gần như không thể kích hoạt cờ cảnh báo cho bất kỳ node Trojan nào trên mạch mới.
+  * Baseline (5 đặc trưng Hasegawa) **sụp đổ hoàn toàn trên LOFO**: Macro $F_1$ rơi tự do từ **$0.7576$** xuống còn vỏn vẹn **$0.0362$**.
+  * Riêng trên họ mạch `RS232`, độ nhạy (Recall) của Baseline chỉ đạt **$2.09\%$** (bỏ lọt 234 trên tổng số 239 node Trojan, ROC-AUC chỉ đạt **$0.3815$** — tệ hơn cả đoán ngẫu nhiên).
+  * Ngưỡng cực đoan $\tau^* \approx 0.97 - 0.98$ được tối ưu cục bộ trước đó khiến mô hình trở nên "tê liệt", gần như không thể kích hoạt cờ cảnh báo cho bất kỳ node Trojan nào trên mạch mới.
 
 > **Kết luận:** Những biến dạng cấu trúc, việc mất bản sắc linh kiện, mất ngữ nghĩa chân cổng và nhiễu mạng Clock không phải là những chi tiết thứ yếu, mà là **những khiếm khuyết cốt tử (fatal flaws)** làm triệt tiêu hoàn toàn khả năng tổng quát hóa thực tế của phương pháp Baseline.
 
@@ -150,7 +150,7 @@ Từ 3 khoảng trống nghiên cứu trên, đề tài xác lập 3 **Câu hỏ
 2. **RQ2 (Về hiệu năng phát hiện và khả năng tổng quát hóa OOD):**
    * *Liệu việc mở rộng các đặc trưng tô-pô đồ thị bậc cao (như PageRank, Betweenness, K-Core, Clustering, Logic Depth Ratio) được tính toán trên đồ thị luồng dữ liệu sạch của Graph IR có khắc phục được hiện tượng học đường tắt và mang lại khả năng tổng quát hóa vượt trội trên bài toán liên họ mạch (LOFO) so với Baseline hay không?*
 3. **RQ3 (Về tính tương thích cho Graph Neural Networks và Graph XAI):**
-   * *Biểu diễn Graph IR đề xuất có đáp ứng đầy đủ tính tương thích chuẩn mực để làm nền tảng đầu vào cho việc huấn luyện trực tiếp các mô hình Graph Neural Networks (GNN) và các phương pháp giải thích dựa trên đồ thị (Graph-based XAI) ở các giai đoạn tiếp theo của luận văn hay không?*
+   * *Biểu diễn Graph IR đề xuất có đáp ứng đầy đủ tính tương thích chuẩn mực để làm nền tảng đầu vào cho việc huấn luyện trực tiếp các mô hình Graph Neural Networks (GNN) và các phương pháp giải thích dựa trên đồ thị (Graph-based XAI) ở các giai đoạn tiếp theo hay không?*
 
 > **Cầu nối dẫn nhập sang Phần 2:**  
 > Để trả lời trực tiếp cho **RQ1** và tạo tiền đề giải quyết **RQ2, RQ3**, **Phần 2 của báo cáo sẽ trình bày chi tiết về kiến trúc hiện thực (Implementation) của Biểu diễn Đồ thị Ngữ nghĩa (Semantic Graph IR)**, cấu trúc chuẩn hóa `nodes.csv` & `edges.csv`, cơ chế phân tách đồ thị dữ liệu sạch $G_{data}$, và quá trình trích xuất bộ 13 đặc trưng tô-pô đồ thị.
@@ -163,7 +163,7 @@ Từ 3 khoảng trống nghiên cứu trên, đề tài xác lập 3 **Câu hỏ
 
 Nhằm khắc phục triệt để các hạn chế mang tính cấu trúc của Baseline (đã phân tích tại Mục 1.2), nghiên cứu đề xuất **Biểu diễn Đồ thị Ngữ nghĩa Trung gian (Semantic Graph Intermediate Representation - Graph IR)**. 
 
-Khác với cách tiếp cận cưỡng ép Netlist về một đồ thị thuần túy cổng logic (Logic Gate Graph) thông qua việc xóa dây `wire` và gộp cổng thô bạo, Graph IR xuất phát từ bản chất vật lý thực sự của vi mạch số: **Vi mạch là một mạng lưới tương tác giữa hai thực thể vật lý cơ bản — Khối linh kiện chức năng (Cell Instances) và Mạng lưới dây dẫn truyền tín hiệu (Nets/Wires)**.
+Khác với cách tiếp cận cưỡng ép Netlist về một đồ thị thuần túy cổng logic (Logic Gate Graph) thông qua việc xóa dây `wire` và gộp cổng thô bạo, Graph IR xuất phát từ bản chất vật lý thực sự của vi mạch số: **Vi mạch là một mạng lưới tương tác giữa hai thực thể vật lý cơ bản - Khối linh kiện chức năng (Cell Instances) và Mạng lưới dây dẫn truyền tín hiệu (Nets/Wires)**.
 
 Về mặt toán học, Semantic Graph IR được định nghĩa là một **Đồ thị có hướng hai phía gán nhãn thuộc tính (Directed Attributed Bipartite Multigraph)** $G = (V, E, \Phi_V, \Phi_E)$, trong đó:
 
@@ -199,8 +199,6 @@ flowchart LR
 ---
 
 ### 2.2. Chuẩn hóa Cấu trúc Dữ liệu Biểu diễn (`nodes.csv` và `edges.csv`)
-
-Toàn bộ quy trình phân tích cú pháp Verilog Netlist được hiện thực hóa trực tiếp trong module [`verilog.py`](file:///home/dat_ttan/thesis/expl_methods_hw_trojan_detection_code/packages/shared/xai_shared/circuitgraph/circuitgraph/parsing/verilog.py) qua hàm `write_graph_csv()`. Kết quả trung gian được chuẩn hóa thành hai tập tin CSV phẳng nhưng giàu ngữ nghĩa: `nodes.csv` và `edges.csv`.
 
 #### Bảng 2.1: Đặc tả Schema dữ liệu của tập tin `nodes.csv`
 | Cột (Attribute) | Kiểu dữ liệu | Ý nghĩa kỹ thuật | Ví dụ mẫu |
@@ -272,7 +270,7 @@ U305,iXMIT_state_1_,output,0,1,connection,Q,payload_output
 
 Như đã chứng minh tại Mục 1.2.2, mạng lưới Clock và Reset là nguyên nhân cốt tử dẫn đến hiện tượng ô nhiễm khoảng cách tô-pô. Baseline cố gắng giải quyết bằng cách xóa cell hoặc lờ đi, dẫn đến hoặc mất mát thông tin, hoặc để mặc đường tắt nhân tạo chi phối.
 
-Trong Graph IR, bài toán này được giải quyết triệt để thông qua **Cơ chế Phân tách Đồ thị Luồng Dữ liệu Sạch ($G_{data}$)** thực hiện tại module [`graph_metrics_extractor.py`](file:///home/dat_ttan/thesis/expl_methods_hw_trojan_detection_code/packages/shared/xai_shared/circuit_processing/graph_metrics_extractor.py).
+Trong Graph IR, bài toán này được giải quyết triệt để thông qua **Cơ chế Phân tách Đồ thị Luồng Dữ liệu Sạch ($G_{data}$)**, được thực hiện theo các bước sau:
 
 #### Nguyên lý thuật toán:
 1. **Định nghĩa Tập chân cắm Điều khiển Chuẩn hóa ($\mathcal{P}_{ctrl}$):**
@@ -314,9 +312,9 @@ flowchart TD
 
 ### 2.4. Trích xuất Bộ 13 Đặc trưng Tô-pô Đồ thị Toàn diện (Graph Feature Extraction)
 
-Dựa trên đồ thị dữ liệu sạch $G_{data}$, module [`graph_metrics_extractor.py`](file:///home/dat_ttan/thesis/expl_methods_hw_trojan_detection_code/packages/shared/xai_shared/circuit_processing/graph_metrics_extractor.py) trích xuất một vector đặc trưng gồm **13 chiều** cho mỗi đỉnh $v \in V$, chia làm hai nhóm:
+Dựa trên đồ thị dữ liệu sạch $G_{data}$, vector đặc trưng gồm **13 chiều** cho mỗi đỉnh $v \in V$ được trích xuất và chia làm hai nhóm như sau:
 
-#### Nhóm 1: Bộ 5 đặc trưng Hasegawa mở rộng (Hasegawa Features on $G_{data}$)
+#### Nhóm 1: Bộ 5 đặc trưng Hasegawa mở rộng (Hasegawa Features on $G_{data}$) - Tính toán theo baseline nhưng trên đồ thị sạch $G_{data}$:
 Được tính toán bằng thuật toán **Multi-Source Dijkstra** hiệu năng cao chạy đồng thời trên $G_{data}$ và đồ thị đảo chiều $G_{data}^{rev}$:
 1. **$LGFi(v)$ (Logic Gate Fanin level 2):** Số lượng tiền thân bậc 2 của đỉnh $v$, đại diện cho quy mô hình nón logic đầu vào (Input logic cone size):
    $$LGFi(v) = \left| \{ u \in V \mid \text{dist}_{G_{data}}(u, v) \le 2 \} \right|$$
@@ -330,9 +328,13 @@ Dựa trên đồ thị dữ liệu sạch $G_{data}$, module [`graph_metrics_ex
 
 #### Nhóm 2: Bộ 8 đặc trưng Tô-pô Đồ thị Bậc cao (8 Advanced Graph Features)
 Nhằm nắm bắt các hình thái cấu trúc ẩn mà khoảng cách bước nhảy đơn thuần không thể mô tả, 8 đặc trưng tô-pô đồ thị tiên tiến được bổ sung:
+
 6. **$In\text{-}Degree(v)$:** Bậc vào của đỉnh trong luồng dữ liệu sạch, phản ánh số lượng tín hiệu hội tụ vào node.
+
 7. **$Out\text{-}Degree(v)$:** Bậc ra của đỉnh trong luồng dữ liệu sạch, phản ánh tải logic (Fan-out) của node.
+
 8. **$PageRank(v)$:** Điểm quan trọng trung tâm dòng dữ liệu tính theo giải thuật PageRank ($\alpha = 0.85$, dung sai $10^{-6}$), đo lường xác suất một luồng tín hiệu ngẫu nhiên đi qua $v$.
+
 9. **$Betweenness(v)$ (Betweenness Centrality):** Độ trung gian cầu nối, đo lường tỷ lệ các đường đi ngắn nhất giữa mọi cặp đỉnh trong vi mạch đi xuyên qua $v$:
    $$C_B(v) = \sum_{s \neq v \neq t} \frac{\sigma_{st}(v)}{\sigma_{st}}$$
    *(Để đảm bảo tính khả thi trên các vi mạch lớn, thuật toán xấp xỉ lấy mẫu k-sampling với $k = 150$ được kích hoạt khi $|V| > 500$).*
@@ -356,15 +358,40 @@ Nhằm nắm bắt các hình thái cấu trúc ẩn mà khoảng cách bước 
 
 ### 3.1. Thiết lập Thực nghiệm 4 Kịch bản Đối chứng (4-Way Benchmark Protocol)
 
-Để đánh giá một cách khách quan, công bằng và toàn diện hiệu quả của Semantic Graph IR so với Baseline, nghiên cứu thiết lập một ma trận thực nghiệm gồm **4 cấu hình đối chứng (4-Way Benchmark)**, kế thừa hoàn toàn giao thức chuẩn hóa của Phương pháp 2 từ [`run_pipeline.sh`](file:///home/dat_ttan/thesis/expl_methods_hw_trojan_detection_code/scripts/run_pipeline.sh) và script đánh giá độc lập [`compare_baseline_vs_graph_ir.py`](file:///home/dat_ttan/thesis/expl_methods_hw_trojan_detection_code/scripts/compare_baseline_vs_graph_ir.py).
+Để đánh giá một cách khách quan, công bằng và toàn diện hiệu quả của Semantic Graph IR so với Baseline, nghiên cứu thiết lập một ma trận thực nghiệm gồm **4 cấu hình đối chứng (4-Way Benchmark)** như sau:
 
 #### Bảng 3.1: Ma trận 4 cấu hình thực nghiệm đối chứng
 | Cấu hình | Biểu diễn Đồ thị | Bộ Đặc trưng | Xử lý Clock / Reset | Tổng số mẫu dữ liệu |
 | :--- | :--- | :--- | :--- | :--- |
-| **Exp 1 (Base-5)** | Đồ thị Baseline cũ | 5 Hasegawa cổ điển | Không lọc (gộp/xóa cell thô bạo) | 41.577 (Train: 33.261, Test: 8.316) |
+| **Exp 1 (Base-5)** | Đồ thị Baseline cũ | 5 Hasegawa cổ điển | Không lọc (áp dụng trên Baseline) | 41.577 (Train: 33.261, Test: 8.316) |
 | **Exp 2 (Base-13)**| Đồ thị Baseline cũ | 13 Đặc trưng (5 Hasegawa + 8 Graph) | Không lọc (áp dụng trên Baseline) | 41.577 (Train: 33.261, Test: 8.316) |
 | **Exp 3 (GIR-5)**  | Semantic Graph IR | 5 Hasegawa mở rộng | **Lọc sạch $is\_control$ qua $G_{data}$** | **108.531** (Train: 86.824, Test: 21.707) |
 | **Exp 4 (GIR-13)** | Semantic Graph IR | **13 Đặc trưng toàn diện** | **Lọc sạch $is\_control$ qua $G_{data}$** | **108.531** (Train: 86.824, Test: 21.707) |
+
+#### Mô tả chi tiết 4 Cấu hình Thực nghiệm:
+
+Thiết kế 4 cấu hình này tuân theo phương pháp luận **Nghiên cứu bóc tách thành phần (Ablation Study)** có kiểm soát, giúp phân lập rành mạch tác động độc lập của hai yếu tố then chốt: **(1) Biểu diễn Đồ thị Ngữ nghĩa (Graph IR)** và **(2) Không gian Đặc trưng Tô-pô Đồ thị bậc cao (13 Features)**:
+
+1. **Exp 1 (Baseline - Base-5): Mốc Đối chuẩn Gốc (Anchor Baseline)**
+   * **Bản chất:** Tái lập nguyên bản $100\%$ quy trình kinh điển của Whitten et al. (2025) và Hasegawa et al. (2016).
+   * **Biểu diễn đồ thị:** Đồ thị một phía thô sơ sau khi đã qua hai hàm gọt giũa phá hủy (`remove_cells(['wire'])` và `merge_cells`). Toàn bộ các đỉnh dây dẫn bị xóa, các chân cắm bị tước bỏ, và 20 cổng Trojan (như buffer kích hoạt `U304`) bị xóa sổ vì thuật toán nhầm lẫn là cổng thừa (`out_degree == 0`).
+   * **Bộ đặc trưng:** Sử dụng đúng 5 đặc trưng khoảng cách logic truyền thống: $\text{LGFi}, \text{ffi}, \text{ffo}, \text{PI}, \text{PO}$.
+   * **Hiện trạng xung nhịp:** Không có cơ chế lọc Clock/Reset; đường xung nhịp `sys_clk` bị nhập chung vào luồng dữ liệu logic, làm méo mó các đường đi Dijkstra.
+   * **Mục tiêu khoa học:** Đóng vai trò là điểm tham chiếu chuẩn (Ground-Truth Baseline) để so sánh định lượng mức độ cải thiện của tất cả các phương pháp cải tiến.
+
+2. **Exp 2 (Baseline Extended - Base-13): Đánh giá khi Bổ sung Đặc trưng vào Đồ thị Cũ**
+   * **Bản chất:** Trích xuất toàn bộ 13 đặc trưng (5 Hasegawa + 8 đặc trưng tô-pô đồ thị bậc cao gồm: $\text{in\_degree}, \text{out\_degree}, \text{pagerank}, \text{betweenness}, \text{closeness}, \text{clustering}, \text{core\_number}, \text{logic\_depth\_ratio}$) nhưng **vẫn chạy trực tiếp trên nền đồ thị Baseline gọt giũa cũ**.
+   * **Mục tiêu khoa học:** Kiểm định giả thuyết: *"Liệu chỉ cần tính toán thêm các thuật toán đồ thị nâng cao trên cấu trúc đồ thị cũ thì có thể giải quyết được bài toán phát hiện Trojan hay không?"* Thực nghiệm này giúp chứng minh rằng nếu cấu trúc đồ thị gốc bị sai lệch (bị nhiễu bởi cây Clock toàn cục và mất mát dây dẫn), các thuật toán như PageRank và Centrality sẽ tính toán trên các đường tắt ảo và không thể phát huy hiệu quả tối ưu.
+
+3. **Exp 3 (Graph IR Baseline - GIR-5): Đánh giá Tác động Độc lập của Semantic Graph IR**
+   * **Bản chất:** Ứng dụng mô hình **Đồ thị hai phía có hướng mang thuộc tính (Semantic Graph IR)** với cơ chế lọc sạch mạng Clock/Reset qua đồ thị dữ liệu $G_{data}$ (`is_control == 0`), nhưng **chỉ giới hạn tính toán đúng 5 đặc trưng Hasegawa cổ điển**.
+   * **Quy mô dữ liệu:** Đạt **108.531 mẫu** (bảo toàn trọn vẹn cả Cổng và Dây, giữ nguyên vẹn đủ 370/370 cổng Trojan, không bị thất thoát linh kiện).
+   * **Mục tiêu khoa học:** Phân lập tác động của Biểu diễn Đồ thị. Thí nghiệm này trả lời câu hỏi: *"Nếu vẫn giữ nguyên 5 đặc trưng cũ nhưng chuyển sang tính toán trên một đồ thị chuẩn tắc, đầy đủ và không bị ô nhiễm bởi Clock thì bản thân Graph IR giúp tăng độ chính xác bao nhiêu?"*
+
+4. **Exp 4 (Graph IR Comprehensive - GIR-13): Giải pháp Toàn diện Đề xuất**
+   * **Bản chất:** Kết hợp tối đa sức mạnh của cả hai đề xuất cải tiến: Biểu diễn Đồ thị hai phía **Semantic Graph IR** (bảo toàn $100\%$ cấu trúc vật lý, cô lập Datapath sạch $G_{data}$) kết hợp cùng **Không gian 13 Đặc trưng Tô-pô Đồ thị bậc cao**.
+   * **Đặc trưng vượt trội:** Bổ sung các thước đo tập trung luồng dữ liệu (PageRank, Betweenness trên $G_{data}$), mức độ liên kết cụm (K-Core), và đặc biệt là đặc trưng tỉ lệ độ sâu bất biến theo kích thước chip ($\text{logic\_depth\_ratio} = \frac{\text{PI}}{\text{PI} + \text{PO}}$).
+   * **Mục tiêu khoa học:** Khẳng định tính ưu việt toàn diện của giải pháp đề xuất so với Baseline nguyên bản (Exp 1), tạo ra bước nhảy vọt về $F_1$-score, giảm thiểu $33\%$ báo động giả, và chứng minh tính hiệp đồng (Synergy) giữa Biểu diễn Đồ thị Ngữ nghĩa và Học máy hiện đại trước khi chuyển giao sang Graph Neural Networks (GNN).
 
 #### Giao thức huấn luyện và đánh giá:
 * **Thuật toán học máy:** Chuẩn mực XGBoost Classifier (`xgb.XGBClassifier`) với bộ siêu tham số cố định xuyên suốt: `max_depth = 6`, `learning_rate = 0.3`, `n_estimators = 100`, `subsample = 0.8`, `colsample_bytree = 0.8`, trọng số phạt mất cân bằng lớp `scale_pos_weight = N_negative / N_positive`.
@@ -378,71 +405,79 @@ Nhằm nắm bắt các hình thái cấu trúc ẩn mà khoảng cách bước 
 
 ### 3.2. Bảng Kết quả Thực nghiệm Tổng hợp
 
-Dữ liệu thực nghiệm được trích xuất trực tiếp từ báo cáo kết quả chuẩn hóa [`data/models/comparison_4_experiments.json`](file:///home/dat_ttan/thesis/expl_methods_hw_trojan_detection_code/data/models/comparison_4_experiments.json).
-
-#### Bảng 3.2: Kết quả đánh giá đơn lần chạy (Single Seed 42 Benchmark)
+##### Bảng 3.2: Kết quả đánh giá đơn lần chạy (Single Seed 42 Benchmark)
 | Tiêu chí / Chỉ số đo lường | Exp 1: Base-5 | Exp 2: Base-13 | Exp 3: GIR-5 | Exp 4: GIR-13 (Đề xuất) |
 | :--- | :---: | :---: | :---: | :---: |
 | **Số lượng mẫu (Train / Test)** | 33.261 / 8.316 | 33.261 / 8.316 | 86.824 / 21.707 | **86.824 / 21.707** |
 | **Số mẫu Trojan (Train / Test)**| 277 / 73 | 277 / 73 | 295 / 75 | **295 / 75** |
-| **Ngưỡng quyết định tối ưu ($\tau^*$)** | $0.9702$ | $0.9801$ | $0.9900$ | **$0.4159$** |
+| **Ngưỡng quyết định tối ưu ($\tau^*$)** | $0.9702$ | $0.9801$ | $0.9900$ | **$0.7623$** |
 | *Tại ngưỡng tối ưu $\tau^*$ :* | | | | |
-| - Độ chính xác (Precision) | $84.75\%$ | $89.29\%$ | $81.54\%$ | **$89.61\%$** |
-| - Độ nhạy (Recall) | $68.49\%$ | $68.49\%$ | $70.67\%$ | **$92.00\%$** |
-| - **$F_1$-Score** | **$0.7576$** | **$0.7752$** | **$0.7571$** | **$0.9079$** |
-| - Hệ số tương quan Matthews (MCC) | $0.7600$ | $0.7804$ | $0.7583$ | **$0.9077$** |
-| - True Positives (TP) / False Negatives (FN) | 50 / 23 | 50 / 23 | 53 / 22 | **69 / 6** |
-| - Báo động giả (False Positives - FP) | 9 | 6 | 12 | **8** |
+| - Độ chính xác (Precision) | $84.75\%$ | $89.29\%$ | $81.54\%$ | **$91.78\%$** |
+| - Độ nhạy (Recall) | $68.49\%$ | $68.49\%$ | $70.67\%$ | **$89.33\%$** |
+| - **$F_1$-Score** | **$0.7576$** | **$0.7752$** | **$0.7571$** | **$0.9054$** |
+| - Hệ số tương quan Matthews (MCC) | $0.7600$ | $0.7804$ | $0.7583$ | **$0.9052$** |
+| - True Positives (TP) / False Negatives (FN) | 50 / 23 | 50 / 23 | 53 / 22 | **67 / 8** |
+| - Báo động giả (False Positives - FP) | 9 | 6 | 12 | **6** |
+| - True Negatives (TN) | 8.234 | 8.237 | 21.620 | **21.626** |
 | *Tại ngưỡng mặc định $\tau = 0.5$ :* | | | | |
-| - Độ chính xác (Precision at 0.5) | $17.00\%$ | $16.85\%$ | $18.95\%$ | **$89.47\%$** |
+| - Độ chính xác (Precision at 0.5) | $17.00\%$ | $16.85\%$ | $18.95\%$ | **$88.31\%$** |
 | - Độ nhạy (Recall at 0.5) | $80.82\%$ | $83.56\%$ | $86.67\%$ | **$90.67\%$** |
-| - **$F_1$-Score at 0.5** | **$0.2810$** | **$0.2805$** | **$0.3110$** | **$0.9007$** |
-| - Báo động giả (FP at 0.5) | 288 | 301 | 278 | **8** |
-| **Diện tích dưới đường cong (ROC-AUC)** | **$0.9501$** | **$0.9531$** | **$0.9910$** | **$0.9981$** |
+| - **$F_1$-Score at 0.5** | **$0.2810$** | **$0.2805$** | **$0.3110$** | **$0.8947$** |
+| - Hệ số tương quan Matthews (MCC at 0.5) | $0.3607$ | $0.3653$ | $0.4017$ | **$0.8942$** |
+| - True Positives (TP at 0.5) | 59 | 61 | 65 | **68** |
+| - Báo động giả (FP at 0.5) | 288 | 301 | 278 | **9** |
+| **Diện tích dưới đường cong (ROC-AUC)** | **$0.9501$** | **$0.9531$** | **$0.9910$** | **$0.9975$** |
 
 ---
 
 #### Bảng 3.3: Kết quả kiểm định thống kê 10 lần chạy lặp lại độc lập ($\text{Mean} \pm \text{Std}$)
 | Chỉ số đánh giá | Exp 1: Base-5 | Exp 2: Base-13 | Exp 3: GIR-5 | Exp 4: GIR-13 (Đề xuất) |
 | :--- | :---: | :---: | :---: | :---: |
-| **$F_1$-Score** | $0.7560 \pm 0.0241$ | $0.7561 \pm 0.0235$ | $0.7194 \pm 0.0345$ | **$0.8901 \pm 0.0239$** |
-| **Độ chính xác (Precision %)** | $88.12 \pm 4.18\%$ | $87.61 \pm 5.89\%$ | $73.80 \pm 4.80\%$ | **$88.77 \pm 3.08\%$** |
-| **Độ nhạy (Recall %)** | $66.38 \pm 3.61\%$ | $66.78 \pm 3.42\%$ | $70.54 \pm 5.38\%$ | **$89.34 \pm 3.05\%$** |
-| **Hệ số tương quan Matthews (MCC)**| $0.7625 \pm 0.0238$ | $0.7623 \pm 0.0254$ | $0.7196 \pm 0.0346$ | **$0.8899 \pm 0.0238$** |
-| **ROC-AUC** | $0.9626 \pm 0.0161$ | $0.9614 \pm 0.0162$ | $0.9878 \pm 0.0051$ | **$0.9954 \pm 0.0028$** |
-| **Ngưỡng tối ưu ($\tau^*$)** | $0.981 \pm 0.007$ | $0.978 \pm 0.010$ | $0.986 \pm 0.007$ | **$0.581 \pm 0.210$** |
+| **$F_1$-Score** | $0.7560 \pm 0.0241$ | $0.7561 \pm 0.0235$ | $0.7194 \pm 0.0345$ | **$0.8934 \pm 0.0154$** |
+| **Độ chính xác (Precision %)** | $88.12 \pm 4.18\%$ | $87.61 \pm 5.89\%$ | $73.80 \pm 4.80\%$ | **$89.46 \pm 3.26\%$** |
+| **Độ nhạy (Recall %)** | $66.38 \pm 3.61\%$ | $66.78 \pm 3.42\%$ | $70.54 \pm 5.38\%$ | **$89.38 \pm 2.90\%$** |
+| **Hệ số tương quan Matthews (MCC)**| $0.7625 \pm 0.0238$ | $0.7623 \pm 0.0254$ | $0.7196 \pm 0.0346$ | **$0.8934 \pm 0.0154$** |
+| **ROC-AUC** | $0.9626 \pm 0.0161$ | $0.9614 \pm 0.0162$ | $0.9878 \pm 0.0051$ | **$0.9951 \pm 0.0030$** |
+| **Ngưỡng tối ưu ($\tau^*$)** | $0.981 \pm 0.007$ | $0.978 \pm 0.010$ | $0.986 \pm 0.007$ | **$0.594 \pm 0.233$** |
 
 ---
 
 #### Bảng 3.4: Kết quả kiểm thử liên họ vi mạch (Leave-One-Family-Out Cross-Validation)
 | Họ vi mạch kiểm thử (Test Family) | Exp 1: Base-5 | Exp 2: Base-13 | Exp 3: GIR-5 | Exp 4: GIR-13 (Đề xuất) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Tổng thể Micro $F_1$** | $0.0214$ | $0.0247$ | $0.0742$ | **$0.0769$** |
-| **Tổng thể Macro $F_1$** | **$0.0297$** | **$0.0276$** | **$0.1296$** | **$0.0975$** |
+| **Tổng thể Micro Precision (%)** | $1.84\%$ | $1.70\%$ | $5.00\%$ | **$5.08\%$** |
+| **Tổng thể Micro Recall (%)** | $10.86\%$ | $11.71\%$ | **$25.68\%$** | $6.76\%$ |
+| **Tổng thể Micro $F_1$** | $0.0314$ | $0.0296$ | **$0.0837$** | $0.0580$ |
+| **Tổng thể Macro $F_1$** | $0.0362$ | $0.0344$ | **$0.1346$** | $0.0792$ |
 | --- | --- | --- | --- | --- |
 | **Họ vi mạch `RS232` (11 biến thể):** | | | | |
-| - Precision / Recall (%) | $0.99\% \ / \ 1.26\%$ | $0.98\% \ / \ 1.26\%$ | **$10.37\% \ / \ 13.99\%$** | $2.13\% \ / \ 0.41\%$ |
-| - $F_1$-Score / MCC | $0.0111 \ / -0.0317$ | $0.0110 \ / -0.0319$ | **$0.1191 \ / \ 0.0984$** | $0.0069 \ / \ 0.0001$ |
-| - TP / FP (trên 239 node Trojan) | $3 \ / \ 300$ | $3 \ / \ 302$ | **$34 \ / \ 294$** | $1 \ / \ \mathbf{46}$ |
-| - ROC-AUC | $0.4271$ | $0.3299$ | **$0.6383$** | **$0.6340$** |
+| - Precision / Recall (%) | $1.23\% \ / \ 2.09\%$ | $0.75\% \ / \ 1.26\%$ | **$11.61\% \ / \ 12.76\%$** | $1.92\% \ / \ 0.41\%$ |
+| - $F_1$-Score / MCC | $0.0155 \ / -0.0337$ | $0.0094 \ / -0.0400$ | **$0.1216 \ / \ 0.1019$** | $0.0068 \ / -0.0008$ |
+| - TP / FP (trên 239 - 243 node Trojan) | $5 \ / \ 401$ | $3 \ / \ 397$ | **$31 \ / \ 236$** | $1 \ / \ \mathbf{51}$ |
+| - ROC-AUC | $0.3815$ | $0.4949$ | **$0.6479$** | $0.6231$ |
 | **Họ vi mạch `s15850`:** | | | | |
-| - Precision / Recall (%) | $4.71\% \ / \ 14.81\%$ | $3.66\% \ / \ 11.11\%$ | **$12.94\% \ / \ 40.74\%$** | $2.44\% \ / \ 3.70\%$ |
-| - $F_1$-Score / ROC-AUC | $0.0714 \ / \ 0.7116$ | $0.0550 \ / \ 0.7501$ | **$0.1964 \ / \ \mathbf{0.9312}$** | $0.0294 \ / \ 0.8740$ |
+| - Precision / Recall (%) | $4.71\% \ / \ 14.81\%$ | $4.94\% \ / \ 14.81\%$ | **$10.00\% \ / \ 37.04\%$** | $0.00\% \ / \ 0.00\%$ |
+| - $F_1$-Score / MCC | $0.0714 \ / \ 0.0665$ | $0.0741 \ / \ 0.0690$ | **$0.1575 \ / \ 0.1844$** | $0.0000 \ / -0.0041$ |
+| - TP / FP (trên 27 node Trojan) | $4 \ / \ 81$ | $4 \ / \ 77$ | **$10 \ / \ 90$** | $0 \ / \ \mathbf{15}$ |
+| - ROC-AUC | $0.6921$ | $0.7532$ | **$0.9649$** | $0.8955$ |
 | **Họ vi mạch `s35932` (Quy mô lớn):** | | | | |
-| - Precision / Recall (%) | $1.61\% \ / \ 30.51\%$ | $2.00\% \ / \ 38.98\%$ | $21.79\% \ / \ \mathbf{53.97\%}$ | **$83.33\%** \ / \ 23.81\%$ |
-| - $F_1$-Score / MCC | $0.0306 \ / \ 0.0592$ | $0.0381 \ / \ 0.0780$ | $0.3105 \ / \ 0.3414$ | **$0.3704 \ / \ \mathbf{0.4450}$** |
-| - TP / FP (trên 59-63 node Trojan) | $18 \ / \ 1.101$ | $23 \ / \ 1.125$ | $34 \ / \ 122$ | **$15 \ / \ \mathbf{3}$** |
-| - ROC-AUC | $0.7919$ | $0.7934$ | $0.9443$ | **$0.9679$** |
+| - Precision / Recall (%) | $2.72\% \ / \ 45.76\%$ | $2.34\% \ / \ 52.54\%$ | $24.72\% \ / \ \mathbf{69.84\%}$ | $\mathbf{90.00\%} \ / \ 14.29\%$ |
+| - $F_1$-Score / MCC | $0.0513 \ / \ 0.1024$ | $0.0448 \ / \ 0.1006$ | **$0.3651 \ / \ 0.4140$** | $0.2466 \ / \ 0.3583$ |
+| - TP / FP (trên 59 - 63 node Trojan) | $27 \ / \ 966$ | $31 \ / \ 1.295$ | **$44 \ / \ 134$** | $9 \ / \ \mathbf{1}$ |
+| - ROC-AUC | $0.8587$ | $0.8141$ | $0.9421$ | **$0.9440$** |
 | **Họ vi mạch `s38417` (Độ phức tạp cao):**| | | | |
-| - Precision / Recall (%) | $0.30\% \ / \ 8.00\%$ | $0.32\% \ / \ 8.00\%$ | $0.60\% \ / \ 14.81\%$ | **$4.35\% \ / \ \mathbf{59.26\%}$** |
-| - $F_1$-Score / MCC | $0.0058 \ / \ 0.0049$ | $0.0062 \ / \ 0.0058$ | $0.0115 \ / \ 0.0247$ | **$0.0810 \ / \ \mathbf{0.1578}$** |
-| - TP / FP (trên 25-27 node Trojan) | $2 \ / \ 662$ | $2 \ / \ 623$ | $4 \ / \ 666$ | **$16 \ / \ \mathbf{352}$** |
-| - ROC-AUC | $0.7075$ | $0.7352$ | $0.9304$ | **$0.9616$** |
-| **Họ vi mạch `s38584`:*** | *(Không chạy Baseline)* | *(Không chạy Baseline)* | | |
-| - Precision / Recall (%) | N/A | N/A | $0.54\% \ / \ \mathbf{40.00\%}$ | $0.0\% \ / \ 0.0\%$ |
-| - $F_1$-Score / ROC-AUC | N/A | N/A | **$0.0107 \ / \ \mathbf{0.9255}$** | $0.0 \ / \ 0.8138$ |
+| - Precision / Recall (%) | $0.34\% \ / \ 8.00\%$ | $0.49\% \ / \ 12.00\%$ | $0.90\% \ / \ 22.22\%$ | **$3.51\% \ / \ \mathbf{51.85\%}$** |
+| - $F_1$-Score / MCC | $0.0065 \ / \ 0.0066$ | $0.0095 \ / \ 0.0144$ | $0.0174 \ / \ 0.0400$ | **$0.0657 \ / \ \mathbf{0.1318}$** |
+| - TP / FP (trên 25 - 27 node Trojan) | $2 \ / \ 584$ | $3 \ / \ 606$ | $6 \ / \ 657$ | **$14 \ / \ \mathbf{385}$** |
+| - ROC-AUC | $0.7766$ | $0.7439$ | **$0.9327$** | $0.9309$ |
+| **Họ vi mạch `s38584`:** | *(Không chạy Baseline)* | *(Không chạy Baseline)* | | |
+| - Precision / Recall (%) | N/A | N/A | $0.58\% \ / \ \mathbf{40.00\%}$ | $\mathbf{6.25\%} \ / \ 10.00\%$ |
+| - $F_1$-Score / MCC | N/A | N/A | $0.0114 \ / \ 0.0458$ | **$0.0769 \ / \ \mathbf{0.0787}$** |
+| - TP / FP (trên 10 node Trojan) | N/A | N/A | $4 \ / \ 687$ | **$1 \ / \ \mathbf{15}$** |
+| - ROC-AUC | N/A | N/A | $0.8761$ | **$0.8841$** |
 
 *(Ghi chú: Họ mạch `s38584` bị lỗi phân tích cú pháp trong quy trình Baseline cũ nên không có dữ liệu đối chứng; Graph IR xử lý trọn vẹn không lỗi).*
+
 
 ---
 
@@ -458,7 +493,7 @@ Dữ liệu thực nghiệm được trích xuất trực tiếp từ báo cáo 
 2. **Hiệu quả vượt bậc của cơ chế bóc tách mạng Clock qua $G_{data}$:**
    * Hãy so sánh trực diện giữa **Exp 1 (Base-5)** và **Exp 3 (GIR-5)**: Cả hai đều sử dụng chính xác **cùng 5 đặc trưng khoảng cách của Hasegawa**, điểm khác biệt duy nhất là Exp 3 được tính toán trên đồ thị dữ liệu sạch $G_{data}$ của Graph IR (đã loại bỏ $is\_control = 1$).
    * Trên phân chia ngẫu nhiên: ROC-AUC tăng vọt từ **$0.9501$** lên **$0.9910$**.
-   * Trên bài toán tổng quát hóa liên họ mạch (LOFO Cross-Validation): Macro $F_1$ tăng vọt từ **$0.0297$** (Exp 1) lên **$0.1296$** (Exp 3) — **tăng hơn 4.3 lần!** Riêng trên họ mạch `RS232`, điểm $F_1$ tăng gấp **10.7 lần** (từ $0.0111$ lên $0.1191$), số lượng Trojan bắt được (TP) tăng từ 3 lên 34 nút, và ROC-AUC nhảy vọt từ $0.4271$ (tệ hơn đoán ngẫu nhiên) lên $0.6383$.
+   * Trên bài toán tổng quát hóa liên họ mạch (LOFO Cross-Validation): Macro $F_1$ tăng vọt từ **$0.0362$** (Exp 1) lên **$0.1346$** (Exp 3) — **tăng hơn 3.7 lần!** Riêng trên họ mạch `RS232`, điểm $F_1$ tăng gấp **7.8 lần** (từ $0.0155$ lên $0.1216$), số lượng Trojan bắt được (TP) tăng từ 5 lên 31 nút, và ROC-AUC nhảy vọt từ $0.3815$ (tệ hơn đoán ngẫu nhiên) lên $0.6479$.
 3. **Bảo tồn ngữ nghĩa chân cổng và hỗ trợ các mạch phức tạp:**
    * Baseline hoàn toàn gãy đổ khi gặp các vi mạch có cấu trúc phức tạp như `s38584` (do lỗi cú pháp gộp cổng). Graph IR xử lý trôi chảy 100% các vi mạch Trust-Hub, tự động ghi nhận thuộc tính chân cắm (`port`) và gán nhãn chính xác 4 ngữ cảnh an ninh Trojan (`trigger_input`, `internal`, `payload_output`, `normal`).
 
@@ -473,25 +508,58 @@ Dữ liệu thực nghiệm được trích xuất trực tiếp từ báo cáo 
 
 1. **Thiết lập đỉnh cao hiệu năng mới trên kịch bản phân chia ngẫu nhiên:**
    * Cấu hình đề xuất **Exp 4 (GIR-13)** áp đảo hoàn toàn cả 3 kịch bản còn lại:
-     * Điểm $F_1$-score đạt **$0.9079$** (so với Baseline $0.7576$), tăng **$+15.03\%$**.
-     * Độ nhạy (Recall) đạt **$92.00\%$** (phát hiện 69/75 node Trojan trong tập test, so với Baseline chỉ đạt $68.49\%$).
-     * ROC-AUC đạt mức gần như tuyệt đối: **$0.9981$** (kiểm định 10 runs độc lập đạt $0.9954 \pm 0.0028$).
-   * **Báo động giả giảm kỷ lục:** Tại ngưỡng mặc định $\tau = 0.5$, số ca báo động giả (False Positives) của Baseline là **288 ca** ($F_1 = 0.2810$), trong khi Exp 4 chỉ có **vỏn vẹn 8 ca báo động giả** trên tổng số hơn 21.000 node kiểm thử, đạt $F_1 = \mathbf{0.9007}$.
+     * Điểm $F_1$-score đạt **$0.9054$** (so với Baseline $0.7576$), tăng **$+14.78\%$**.
+     * Độ chính xác (Precision) đạt **$91.78\%$** (so với Baseline $84.75\%$).
+     * Độ nhạy (Recall) đạt **$89.33\%$** (phát hiện 67/75 node Trojan trong tập test, so với Baseline chỉ đạt $68.49\%$).
+     * ROC-AUC đạt mức gần như tuyệt đối: **$0.9975$** (kiểm định 10 runs độc lập đạt $0.9951 \pm 0.0030$).
+   * **Báo động giả giảm kỷ lục:** Tại ngưỡng tối ưu $\tau^* = 0.7623$, số ca báo động giả (False Positives) chỉ có **6 ca** trên hơn 21.000 node kiểm thử. Ngay tại ngưỡng mặc định $\tau = 0.5$, Exp 4 chỉ có **9 ca báo động giả** ($F_1 = \mathbf{0.8947}$), trong khi Baseline cũ gây ra tới **288 ca báo động giả** ($F_1 = 0.2810$).
 
 2. **Triệt tiêu hiện tượng nhạy cảm ngưỡng cực đoan (Đập tan "đường tắt học vẹt"):**
    * Trong Mục 1.2.2, chúng ta đã chỉ ra "nghịch lý phân chia ngẫu nhiên": Mô hình Baseline buộc phải đẩy ngưỡng quyết định lên sát trần $\tau^* = 0.9702 - 0.9801$ để lọc bỏ báo động giả do học vẹt mạng Clock.
-   * Khi chuyển sang **Exp 4 (GIR-13)**, ngưỡng tối ưu $\tau^*$ lập tức chuyển dịch tự nhiên về **$0.4159$** (trung bình 10 runs là $0.581 \pm 0.210$). Mô hình phân bổ xác suất thực chất và tự tin, duy trì hiệu năng cao ổn định ngay tại ngưỡng chuẩn $\tau = 0.5$ ($F_1 = 0.9007$). Điều này chứng minh mô hình đã học được các đặc trưng tô-pô nội tại của mã độc thay vì dựa vào các đường tắt phân phối xác suất méo mó.
+   * Khi chuyển sang **Exp 4 (GIR-13)**, ngưỡng tối ưu $\tau^*$ chuyển dịch về **$0.7623$** (trung bình 10 runs là $0.594 \pm 0.233$). Mô hình phân bổ xác suất thực chất và tự tin, duy trì hiệu năng cao ổn định ngay tại ngưỡng chuẩn $\tau = 0.5$ ($F_1 = 0.8947$). Điều này chứng minh mô hình đã học được các đặc trưng tô-pô nội tại của mã độc thay vì dựa vào các đường tắt phân phối xác suất méo mó.
 
-3. **Khả năng tổng quát hóa OOD vượt trội trên bài toán LOFO:**
-   * **Đột phá trên mạch quy mô lớn `s35932` (1.728 Flip-Flop):**  
-     Trên vi mạch này, Baseline Exp 1 hoàn toàn bất lực: dù bắt được 18 Trojan nhưng gây ra tới **1.101 ca báo động giả**, khiến Precision rơi xuống thảm hại $1.61\%$ và $F_1 = 0.0306$.  
-     Ngược lại, **Exp 4 (GIR-13) đạt Precision lên tới $83.33\%$** (tăng hơn **51 lần**!), điểm $F_1 = \mathbf{0.3704}$ (tăng hơn **12 lần**!), ROC-AUC đạt **$0.9679$**, và số ca báo động giả giảm từ 1.101 xuống **chỉ còn đúng 3 ca**!
-   * **Đột phá trên vi mạch phức tạp `s38417`:**  
-     Exp 4 đạt độ nhạy (Recall) **$59.26\%$** (bắt được 16/27 node Trojan) và ROC-AUC **$0.9616$**, trong khi Baseline Exp 1 chỉ đạt Recall $8.00\%$ (bắt được 2 node) và tạo ra 662 ca báo động giả.
-   * **Vai trò then chốt của $LogicDepthRatio$:**  
-     Sự kết hợp giữa các chỉ số tập trung dòng dữ liệu ($PageRank$, $Betweenness$) với tỷ lệ độ sâu logic chuẩn hóa $LDR(v) = \frac{PI}{PI + PO + \epsilon}$ đã cung cấp một thang đo không gian bất biến với quy mô vi mạch. Dù vi mạch kiểm thử có quy mô lớn gấp 10 lần vi mạch huấn luyện, tỷ lệ độ sâu tương đối của các cổng Trigger (thường nằm ở các tầng logic có xác suất kích hoạt hiếm) vẫn giữ nguyên tính chất bất thường, cho phép bộ phân loại nhận diện chính xác Trojan mà không bị nhầm lẫn.
+3. **Phân tích Thực nghiệm LOFO: Bước tiến Cục bộ và Rào cản Cốt tử của Mô hình Bảng (Tiền đề Dẫn nhập sang GNN):**
+   
+   * **Những bước tiến rõ nét so với Baseline:**
+     So với Baseline (Exp 1) gần như tê liệt trên bài toán OOD (Macro $F_1 = 0.0362$, Micro $F_1 = 0.0314$ và gây ra hàng nghìn báo động giả), Graph IR mang lại những cải thiện cục bộ mang tính đột phá:
+     - Trên vi mạch quy mô lớn `s35932` (1.728 FF), Exp 4 đạt Precision lên tới **$90.00\%$** (so với Baseline $2.72\%$, tăng hơn **33 lần**), giảm báo động giả từ 966 xuống **chỉ còn đúng 1 ca**, đạt $F_1 = 0.2466$ và ROC-AUC = $0.9440$. Cấu hình Exp 3 thậm chí đạt Recall tới **$69.84\%$** (bắt được 44/63 node Trojan) với $F_1 = 0.3651$.
+     - Trên vi mạch phức tạp `s38417`, Exp 4 bắt được **$51.85\%$** Trojan (14/27 node) và ROC-AUC đạt $0.9309$, trong khi Baseline chỉ bắt được vỏn vẹn $8.00\%$ (2 node) và tạo ra 584 ca báo động giả.
+     - Điểm Macro $F_1$ tổng thể tăng từ $0.0362$ lên $0.1346$ (tăng gấp **3.7 lần** ở Exp 3) và $0.0792$ (ở Exp 4).
 
-=> **Kết luận khẳng định cho RQ2:** Việc mở rộng bộ 13 đặc trưng tô-pô đồ thị trên luồng dữ liệu sạch đã loại bỏ triệt để hiện tượng học đường tắt, hạ thấp số ca báo động giả xuống mức tối thiểu và mang lại khả năng tổng quát hóa vượt trội trên các họ vi mạch chưa từng biết trước.
+   * **Nhìn nhận khách quan: Tại sao kết quả LOFO tuyệt đối vẫn còn rất khiêm tốn ($F_1 \approx 0.06 - 0.13$)?**
+     Mặc dù mức tăng tương đối so với Baseline là rất ấn tượng (gấp từ 2.2 đến 3.7 lần), nhưng nếu xét về giá trị tuyệt đối, điểm số Macro $F_1 \approx 0.079 - 0.135$ và Micro $F_1 \approx 0.058 - 0.084$ trên bài toán tổng quát hóa liên họ mạch (LOFO) **vẫn chưa thực sự khả quan và còn cách rất xa ngưỡng ứng dụng thực tế**. Một số họ mạch vẫn bộc lộ hạn chế lớn: ở họ `RS232` Precision chỉ đạt $1.92\% - 11.61\%$, ở họ `s38417` vẫn tồn tại 385 ca báo động giả khiến Precision chỉ đạt $3.51\%$, và đặc biệt ở họ `s15850` Exp 4 cho kết quả $F_1 = 0.0000$.
+
+   * **Giải mã hiện tượng mạch `s15850` trong LOFO: Vì sao Exp 4 cho ra kết quả khá tệ ($F_1 = 0$) dù ROC-AUC đạt tới $0.8955$?**  
+     Đây là một trường hợp dị biệt cực kỳ thú vị và mang tính then chốt về mặt học thuật trong nghiên cứu này:
+     
+     1. *Nghịch lý giữa ROC-AUC cao ($0.8955$) và $F_1 = 0$:*  
+        Chỉ số ROC-AUC của Exp 4 trên `s15850` đạt mức rất cao: **$0.8955$** (gần $90\%$). Điều này chứng minh rằng **năng lực xếp hạng (Ranking ability) của mô hình không hề tệ**: XGBoost vẫn xếp xác suất của các node Trojan cao hơn $89.55\%$ các node an toàn.  
+        Tuy nhiên, khi phân tích sâu phân phối xác suất dự đoán ($\hat{y}$) của Exp 4 trên 27 node Trojan của `s15850`, giá trị xác suất lớn nhất mà mô hình gán cho một node Trojan chỉ đạt:
+        $$\max_{v \in V_{Trojan}} P(v) = \mathbf{0.4613} < 0.5$$
+        Trong bài toán LOFO (blind-test cross-family), ngưỡng quyết định chuẩn mực được cố định tại $\tau = 0.5$. Do không có bất kỳ node Trojan nào vượt qua được mốc $0.5$, mô hình dẫn đến: $\text{True Positives (TP)} = 0$, $\text{False Negatives (FN)} = 27 \implies \mathbf{\text{Recall} = 0.00\%, \text{Precision} = 0.00\%, F_1 = 0.0000}$.
+     
+     2. *Nguyên nhân kỹ thuật: Sự trượt thang đo quy mô đồ thị của các đặc trưng tô-pô toàn cục (Scale-dependent Topological Covariate Shift):*  
+        - Trong Exp 4, các đặc trưng đồ thị được XGBoost sử dụng nhiều nhất và đóng góp mức lợi ích thông tin (`gain`) cao nhất là `out_degree` ($22.9\%$), `pagerank` ($18.2\%$), `logic_depth_ratio` ($13.5\%$) và `betweenness` ($6.6\%$).
+        - Về bản chất toán học, giá trị PageRank của một đỉnh trong đồ thị tỷ lệ nghịch với quy mô số đỉnh ($\sim 1/N$), còn Betweenness Centrality tỷ lệ nghịch với bình phương số đỉnh ($\sim 1/N^2$).
+        - Mạch `s15850` có quy mô 4.980 nodes với kiến trúc đồ thị dữ liệu rất thưa, hình thành các chuỗi xử lý logic dài và hẹp:
+          * Trên tập huấn luyện (gồm các mạch `RS232` và `s35932`), các node Trojan có giá trị `PageRank` trung bình là **$0.00267$** và `Betweenness` trung bình là **$0.01367$**. Cây quyết định học các phép rẽ nhánh dựa trên ngưỡng này (ví dụ: `if PageRank > 0.001 then Trojan`).
+          * Tuy nhiên, trên mạch `s15850`, toàn bộ 27 node Trojan chỉ có `PageRank` trung bình là **$0.00041$** (thấp hơn **6.5 lần** so với tập train), và `Betweenness` trung bình chỉ là **$0.00025$** (thấp hơn tới **50 lần** so với tập train!).
+          * Khi cây quyết định kiểm tra các điều kiện này, toàn bộ 27 node Trojan của `s15850` bị rẽ nhầm sang nhánh "Clean", kéo tụt điểm số xác suất tích lũy xuống dưới $0.4613$.
+     
+     3. *Tại sao Exp 3 (5 đặc trưng) lại bắt được 10 Trojan ($F_1 = 0.1575$), còn Exp 4 lại thất bại?*  
+        - Exp 3 chỉ sử dụng 5 đặc trưng khoảng cách bước nhảy Dijkstra thuần túy ($\text{LGFi}, \text{ffi}, \text{ffo}, \text{PI}, \text{PO}$). Các khoảng cách bước nhảy logic này (như $\text{ffi} = 4.8$, $\text{ffo} = 3.9$) không bị co giãn tỷ lệ phi tuyến theo số lượng đỉnh của đồ thị như PageRank và Betweenness.
+        - Vì thang đo khoảng cách logic trên $G_{data}$ tương đồng giữa các họ vi mạch, cây quyết định của Exp 3 giữ được tính ổn định, gán xác suất Trojan cho `s15850` lên tới $0.9808$, giúp 10 node vượt qua ngưỡng 0.5.
+        - Điều này chứng minh: **Việc bổ sung thêm các đặc trưng tô-pô toàn cục vô hướng dạng bảng nếu không có cơ chế chuẩn hóa theo đồ thị sẽ tạo ra hiệu ứng "con dao hai lưỡi" khi chuyển miền (OOD)** — nó giúp tối ưu hóa cực mạnh trong phân phối nội bộ (Random Split đạt $F_1 = 0.9054$), nhưng lại gây trượt phân phối xác suất khi gặp kiến trúc vi mạch có hình thái tô-pô khác biệt như `s15850`.
+
+   * **Ý nghĩa: Tiền đề Khoa học Tất yếu để Luận văn Tiến sang Triển khai Graph Neural Networks (GNN):**  
+     Hiện tượng sụp đổ xác suất trên `s15850` của Exp 4 chính là **luận cứ thực nghiệm đắt giá và thuyết phục nhất**:
+     - Các mô hình học máy dạng bảng (Tabular ML như XGBoost) dựa trên các vector đặc trưng số trích xuất thủ công hoàn toàn **thiếu vắng cơ chế chuẩn hóa đồ thị nội tại (Graph Inductive Normalization)** và **bị mất mát hoàn toàn ngữ cảnh không gian (Relational Inductive Bias)** khi "nén phẳng" đồ thị thành bảng số.
+     - Đây chính là động lực khoa học cốt tử xác lập sự cần thiết phải chuyển giao sang **Mạng Nơ-ron Đồ thị Không đồng nhất (Heterogeneous Graph Neural Networks - H-GNN)**:
+       * GNNs hoạt động trực tiếp trên cấu trúc liên kết hai phía ($V_{cell} \cup V_{net}$), sử dụng cơ chế **Lan truyền thông điệp (Message Passing)** với các phép chuẩn hóa bậc cục bộ (như phép nhân ma trận đối xứng $D^{-1/2} A D^{-1/2}$ trong GCN hoặc Attention Softmax trong GATv2), giúp biểu diễn học được bất biến với quy mô toàn cục của vi mạch.
+       * GNN không phụ thuộc vào các con số thống kê vô hướng đơn lẻ mà học trực tiếp **Mô thức Đồ thị con Đặc thù (Sub-graph Motifs)** — nhận diện chuỗi cổng Trigger/Payload dựa trên mối quan hệ lân cận $k$-hop bất kể vi mạch có 1.000 hay 100.000 cổng.
+     - Semantic Graph IR với cấu trúc chuẩn tắc `nodes.csv` và `edges.csv` đã giải quyết xong bài toán biểu diễn dữ liệu, đóng vai trò **bệ phóng kiến trúc hoàn hảo** để luận văn tiến thẳng sang triển khai H-GNN ở giai đoạn tiếp theo.
+
+=> **Kết luận khẳng định cho RQ2:** Mặc dù bộ 13 đặc trưng tô-pô trên luồng dữ liệu sạch đã triệt tiêu hoàn toàn đường tắt học vẹt và mang lại hiệu năng kỷ lục trên kịch bản phân chia nội bộ ($F_1 = 0.9054$), nhưng trên bài toán OOD liên họ mạch (LOFO), mô hình bảng đã bộc lộ giới hạn cấu trúc cố hữu (thể hiện rõ qua hiện tượng nén xác suất ở mạch `s15850`). Đây là phát hiện then chốt, xác lập tính cấp thiết khoa học để luận văn chuyển giao trọng tâm sang nghiên cứu Graph Neural Networks.
 
 ---
 
@@ -502,16 +570,7 @@ Dữ liệu thực nghiệm được trích xuất trực tiếp từ báo cáo 
 
 1. **Tính tương thích tự nhiên với các thư viện Deep Graph Learning:**
    * Cặp tập tin `nodes.csv` và `edges.csv` được thiết kế theo đúng chuẩn biểu diễn của **Đồ thị không đồng nhất (Heterogeneous Graph)**.
-   * Dữ liệu có thể được chuyển đổi 1-1 ("plug-and-play") vào đối tượng `torch_geometric.data.HeteroData` của thư viện **PyTorch Geometric (PyG)** hoặc `dgl.heterograph` của **DGL (Deep Graph Library)** mà không cần bất kỳ bước tiền xử lý trung gian nào:
-     ```python
-     # Ánh xạ trực tiếp sang PyTorch Geometric HeteroData:
-     data = HeteroData()
-     data['cell'].x = cell_feature_matrix      # Node features cho linh kiện
-     data['net'].x  = net_feature_matrix       # Node features cho đường dây
-     data['net', 'drives', 'cell'].edge_index  = net_to_cell_edges
-     data['net', 'drives', 'cell'].edge_attr   = port_type_embeddings
-     data['cell', 'outputs', 'net'].edge_index = cell_to_net_edges
-     ```
+   * Dữ liệu có thể được chuyển đổi 1-1 ("plug-and-play") vào đối tượng `torch_geometric.data.HeteroData` của thư viện **PyTorch Geometric (PyG)** hoặc `dgl.heterograph` của **DGL (Deep Graph Library)** mà không cần bất kỳ bước tiền xử lý trung gian nào.
    * Kiến trúc này cho phép triển khai trực tiếp các mô hình học sâu đồ thị tiên tiến như **Relational Graph Convolutional Networks (R-GCN)**, **Graph Attention Networks (GATv2)** với cơ chế Attention theo chân cắm (`port`), hoặc **Heterogeneous Graph Transformers (HGT)**.
 
 2. **Mở ra cuộc cách mạng cho Giải thích học máy trên đồ thị (Graph-based XAI):**
@@ -532,8 +591,8 @@ Báo cáo đã hoàn thành trọn vẹn việc phân tích, hiện thực hóa 
 
 1. **Về mặt lý thuyết và biểu diễn:** Đã giải quyết triệt để 3 khoảng trống nghiên cứu (RG1, RG2, RG3), khắc phục hoàn toàn sự cố đứt đoạn của CircuitGraph, bảo tồn toàn vẹn cấu trúc hai phía (Cells $\leftrightarrow$ Nets), bản sắc cổng và ngữ nghĩa chân pin, đồng thời bóc tách triệt để nhiễu ô nhiễm xung nhịp qua đồ thị luồng dữ liệu sạch $G_{data}$.
 2. **Về mặt thực nghiệm:** Kiểm chứng đa chiều qua 4 kịch bản đối chứng (Single Seed, 10-Run Statistics, LOFO Cross-Validation) khẳng định cấu hình đề xuất **Exp 4 (GIR-13)** vượt trội toàn diện:
-   * Trên Random Split: Đạt $F_1 = \mathbf{0.9079}$, ROC-AUC = $\mathbf{0.9981}$, giảm báo động giả từ 288 xuống còn 8 ca, đưa ngưỡng phân loại về vùng phân phối tự nhiên $\tau^* \approx 0.42 - 0.58$.
-   * Trên LOFO Cross-Validation: Đạt bước nhảy vọt về độ chính xác trên các mạch quy mô lớn (trên `s35932` đạt Precision $83.33\%$, $F_1 = 0.3704$, ROC-AUC = $0.9679$).
+   * Trên Random Split: Đạt $F_1 = \mathbf{0.9054}$ (kiểm định 10 runs đạt $0.8934 \pm 0.0154$), ROC-AUC = $\mathbf{0.9975}$, giảm báo động giả từ 288 xuống còn 6 ca tại $\tau^*$ và 9 ca tại $\tau=0.5$.
+   * Trên LOFO Cross-Validation: Đạt bước nhảy vọt về độ chính xác trên các mạch quy mô lớn (trên `s35932` đạt Precision $90.00\%$, giảm báo động giả xuống còn đúng 1 ca, trong khi Exp 3 đạt $F_1 = 0.3651$ với Recall $69.84\%$). Hiện tượng sụp đổ xác suất trên mạch dị biệt `s15850` đã cung cấp bằng chứng thực nghiệm rõ ràng nhất về giới hạn của mô hình bảng, tạo tiền đề vững chắc cho việc chuyển giao sang GNN.
 3. **Định hướng nghiên cứu tiếp theo của luận văn:**
    * **Giai đoạn tiếp theo (Triển khai GNN):** Tận dụng trực tiếp biểu diễn `nodes.csv` và `edges.csv` để xây dựng và huấn luyện mô hình **Heterogeneous Graph Neural Network (H-GNN)**, khai thác năng lực tự động trích xuất đặc trưng của mạng nơ-ron đồ thị thay vì phụ thuộc vào 13 đặc trưng tô-pô thủ công.
    * **Khung giải thích đồ thị (Graph XAI Framework):** Phát triển module giải thích đồ thị trực quan (sử dụng SubgraphX / GNNExplainer) để tự động xuất ra sơ đồ con chứa mạch kích hoạt và phá hoại của Trojan phục vụ trực tiếp cho các kỹ sư kiểm định phần cứng.
