@@ -1,15 +1,15 @@
-# Báo cáo quá trình xây dựng xây dựng Semantic Graph IR và triển khai 4 thực nghiệm so sánh benchmark với baseline khi huấn luyện mô hình XGBoost bài toán phân loại Trojan Detection trên tập dữ liệu Trust-Hub Benchmark.
+# Báo cáo quá trình xây dựng Semantic Graph IR và triển khai 4 thực nghiệm so sánh benchmark với baseline khi huấn luyện mô hình XGBoost bài toán phân loại Trojan Detection trên tập dữ liệu Trust-Hub Benchmark.
 * **Học viên thực hiện:** Trần Tấn Đạt
 * **Ngày báo cáo:** 03/09/2026
 * **Báo cáo trước:** [`ReportThesis-TranTanDat-20260719.pdf`](ReportThesis-TranTanDat-20260719.pdf) (Báo cáo tái lập baseline và đề xuất định hướng nghiên cứu mới)
-* **Mục tiêu báo cáo:** Báo cáo kết quả hoàn thành giai đoạn xây dựng Biểu diễn Đồ thị Ngữ nghĩa (Graph IR), mở rộng bộ đặc trưng tô-pô đồ thị, và kết quả thực nghiệm đối chứng 4 kịch bản trên mô hình XGBoost làm tiền đề bắt buộc cho Graph Neural Networks (GNN).
+* **Mục tiêu báo cáo:** Báo cáo kết quả nghiên cứu về Biểu diễn Đồ thị Ngữ nghĩa (Graph IR), khảo sát thực nghiệm đối chứng 4 kịch bản nhằm làm rõ vai trò của biểu diễn đồ thị và không gian đặc trưng trên phân chia ngẫu nhiên (In-Distribution) và kiểm thử liên họ mạch (Out-of-Distribution), qua đó thiết lập cơ sở khoa học định hướng cho việc ứng dụng Graph Neural Networks (GNN).
 ## 1. Mô tả quá trình dựng graph từ baseline và những điểm còn hạn chế
 
 ### 1.1. Quy trình dựng đồ thị của Baseline và minh họa trực quan qua mạch UART (RS232-T1000)
 
-Trong phương pháp cơ sở, mục tiêu ban đầu của tác giả là xây dựng một đồ thị phụ trợ để tính toán khoảng cách số tầng cổng logic (gate-level hops), phục vụ trích xuất **5 đặc trưng tô-pô dạng bảng của Hasegawa** (`LGFi`, `ffi`, `ffo`, `PI`, `PO`).
+Trong phương pháp cơ sở, mục tiêu ban đầu của các tác giả tiền nhiệm là xây dựng một đồ thị phụ trợ để tính toán khoảng cách số tầng cổng logic (gate-level hops), phục vụ trích xuất **5 đặc trưng tô-pô dạng bảng của Hasegawa** (`LGFi`, `ffi`, `ffo`, `PI`, `PO`). Đối với mục tiêu chuyên biệt này, việc thiết lập một biểu diễn đơn giản hóa là một lựa chọn thiết kế (design choice) hợp lý nhằm giảm chi phí tính toán đường đi ngắn nhất.
 
-Để thấy rõ cơ chế hoạt động và nguyên nhân gây biến dạng đồ thị, hãy xét một chuỗi truyền tín hiệu mẫu có thật trong file netlist UART [`data/raw/RS232-T1000/src/90nm/uart.v`] gồm 1 chân đầu vào chính (`xmit_dataH[0]`) đi qua 2 cổng logic liên tiếp (`U33` và `U32`):
+Để thấy rõ cơ chế hoạt động và cách thức đồ thị được giản lược hóa, hãy xét một chuỗi truyền tín hiệu mẫu trong file netlist UART [`data/raw/RS232-T1000/src/90nm/uart.v`] gồm 1 chân đầu vào chính (`xmit_dataH[0]`) đi qua 2 cổng logic liên tiếp (`U33` và `U32`):
 
 ```verilog
 // 1. Chân ngõ vào chính của chip UART (Primary Input)
@@ -36,10 +36,10 @@ OAI21X2 U32 (
 * **Luồng vật lý thực tế ngoài đời:**  
   Tín hiệu đi từ `xmit_dataH[0]` $\longrightarrow$ chui vào cổng `U33` $\longrightarrow$ phát ra dây `n27` $\longrightarrow$ chui vào cổng `U32` $\longrightarrow$ phát ra dây `n190`.
 
-Tuy nhiên, khi đưa qua quy trình xử lý của Baseline, đồ thị phải trải qua hai giai đoạn đầy mâu thuẫn:
+Tuy nhiên, khi đưa qua quy trình xử lý của Baseline, đồ thị phải trải qua hai giai đoạn xử lý trung gian:
 
 #### Giai đoạn 1: Phân tích cú pháp qua CircuitGraph - Hiện tượng đứt đoạn cấu trúc
-Khi đọc Verilog trên, thư viện `circuitgraph` xem mỗi linh kiện là một **BlackBox** (hộp đen) không rõ cấu trúc bên trong. Thay vì tạo ra node `U33`, nó lại phân tách linh kiện thành **các node chân cắm con (pin nodes)** rời rạc:
+Khi đọc Verilog trên, thư viện `circuitgraph` xem mỗi linh kiện là một **BlackBox** (hộp đen) không mô hình hóa cấu trúc bên trong. Thay vì tạo ra node `U33`, thư viện phân tách linh kiện thành **các node chân cắm con (pin nodes)** rời rạc:
 * Chân vào: tạo các node con `U33.IN1`, `U33.IN2`... (mang thuộc tính `type='bb_input'`).
 * Chân ra: tạo node con `U33.QN` (mang thuộc tính `type='bb_output'`).
 * Dây dẫn tín hiệu (`wire`) được biểu diễn bằng một node trung gian: `wire_in` $\to$ `U33.IN1`, và `U33.QN` $\to$ `wire_out`.
@@ -64,93 +64,93 @@ Sự đứt đoạn biểu diễn trực quan như sau:
   2. Tại `U33.IN1`, không còn cạnh nào đi tiếp $\implies$ **Dừng lại (ngõ cụt)**.
   3. Dijkstra kết luận: **Khoảng cách = $\infty$ (báo không có đường đi)**.
 
-#### Giai đoạn 2: Cách Baseline vá víu đồ thị (Phương pháp tiền xử lý phá hủy)
-Để thuật toán Dijkstra có thể chạy được qua các cổng logic, tác giả đã áp dụng hai bước can thiệp như sau:
+#### Giai đoạn 2: Cách Baseline xử lý đồ thị
+Để thuật toán Dijkstra có thể chạy được qua các cổng logic, phương pháp cơ sở đã áp dụng hai bước can thiệp tiền xử lý:
 
 1. **Bước `merge_cells`:** 
-   * Tác giả tự tay kéo một mũi tên nhân tạo từ nguồn ngõ vào `xmit_dataH[0]` cắm thẳng vào node chân ra `U33.QN`: `c.graph.add_edge('xmit_dataH[0]', 'U33.QN')`.
-   * **Xóa bỏ hoàn toàn các node chân vào** `U33.IN1..4` (`c.graph.remove_node(N_in)`).
-   * Gán nhãn cho `U33.QN` thành `label = "U33 AOI22X2"`. Cả cổng `U33` lúc này bị ép thay thế bằng chính node chân output của nó.
+    * Kéo một mũi tên nhân tạo từ nguồn ngõ vào `xmit_dataH[0]` cắm thẳng vào node chân ra `U33.QN`: `c.graph.add_edge('xmit_dataH[0]', 'U33.QN')`.
+    * **Loại bỏ các node chân vào** `U33.IN1..4` (`c.graph.remove_node(N_in)`).
+    * Gán nhãn cho `U33.QN` thành `label = "U33 AOI22X2"`. Cả cổng `U33` lúc này được đại diện bằng chính node chân output của nó.
 2. **Bước `remove_cells(['wire'])`:** 
-   * Tác giả thấy dây `n27` nằm giữa `U33.QN` và `U32.QN`.
-   * Tác giả **xóa luôn node dây `n27`** và kéo mũi tên thẳng từ `U33.QN` sang `U32.QN`: `c.graph.add_edge('U33.QN', 'U32.QN')`.
+    * Dây `n27` nằm giữa `U33.QN` và `U32.QN`.
+    * Phương pháp **lược bỏ node dây `n27`** và kéo mũi tên thẳng từ `U33.QN` sang `U32.QN`: `c.graph.add_edge('U33.QN', 'U32.QN')`.
 
 **Kết quả đồ thị Baseline thu được:**
 ```
 [xmit_dataH[0]] ───────────────> (Node: U33.QN) ───────────────> (Node: U32.QN) ───────────────> ...
-                         (Dây n27 bị xóa sổ)              (Chân IN1, IN3 bị xóa sổ)
+                         (Dây n27 bị loại bỏ)             (Chân IN1, IN3 bị loại bỏ)
 ```
 
-> **Đánh giá về cái giá phải trả:**
+> **Đánh giá về đặc điểm biểu diễn:**
 > * Đồ thị lúc này đã liền mạch để thuật toán Dijkstra có thể đi từ `xmit_dataH[0] -> U33.QN -> U32.QN` và đếm số bước nhảy (hops).
-> * Nhưng cái giá phải trả là **sự phá hủy hoàn toàn cấu trúc mạch**: Dây dẫn `n27` bị bốc hơi; cổng `U33` và `U32` bị bốc hơi thành các node chân output; toàn bộ ngữ nghĩa chân cổng (`IN1`, `IN3`, `CLK`, `RSTB`...) bị xóa sạch.
-> * Đây thuần túy là một **thủ thuật tiền xử lý tạm thời (ad-hoc workaround)**: đồ thị chỉ đóng vai trò "bàn đạp tính toán" (scratchpad) để lấy ra 5 con số dạng bảng rồi vứt bỏ, không thể bảo tồn để phân tích mạch.
+> * Tuy nhiên, việc đơn giản hóa này **làm nén cấu trúc mạch đáng kể**: Dây dẫn `n27` bị loại bỏ; cổng `U33` và `U32` bị thay thế bằng các node chân output; toàn bộ ngữ nghĩa chân cổng (`IN1`, `IN3`, `CLK`, `RSTB`...) không còn được lưu trữ trên đồ thị.
+> * Biểu diễn này phù hợp cho việc trích xuất một số khoảng cách số tầng cổng logic cơ bản dạng bảng, nhưng bộc lộ nhiều hạn chế khi được kỳ vọng đóng vai trò là một biểu diễn đồ thị tổng quát cho các mô hình học máy đồ thị hiện đại.
 
 ---
 
-### 1.2. Những điểm hạn chế cốt lõi của đồ thị Baseline
+### 1.2. Những giới hạn biểu diễn của đồ thị Baseline khi mở rộng sang học máy đồ thị
 
-#### 1.2.1. Các biến dạng và mất mát cấu trúc nghiêm trọng
-Quy trình tiền xử lý phá hủy của Baseline tồn tại 4 khiếm khuyết cấu trúc lớn:
-1. **Mất bản sắc thực thể linh kiện (Cell Instance Identity):**
-   * Bản thân cổng logic hay flip-flop không tồn tại độc lập như một đỉnh trong đồ thị mà bị ép đồng nhất thành một chân output (ví dụ cổng Trojan `U293` bị thay thế bằng node `U293.QN`).
-   * **Lỗi bất đối xứng ở phần tử tuần tự:** Với các linh kiện có 2 ngõ ra như Flip-Flop (`Q` và `QN`), hàm `merge_cells` gặp lỗi nghiêm trọng (được tác giả baseline chú thích là *Bug #2* trong mã nguồn): tín hiệu ngõ vào chỉ được nối vào chân `.QN`, còn chân `.Q` hoàn toàn không nhận ngõ vào, làm mất tính đối xứng của mạch số.
-2. **Mất trắng ngữ nghĩa chân cổng (Port/Pin Semantics):**
-   * Việc xóa bỏ các node chân vào khiến đồ thị mất toàn bộ thông tin về tên chân (`A`, `B`, `D`, `CLK`, `RSTB`, `EN`).
-   * Trên đồ thị, một cạnh từ xung nhịp Clock (`CLK`), cạnh từ tín hiệu Reset (`RSTB`), và cạnh từ đường dữ liệu (`D`) đi vào Flip-Flop hoàn toàn giống hệt nhau, không có thuộc tính phân biệt.
-3. **Hiện tượng "nhiễu ngắn mạch" do mạng điều khiển (Clock/Reset Pollution):**
-   * Mạng xung nhịp `sys_clk` và reset `sys_rst_l` có hệ số phân nhánh (fan-out) cực lớn, kết nối đồng thời tới toàn bộ các flip-flop trong vi mạch.
-   * Do Baseline kéo thẳng `sys_clk` vào chân output của flip-flop, **mạng Clock vô tình biến thành "đường cao tốc nối tắt" (shortcut highway)**: mọi flip-flop trong mạch đều có một đường đi tắt tới nhau qua `sys_clk` chỉ với 1-2 bước nhảy. Điều này làm sai lệch hoàn toàn độ sâu logic và khoảng cách tô-pô thực tế của mạch.
-4. **Mất cấu trúc dây dẫn và suy giảm quy mô tập mẫu:**
-   * Việc loại bỏ hoàn toàn các node kiểu `wire` phá vỡ cấu trúc đồ thị hai phía (Bipartite Graph: Cells $\leftrightarrow$ Nets) vốn là bản chất vật lý của vi mạch điện tử.
-   * Tại mạch `RS232-T1000`, số lượng node bị co cụm từ 581 node xuống còn 323 node; trên toàn bộ benchmark Trust-Hub, dữ liệu bị sụt giảm từ hơn 108.531 mẫu xuống chỉ còn 41.577 mẫu, làm mất đi phần lớn thông tin cấu trúc vi mô.
+#### 1.2.1. Sự nén cấu trúc và mất mát ngữ nghĩa
+Quy trình đơn giản hóa của Baseline tồn tại 4 giới hạn cấu trúc đáng chú ý:
+1. **Mất bản sắc thực thể linh kiện độc lập (Cell Instance Identity):**
+   * Bản thân cổng logic hay flip-flop không tồn tại độc lập như một đỉnh riêng biệt trong đồ thị mà bị gộp chung vào chân output (ví dụ cổng Trojan `U293` bị đại diện bằng node `U293.QN`).
+   * **Sự bất đối xứng ở phần tử tuần tự:** Với các linh kiện có 2 ngõ ra như Flip-Flop (`Q` và `QN`), hàm `merge_cells` chỉ kết nối tín hiệu ngõ vào vào chân `.QN`, còn chân `.Q` không nhận ngõ vào, làm mất tính đối xứng tự nhiên của mạch tuần tự.
+2. **Thiếu vắng ngữ nghĩa chân cổng (Port/Pin Semantics):**
+   * Việc loại bỏ các node chân vào khiến đồ thị không còn phân biệt được vai trò chức năng của các ngõ vào (`A`, `B`, `D`, `CLK`, `RSTB`, `EN`).
+   * Trên đồ thị, một cạnh từ xung nhịp Clock (`CLK`), cạnh từ tín hiệu Reset (`RSTB`), và cạnh từ đường dữ liệu (`D`) đi vào Flip-Flop đều đồng nhất thành các cạnh không mang nhãn thuộc tính phân biệt.
+3. **Hiện tượng "đường tắt nhân tạo" do mạng điều khiển (Clock/Reset Interference):**
+   * Mạng xung nhịp `sys_clk` và reset `sys_rst_l` có hệ số phân nhánh (fan-out) rất lớn, kết nối đồng thời tới toàn bộ các flip-flop trong vi mạch.
+   * Khi `sys_clk` được kết nối trực tiếp vào các chân output của flip-flop, mạng Clock vô tình tạo ra các đường đi ngắn kết nối giữa các flip-flop chỉ qua 1-2 bước nhảy. Điều này làm thay đổi đáng kể phân phối khoảng cách tô-pô so với luồng truyền dữ liệu chức năng thực tế.
+4. **Giản lược cấu trúc dây dẫn và quy mô thực thể đồ thị:**
+   * Việc loại bỏ các node kiểu `wire` làm mất đi cấu trúc đồ thị hai phía vốn phản ánh mối tương tác tự nhiên giữa linh kiện (Cells) và mạng dây dẫn (Nets).
+   * Cụ thể, quy trình tiền xử lý của Baseline giản lược số lượng thực thể đồ thị được giữ lại từ **108.531** xuống còn **41.577** trên toàn bộ benchmark (*The baseline preprocessing reduces the number of retained graph entities from 108,531 to 41,577 in our extraction pipeline, indicating substantial structural compression before feature extraction*). Sự nén cấu trúc này làm mất đi các đỉnh dây dẫn (wire/net), các chân vào (input pins), ngữ nghĩa chân cắm (port semantics), và làm mờ ranh giới giữa mạng điều khiển và luồng dữ liệu chức năng.
 
 #### 1.2.2. Nghịch lý đánh giá: Vì sao Baseline vẫn đạt kết quả tốt trên phân chia ngẫu nhiên (Random Split)?
-Trên thử nghiệm phân chia ngẫu nhiên (Random 80/20 Train/Test Split), mô hình XGBoost của Baseline vẫn đạt được $F_1 \approx 0.75$ và ROC-AUC $\approx 0.95$. Điều này dễ tạo ra ngộ nhận rằng các hạn chế trên không thực sự ảnh hưởng đến hiệu quả phát hiện. Tuy nhiên, phân tích sâu về bản chất học máy cho thấy đây thực chất là một **"ảo tưởng hiệu năng"** xuất phát từ 2 nguyên nhân:
+Trên thử nghiệm phân chia ngẫu nhiên (Random 80/20 Train/Test Split), mô hình XGBoost của Baseline vẫn đạt được $F_1 \approx 0.75$ và ROC-AUC $\approx 0.95$. Kết quả khả quan này cho thấy bộ 5 đặc trưng của Baseline vẫn chứa đựng thông tin hữu ích trong phân phối dữ liệu nội bộ. Tuy nhiên, việc phân tích sâu hơn đặt ra 2 vấn đề phương pháp luận quan trọng:
 
-* **Hiện tượng học đường tắt (Shortcut Learning / In-Distribution Memorization):**
-  * Trong tập dữ liệu Trust-Hub, một họ mạch có nhiều biến thể (ví dụ họ `RS232` có 11 mạch từ `T1000` đến `T2000`) cùng chia sẻ một mạch chủ (host circuit) giống hệt nhau. Khi phân chia ngẫu nhiên theo tỷ lệ 80/20, các node của cùng một họ mạch xuất hiện ở cả tập huấn luyện và kiểm thử.
-  * Nhiễu Clock của Baseline vô tình tạo ra một "dấu vân tay" cố định cho họ mạch đó (các cổng quanh flip-flop đều có khoảng cách tới Clock bằng 1). Thay vì học được bản chất cấu trúc tô-pô độc lập của Trojan, mô hình XGBoost chỉ đơn thuần **"học vẹt" (shortcut learning)** quy luật cục bộ của riêng mạch chủ đó. Vì tập kiểm tra ngẫu nhiên có cùng phân phối dữ liệu (In-Distribution), quy luật học vẹt này vẫn giúp mô hình dự đoán trúng.
-* **Sự phụ thuộc bệnh hoạn vào ngưỡng cực đoan (Extreme Threshold Tuning):**
-  * Ở ngưỡng phân loại tự nhiên ($\tau = 0.5$), Baseline cho ra tới **288 báo động giả (False Positives)** trên tập test, khiến $F_1$ chỉ đạt mức nghèo nàn **$0.281$**.
-  * Để đạt được $F_1 \approx 0.75$, tác giả baseline bắt buộc phải dùng thuật toán quét lưới (Grid Search) để "bóp" ngưỡng phân loại lên mức cực đoan: $\mathbf{\tau^* = 0.9702 - 0.9810}$. Điều này chứng minh các đặc trưng của Baseline phân tách ranh giới rất kém; mô hình gán xác suất cao nhầm lẫn cho hàng trăm node bình thường, buộc phải dùng ngưỡng cực cao để lọc nhiễu một cách gượng ép.
+* **Giả thuyết về đường tắt phân phối (Shortcut Learning Hypothesis under In-Distribution):**
+  * Trong tập dữ liệu Trust-Hub, một họ mạch có nhiều biến thể (ví dụ họ `RS232` có 11 mạch từ `T1000` đến `T2000`) cùng chia sẻ một mạch chủ (host circuit) giống hệt nhau. Khi phân chia ngẫu nhiên theo tỷ lệ 80/20, các node của cùng một mạch chủ xuất hiện ở cả tập huấn luyện và kiểm thử.
+  * Mạng Clock của Baseline tạo ra một cấu trúc khoảng cách đặc thù cho từng mạch chủ. Chúng tôi đặt ra giả thuyết nghiên cứu (hypothesis) rằng trong phân chia ngẫu nhiên cùng họ mạch, mô hình có thể đã khai thác các đường tắt phân phối (shortcut patterns) gắn liền với hình thái mạch chủ để đưa ra dự đoán, thay vì học được các đặc trưng tô-pô mang tính khái quát cao của phần cứng Trojan. Vì tập kiểm tra ngẫu nhiên có cùng phân phối dữ liệu (In-Distribution), các đặc trưng này vẫn giúp mô hình dự đoán chính xác.
+* **Độ nhạy đối với ngưỡng quyết định (Threshold Sensitivity):**
+  * Ở ngưỡng phân loại mặc định ($\tau = 0.5$), Baseline cho ra tới **288 báo động giả (False Positives)** trên tập test, khiến $F_1$ chỉ đạt mức **$0.2810$**.
+  * Để đạt được $F_1 \approx 0.75$, mô hình đòi hỏi phải quét tìm ngưỡng quyết định tối ưu trên tập test tại mức rất cao: $\mathbf{\tau^* = 0.9702 - 0.9810}$. Cần lưu ý rằng việc tối ưu ngưỡng trực tiếp trên test set là một phân tích mang tính xác định cận trên hiệu năng (ceiling analysis), và có thể mang lại ước lượng lạc quan (optimistic bias) nếu không được kiểm chứng trên tập validation độc lập.
 
-#### 1.2.3. Thước đo sự thật: Sự sụp đổ của Baseline trên bài toán liên họ mạch (LOFO)
-Trong an ninh phần cứng thực tế, bên kiểm định vi mạch phải đối mặt với bài toán **Out-of-Distribution (OOD)**: con chip cần kiểm tra là một thiết kế mới hoàn toàn, chưa từng xuất hiện trong tập dữ liệu huấn luyện. Đó chính là kịch bản kiểm thử nghiêm ngặt **Leave-One-Family-Out (LOFO)**: huấn luyện mô hình trên các họ mạch đã biết (như `s35932`, `s38417`) và kiểm tra trên họ mạch hoàn toàn mới lạ (`RS232`).
+#### 1.2.3. Thách thức thực nghiệm: Sự suy giảm hiệu năng của Baseline trên bài toán liên họ mạch (LOFO)
+Trong an ninh phần cứng thực tế, bên kiểm định vi mạch thường đối mặt với kịch bản kiểm thử ngoài phân phối (**Out-of-Distribution - OOD**): thiết kế cần kiểm tra thuộc một họ mạch hoàn toàn mới, chưa từng xuất hiện trong tập huấn luyện. Kịch bản kiểm thử nghiêm ngặt **Leave-One-Family-Out (LOFO)** phản ánh đúng thách thức này: huấn luyện mô hình trên các họ mạch đã biết (như `s35932`, `s38417`) và kiểm tra mù trên họ mạch để lại (`RS232`).
 
-Khi bước sang bài toán LOFO, bản chất hạn chế của Baseline bị phơi bày toàn diện:
-* Khi cấu trúc mạch thay đổi (mạch `RS232` chỉ có 35 flip-flop trong khi `s35932` có tới 1.728 flip-flop), độ sâu logic và quy mô cây Clock khác nhau hoàn toàn. Toàn bộ phân phối khoảng cách của Baseline bị trôi lệch (*severe domain shift*). Đường tắt học vẹt mà mô hình ghi nhớ trước đó trở nên hoàn toàn vô hiệu.
+Khi chuyển sang kịch bản LOFO, các giới hạn biểu diễn của Baseline bộc lộ rõ rệt:
+* Khi quy mô và cấu trúc vi mạch thay đổi (mạch `RS232` chỉ có 35 flip-flop trong khi `s35932` có tới 1.728 flip-flop), độ sâu logic và phân phối khoảng cách bị trôi lệch mạnh (*severe domain shift*). Các quy luật khoảng cách tuyệt đối mà mô hình học được từ tập huấn luyện không còn phù hợp trên mạch mới.
 * **Số liệu thực nghiệm kiểm chứng:**
-  * Baseline (5 đặc trưng Hasegawa) **sụp đổ hoàn toàn trên LOFO**: Macro $F_1$ rơi tự do từ **$0.7576$** xuống còn vỏn vẹn **$0.0362$**.
-  * Riêng trên họ mạch `RS232`, độ nhạy (Recall) của Baseline chỉ đạt **$2.09\%$** (bỏ lọt 234 trên tổng số 239 node Trojan, ROC-AUC chỉ đạt **$0.3815$** — tệ hơn cả đoán ngẫu nhiên).
-  * Ngưỡng cực đoan $\tau^* \approx 0.97 - 0.98$ được tối ưu cục bộ trước đó khiến mô hình trở nên "tê liệt", gần như không thể kích hoạt cờ cảnh báo cho bất kỳ node Trojan nào trên mạch mới.
+  * Baseline (5 đặc trưng Hasegawa) suy giảm mạnh trên LOFO: Macro $F_1$ giảm từ **$0.7576$** xuống còn **$0.0362$**.
+  * Riêng trên họ mạch `RS232`, độ nhạy (Recall) của Baseline chỉ đạt **$2.09\%$** (bỏ lọt 234 trên tổng số 239 node Trojan, ROC-AUC chỉ đạt **$0.3815$**).
+  * Ngưỡng quyết định cực đoan $\tau^* \approx 0.97 - 0.98$ được tối ưu nội bộ trước đó không thể kích hoạt hiệu quả trên phân phối xác suất mới.
 
-> **Kết luận:** Những biến dạng cấu trúc, việc mất bản sắc linh kiện, mất ngữ nghĩa chân cổng và nhiễu mạng Clock không phải là những chi tiết thứ yếu, mà là **những khiếm khuyết cốt tử (fatal flaws)** làm triệt tiêu hoàn toàn khả năng tổng quát hóa thực tế của phương pháp Baseline.
+> **Đánh giá tổng hợp:** Các giản lược cấu trúc, việc thiếu bản sắc linh kiện độc lập, mất ngữ nghĩa chân cổng và nhiễu mạng Clock là **những giới hạn biểu diễn quan trọng (representation limitations)** làm suy giảm đáng kể khả năng tổng quát hóa của phương pháp Baseline khi chuyển sang các họ vi mạch chưa từng biết trước.
 
 ---
 
 ### 1.3. Khoảng trống nghiên cứu (Research Gaps) và Câu hỏi nghiên cứu (Research Questions)
 
-Kế thừa các kết luận từ báo cáo phân tích trước đó ([`ReportThesis-TranTanDat-20260719.pdf`](ReportThesis-TranTanDat-20260719.pdf)), những hạn chế sâu sắc của Baseline đã làm phát lộ 3 khoảng trống nghiên cứu cốt lõi:
+Từ những phân tích thực nghiệm trên, đề tài xác lập 3 khoảng trống nghiên cứu cốt lõi:
 
 * **Research Gap 1 (Khả năng tổng quát hóa liên họ mạch - Cross-Family Generalization Gap):**
-  * *Vấn đề:* Bộ 5 đặc trưng Hasegawa phụ thuộc vào các giá trị khoảng cách tuyệt đối và bị méo mó bởi mạng Clock/Reset, khiến mô hình chỉ hoạt động trên phân chia ngẫu nhiên cùng phân phối và thất bại hoàn toàn trên kiểm thử liên họ mạch (LOFO).
-  * *Yêu cầu đặt ra:* Cần một phương pháp biểu diễn đồ thị sạch, cho phép trích xuất các đặc trưng tô-pô độc lập với quy mô mạch (scale-invariant topology) để duy trì hiệu năng phát hiện ổn định trên các vi mạch chưa từng biết trước.
+  * *Vấn đề:* Bộ 5 đặc trưng Hasegawa phụ thuộc vào các giá trị khoảng cách bước nhảy tuyệt đối và chịu ảnh hưởng từ mạng Clock/Reset, khiến mô hình gặp khó khăn lớn khi kiểm thử trên các vi mạch có quy mô và cấu trúc khác biệt (LOFO).
+  * *Yêu cầu đặt ra:* Cần một phương pháp biểu diễn đồ thị sạch, cho phép trích xuất các đặc trưng tô-pô được chuẩn hóa theo quy mô (scale-normalized) và bảo tồn cấu trúc quan hệ để hạn chế tác động của trôi lệch phân phối.
 * **Research Gap 2 (Biểu diễn đặc trưng và giới hạn mở rộng - Representation & Expressiveness Gap):**
-  * *Vấn đề:* Các thao tác gộp cổng, xóa dây và xóa bỏ chân cắm của Baseline là một ngõ cụt phương pháp: nó phá vỡ cấu trúc đồ thị hai phía (Cells $\leftrightarrow$ Nets), làm nghèo nàn thông tin và hoàn toàn không thể làm đầu vào cho các mô hình học sâu đồ thị hiện đại (Graph Neural Networks - GNNs).
-  * *Yêu cầu đặt ra:* Cần một biểu diễn trung gian dạng đồ thị chuẩn hóa, bảo tồn đầy đủ bản sắc linh kiện, cấu trúc dây nối và ngữ nghĩa chân cổng mang tính tổng quát cho mọi chuẩn thư viện tế bào chuẩn (Standard Cell Library).
+  * *Vấn đề:* Các thao tác gộp cổng và loại bỏ dây dẫn của Baseline làm nén cấu trúc quá mức, làm mất mát thông tin chân cắm và không tương thích để làm đầu vào cho các mô hình học sâu đồ thị hiện đại (Graph Neural Networks - GNNs).
+  * *Yêu cầu đặt ra:* Cần một biểu diễn trung gian dạng đồ thị chuẩn hóa, bảo toàn các thông tin cấu trúc và ngữ nghĩa quan trọng ở mức gate-level phục vụ bài toán Trojan localization, bao gồm bản sắc cell, kết nối net và ngữ nghĩa port.
 * **Research Gap 3 (Thiếu hụt ngữ cảnh trong giải thích - Explainability Context Gap):**
-  * *Vấn đề:* Các phương pháp XAI dạng bảng cổ điển (LIME, SHAP) áp dụng trên Baseline chỉ đưa ra điểm số quan trọng rời rạc của 5 đặc trưng số (ví dụ: `PO quan trọng 0.3`), hoàn toàn tách rời khỏi sơ đồ nguyên lý mạch điện. Kỹ sư an ninh phần cứng không thể nhìn vào các con số này để định vị hay khoanh vùng mạch con (sub-graph) chứa cơ chế kích hoạt (Trigger) và tải trọng (Payload) của Trojan.
-  * *Yêu cầu đặt ra:* Biểu diễn đồ thị phải có khả năng tương thích với Graph XAI, cho phép truy vết và hiển thị trực quan các đường dẫn logic kích hoạt mã độc.
+  * *Vấn đề:* Các phương pháp XAI dạng bảng cổ điển (LIME, SHAP) áp dụng trên Baseline chỉ đưa ra điểm số quan trọng rời rạc của các đặc trưng vô hướng (ví dụ: `PO quan trọng 0.3`), hoàn toàn tách rời khỏi sơ đồ nguyên lý mạch điện, không thể khoanh vùng trực quan đường dẫn logic kích hoạt (Trigger) và tải trọng (Payload).
+  * *Yêu cầu đặt ra:* Biểu diễn đồ thị phải thiết lập được các tiền đề cấu trúc (structural prerequisites) cho Graph XAI, cho phép truy vết và hiển thị trực quan các đường dẫn logic liên quan đến mã độc.
 
 Từ 3 khoảng trống nghiên cứu trên, đề tài xác lập 3 **Câu hỏi nghiên cứu (Research Questions - RQ)** trọng tâm:
 
 1. **RQ1 (Về mô hình hóa biểu diễn đồ thị):**
-   * *Làm thế nào để xây dựng một Biểu diễn Đồ thị Trung gian (Graph IR) chuẩn hóa cho vi mạch từ Verilog Netlist, vừa bảo tồn nguyên vẹn cấu trúc đồ thị hai phía (Cells $\leftrightarrow$ Nets), bản sắc linh kiện và ngữ nghĩa chân cổng, vừa bóc tách triệt để nhiễu ngắn mạch do mạng Clock/Reset gây ra mà không làm đứt đoạn hay biến dạng đồ thị?*
+   * *Làm thế nào để xây dựng một Biểu diễn Đồ thị Trung gian (Graph IR) chuẩn hóa cho vi mạch từ Verilog Netlist, bảo tồn cấu trúc quan hệ Cell-Net, bản sắc linh kiện và ngữ nghĩa chân cổng ở mức gate-level, đồng thời phân tách hiệu quả luồng dữ liệu sạch khỏi mạng Clock/Reset mà không làm đứt đoạn hay biến dạng đồ thị?*
 2. **RQ2 (Về hiệu năng phát hiện và khả năng tổng quát hóa OOD):**
-   * *Liệu việc mở rộng các đặc trưng tô-pô đồ thị bậc cao (như PageRank, Betweenness, K-Core, Clustering, Logic Depth Ratio) được tính toán trên đồ thị luồng dữ liệu sạch của Graph IR có khắc phục được hiện tượng học đường tắt và mang lại khả năng tổng quát hóa vượt trội trên bài toán liên họ mạch (LOFO) so với Baseline hay không?*
+   * *Liệu việc chuyển các đặc trưng tô-pô từ đồ thị Baseline sang đồ thị luồng dữ liệu sạch của Graph IR có cải thiện khả năng tổng quát hóa trên bài toán liên họ mạch (LOFO) hay không, và việc bổ sung các đặc trưng tô-pô bậc cao có tiếp tục mang lại lợi ích hay bộc lộ những giới hạn khi chuyển miền?*
 3. **RQ3 (Về tính tương thích cho Graph Neural Networks và Graph XAI):**
-   * *Biểu diễn Graph IR đề xuất có đáp ứng đầy đủ tính tương thích chuẩn mực để làm nền tảng đầu vào cho việc huấn luyện trực tiếp các mô hình Graph Neural Networks (GNN) và các phương pháp giải thích dựa trên đồ thị (Graph-based XAI) ở các giai đoạn tiếp theo hay không?*
+   * *Biểu diễn Graph IR đề xuất có đáp ứng tính khả thi kỹ thuật và cung cấp đầy đủ các tiền đề cấu trúc để làm nền tảng cho việc huấn luyện các mô hình Graph Neural Networks (GNN) và phát triển các phương pháp giải thích dựa trên đồ thị (Graph-based XAI) ở giai đoạn tiếp theo hay không?*
 
 > **Cầu nối dẫn nhập sang Phần 2:**  
 > Để trả lời trực tiếp cho **RQ1** và tạo tiền đề giải quyết **RQ2, RQ3**, **Phần 2 của báo cáo sẽ trình bày chi tiết về kiến trúc hiện thực (Implementation) của Biểu diễn Đồ thị Ngữ nghĩa (Semantic Graph IR)**, cấu trúc chuẩn hóa `nodes.csv` & `edges.csv`, cơ chế phân tách đồ thị dữ liệu sạch $G_{data}$, và quá trình trích xuất bộ 13 đặc trưng tô-pô đồ thị.
@@ -159,22 +159,23 @@ Từ 3 khoảng trống nghiên cứu trên, đề tài xác lập 3 **Câu hỏ
 
 ## 2. Phương pháp xây dựng Biểu diễn Đồ thị Ngữ nghĩa (Semantic Graph IR)
 
-### 2.1. Triết lý thiết kế và Kiến trúc Đồ thị Hai phía (Bipartite Graph Architecture)
+### 2.1. Triết lý thiết kế và Kiến trúc Đồ thị Không đồng nhất Cell-Net (Heterogeneous Cell-Net Architecture)
 
-Nhằm khắc phục triệt để các hạn chế mang tính cấu trúc của Baseline (đã phân tích tại Mục 1.2), nghiên cứu đề xuất **Biểu diễn Đồ thị Ngữ nghĩa Trung gian (Semantic Graph Intermediate Representation - Graph IR)**. 
+Nhằm khắc phục các giới hạn biểu diễn của Baseline (đã phân tích tại Mục 1.2), nghiên cứu đề xuất **Biểu diễn Đồ thị Ngữ nghĩa Trung gian (Semantic Graph Intermediate Representation - Graph IR)**. 
 
-Khác với cách tiếp cận cưỡng ép Netlist về một đồ thị thuần túy cổng logic (Logic Gate Graph) thông qua việc xóa dây `wire` và gộp cổng thô bạo, Graph IR xuất phát từ bản chất vật lý thực sự của vi mạch số: **Vi mạch là một mạng lưới tương tác giữa hai thực thể vật lý cơ bản - Khối linh kiện chức năng (Cell Instances) và Mạng lưới dây dẫn truyền tín hiệu (Nets/Wires)**.
+Thay vì cưỡng ép Netlist về một đồ thị thuần túy cổng logic (Logic Gate Graph) thông qua việc xóa dây và gộp cổng, Graph IR tiếp cận từ bản chất mô hình hóa mạch số ở mức cổng: **Vi mạch là một mạng lưới quan hệ giữa hai thực thể vật lý cơ bản — Khối linh kiện chức năng (Cell Instances) và Mạng lưới dây dẫn truyền tín hiệu (Nets/Wires)**.
 
-Về mặt toán học, Semantic Graph IR được định nghĩa là một **Đồ thị có hướng hai phía gán nhãn thuộc tính (Directed Attributed Bipartite Multigraph)** $G = (V, E, \Phi_V, \Phi_E)$, trong đó:
+Về mặt toán học, Semantic Graph IR được định nghĩa là một **Đồ thị không đồng nhất Cell-Net có hướng gán nhãn thuộc tính (Directed Attributed Heterogeneous Cell-Net Graph)** $G = (V, E, \Phi_V, \Phi_E)$, trong đó:
 
 1. **Tập đỉnh hai phía phân tách $V = V_{cell} \cup V_{net}$ ($V_{cell} \cap V_{net} = \emptyset$):**
-   * **Tập đỉnh linh kiện $V_{cell}$:** Đại diện cho toàn bộ các tế bào chuẩn (Standard Cells: AND, OR, XOR, MUX...), flip-flop/latch tuần tự (`DFFARX1`, `SDFFSRX1`...), hoặc các khối macro/nguyên thủy logic. Mỗi đỉnh $u \in V_{cell}$ bảo tồn đầy đủ bản sắc thư viện thông qua hàm thuộc tính đỉnh $\Phi_V(u) = \{\text{kind: "cell"}, \text{cell\_type: "AOI22X2"}, \text{type: "AOI22X2"}, \text{is\_trojan: } \{0, 1\}\}$.
+   * **Tập đỉnh linh kiện $V_{cell}$:** Đại diện cho toàn bộ các tế bào chuẩn (Standard Cells: AND, OR, XOR, MUX...), flip-flop/latch tuần tự (`DFFARX1`, `SDFFSRX1`...), hoặc các khối macro/nguyên thủy logic. Mỗi đỉnh $u \in V_{cell}$ lưu trữ bản sắc thư viện thông qua hàm thuộc tính đỉnh $\Phi_V(u) = \{\text{kind: "cell"}, \text{cell\_type: "AOI22X2"}, \text{type: "AOI22X2"}, \text{is\_trojan: } \{0, 1\}\}$.
    * **Tập đỉnh đường dây $V_{net}$:** Đại diện cho các đường dây tín hiệu nội bộ (`wire`), các cổng vào chính (Primary Inputs - `input`), và các cổng ra chính (Primary Outputs - `output`). Mỗi đỉnh $v \in V_{net}$ mang thuộc tính $\Phi_V(v) = \{\text{kind: "net"}, \text{type: } \{\text{"wire"}, \text{"input"}, \text{"output"}\}, \text{output: } \{\text{True}, \text{False}\}, \text{is\_trojan: } \{0, 1\}\}$.
 
 2. **Tập cạnh có hướng gán nhãn chân cổng $E \subseteq (V_{net} \times V_{cell}) \cup (V_{cell} \times V_{net}) \cup (V_{net} \times V_{net})$:**
-   * **Cạnh Tín hiệu vào Linh kiện ($e = (v_{net}, u_{cell})$):** Biểu diễn dòng dữ liệu hoặc điều khiển từ đường dây đi vào một chân cắm cụ thể của cell. Thuộc tính cạnh lưu trữ chính xác tên chân và hướng: $\Phi_E(e) = \{\text{direction: "input"}, \text{port: } \text{"IN1"} / \text{"D"} / \text{"CLK"}..., \text{kind: "connection"}\}$.
-   * **Cạnh Linh kiện ra Tín hiệu ($e = (u_{cell}, v_{net})$):** Biểu diễn kết quả logic phát ra từ chân đầu ra của cell lên đường dây. Thuộc tính cạnh: $\Phi_E(e) = \{\text{direction: "output"}, \text{port: } \text{"Q"} / \text{"QN"} / \text{"OUT"}..., \text{kind: "connection"}\}$.
-   * **Cạnh Dây dẫn Trực tiếp ($e = (v_{net1}, v_{net2})$):** Biểu diễn các câu lệnh gán liên tục (`assign a = b`) hoặc kết nối tương đương trực tiếp trong Verilog, mang thuộc tính $\Phi_E(e) = \{\text{kind: "direct"}\}$.
+   * Trong đó, phần lớn các liên kết tuân theo quan hệ hai chiều giữa Net và Cell, kèm theo các cạnh gán trực tiếp giữa các đường dây:
+     - **Cạnh Tín hiệu vào Linh kiện ($e = (v_{net}, u_{cell})$):** Biểu diễn dòng dữ liệu hoặc điều khiển từ đường dây đi vào một chân cắm cụ thể của cell. Thuộc tính cạnh: $\Phi_E(e) = \{\text{direction: "input"}, \text{port: } \text{"IN1"} / \text{"D"} / \text{"CLK"}..., \text{kind: "connection"}\}$.
+     - **Cạnh Linh kiện ra Tín hiệu ($e = (u_{cell}, v_{net})$):** Biểu diễn kết quả logic phát ra từ chân đầu ra của cell lên đường dây. Thuộc tính cạnh: $\Phi_E(e) = \{\text{direction: "output"}, \text{port: } \text{"Q"} / \text{"QN"} / \text{"OUT"}..., \text{kind: "connection"}\}$.
+     - **Cạnh Dây dẫn Trực tiếp ($e = (v_{net1}, v_{net2})$):** Biểu diễn các câu lệnh gán liên tục (`assign a = b`) hoặc kết nối tương đương trực tiếp giữa hai đường dây trong Verilog, mang thuộc tính $\Phi_E(e) = \{\text{kind: "direct"}\}$.
 
 ```mermaid
 flowchart LR
@@ -192,9 +193,10 @@ flowchart LR
     class N1,N2,N3,N4,N5 netNode;
 ```
 
-**Ưu thế vượt trội của kiến trúc hai phía:**
-* **Bảo toàn 100% tính liên thông vật lý:** Dây `n27` đóng vai trò là một đỉnh thực thụ $v \in V_{net}$ làm cầu nối giữa đầu ra `QN` của `U33` và đầu vào `IN3` của `U32`. Tín hiệu truyền mượt mà theo chu trình tự nhiên $\text{Net} \to \text{Cell} \to \text{Net} \to \text{Cell} \to \text{Net}$ mà không có bất kỳ điểm đứt gãy nào.
-* **Không làm biến dạng đồ thị:** Hoàn toàn xóa bỏ nhu cầu gọi các hàm hủy diệt `remove_cells(['wire'])` và `merge_cells`. Mọi thông tin về cấu trúc chân cắm (`port`), kiểu cổng logic (`cell_type`), và mạng lưới dây dẫn đều được giữ nguyên vẹn.
+**Ưu thế của kiến trúc đồ thị không đồng nhất Cell-Net:**
+* **Bảo toàn tính liên thông logic tự nhiên ở mức gate-level:** Dây `n27` đóng vai trò là một đỉnh thực thụ $v \in V_{net}$ làm cầu nối giữa đầu ra `QN` của `U33` và đầu vào `IN3` của `U32`. Tín hiệu truyền theo chu trình tự nhiên $\text{Net} \to \text{Cell} \to \text{Net} \to \text{Cell} \to \text{Net}$ mà không có điểm đứt gãy.
+* **Bảo toàn thông tin cấu trúc và ngữ nghĩa quan trọng:** Graph IR bảo toàn các thông tin cấu trúc và ngữ nghĩa quan trọng ở mức gate-level phục vụ bài toán Trojan localization, bao gồm bản sắc cell, kết nối net và ngữ nghĩa port mà không cần gọi các hàm gọt giũa làm mất thông tin như `remove_cells(['wire'])` và `merge_cells`.
+* **Phạm vi mô hình hóa xác định rõ:** Cần lưu ý rằng Graph IR tập trung vào việc mô hình hóa cấu trúc logic mức cổng (gate-level structure) được mô tả trong netlist logic, không mô hình hóa các thuộc tính vật lý sâu hơn như cấu trúc transistor bên trong standard cell, độ trễ thời gian (timing delay), điện dung ký sinh (capacitance), hoặc sơ đồ bố trí vật lý (placement and routing). Đây là phạm vi biểu diễn phù hợp và vừa đủ cho bài toán nhận diện Trojan dựa trên đồ thị cấu trúc.
 
 ---
 
@@ -262,15 +264,15 @@ U305,iXMIT_state_1_,output,0,1,connection,Q,payload_output
 ```
 
 > **Nhận xét then chốt:**  
-> Dữ liệu CSV phản ánh trung thực 100% sơ đồ nguyên lý: Các đường dây `iRECEIVER_state_0_, 1, 2` dẫn vào cổng `U297` được tự động đánh dấu chính xác là `trigger_input`. Ngõ ra của `U303` và `U305` tác động vào các tín hiệu quan trọng `xmit_doneH` và `iXMIT_state_1_` được tự động gắn nhãn chính xác là `payload_output`. Đây là cấu trúc dữ liệu vàng chưa từng có ở Baseline, cho phép mở rộng trực tiếp sang các mô hình học sâu đồ thị có gán nhãn cạnh (Edge-attributed GNNs).
+> Dữ liệu CSV phản ánh nhất quán cấu trúc kết nối và nhãn ngữ cảnh Trojan ở mức gate-level: Các đường dây `iRECEIVER_state_0_, 1, 2` dẫn vào cổng `U297` được tự động đánh dấu là `trigger_input`. Ngõ ra của `U303` và `U305` tác động vào các tín hiệu quan trọng `xmit_doneH` và `iXMIT_state_1_` được tự động gắn nhãn là `payload_output`. Cấu trúc dữ liệu có gán nhãn cạnh chi tiết này cung cấp biểu diễn giàu ngữ nghĩa, tạo tiền đề thuận lợi cho việc mở rộng sang các mô hình học sâu đồ thị có thuộc tính cạnh (Edge-attributed GNNs).
 
 ---
 
-### 2.3. Cơ chế Phân tách Đồ thị Luồng Dữ liệu Sạch ($G_{data}$) Khắc phục Triệt để Ô nhiễm Clock
+### 2.3. Cơ chế Phân tách Đồ thị Luồng Dữ liệu ($G_{data}$) Nhằm Giảm Nhiễu Mạng Clock/Reset
 
-Như đã chứng minh tại Mục 1.2.2, mạng lưới Clock và Reset là nguyên nhân cốt tử dẫn đến hiện tượng ô nhiễm khoảng cách tô-pô. Baseline cố gắng giải quyết bằng cách xóa cell hoặc lờ đi, dẫn đến hoặc mất mát thông tin, hoặc để mặc đường tắt nhân tạo chi phối.
+Như đã phân tích tại Mục 1.2.2, mạng lưới Clock và Reset phân phối diện rộng có thể tạo ra các đường tắt tô-pô ngắn nhân tạo giữa các Flip-Flop khi tính toán khoảng cách đồ thị. Baseline xử lý vấn đề này bằng cách xóa cell hoặc giữ nguyên kết nối, dẫn đến nguy cơ mất mát thông tin hoặc để đường tắt tô-pô chi phối các đặc trưng khoảng cách.
 
-Trong Graph IR, bài toán này được giải quyết triệt để thông qua **Cơ chế Phân tách Đồ thị Luồng Dữ liệu Sạch ($G_{data}$)**, được thực hiện theo các bước sau:
+Trong Graph IR, vấn đề này được tiếp cận thông qua **Cơ chế Phân tách Đồ thị Luồng Dữ liệu Sạch ($G_{data}$)**, được thực hiện theo các bước sau:
 
 #### Nguyên lý thuật toán:
 1. **Định nghĩa Tập chân cắm Điều khiển Chuẩn hóa ($\mathcal{P}_{ctrl}$):**
@@ -282,7 +284,7 @@ Trong Graph IR, bài toán này được giải quyết triệt để thông qua
    $$e.is\_control = \begin{cases} 1 & \text{nếu } e.port \in \mathcal{P}_{ctrl} \\ 0 & \text{ngược lại} \end{cases}$$
 
 3. **Thiết lập Hai Không gian Đồ thị Phân lập:**
-   * **Đồ thị Toàn phần (Full Structural Graph) $G = (V, E)$:** Lưu trữ toàn bộ vi mạch bao gồm cả mạng phân phối xung nhịp, phục vụ cho việc kiểm tra toàn vẹn vật lý và giải thích XAI tổng thể.
+   * **Đồ thị Toàn phần (Full Structural Graph) $G = (V, E)$:** Lưu trữ toàn bộ vi mạch bao gồm cả mạng phân phối xung nhịp, phục vụ cho việc kiểm tra toàn vẹn cấu trúc và phân tích XAI tổng thể.
    * **Đồ thị Luồng Dữ liệu Sạch (Clean Data-Flow Graph) $G_{data} = (V, E_{data})$:** Được lọc bỏ toàn bộ các cạnh điều khiển:
      $$E_{data} = \{ e \in E \mid e.is\_control = 0 \}$$
 
@@ -303,10 +305,10 @@ flowchart TD
     end
 ```
 
-#### Ý nghĩa kỹ thuật cốt tử của $G_{data}$:
-* **Triệt tiêu hoàn toàn đường tắt nhân tạo:** Khi các cạnh $is\_control = 1$ bị loại khỏi $G_{data}$, xung nhịp `sys_clk` không còn là "siêu nút" nối tắt giữa các flip-flop. Khoảng cách giữa Flip-Flop 1 và Flip-Flop 2 trên $G_{data}$ phản ánh đúng chu trình xử lý dữ liệu qua khối `Combinational Logic B`, hoàn toàn không thể nhảy tắt qua chân `CLK`.
-* **Bảo tồn trọn vẹn đường dẫn dữ liệu:** Các Flip-Flop không hề bị xóa khỏi đồ thị. Chân dữ liệu đầu vào `D` và chân ngõ ra `Q/QN` vẫn kết nối liên tục với mạch tổ hợp. Chuỗi tín hiệu tuần tự được duy trì nguyên vẹn.
-* **Độc lập với cấu trúc cây Clock vật lý:** Đồ thị dữ liệu phản ánh ngữ nghĩa thuật toán thuần túy của vi mạch, không phụ thuộc vào việc cây Clock được tổng hợp theo mạng lưới H-tree, mesh, hay buffer chain.
+#### Ý nghĩa kỹ thuật của $G_{data}$:
+* **Hạn chế đường tắt nhân tạo:** Khi các cạnh $is\_control = 1$ được tách khỏi $G_{data}$, xung nhịp `sys_clk` không còn đóng vai trò nút trung gian nối tắt giữa các flip-flop. Khoảng cách giữa Flip-Flop 1 và Flip-Flop 2 trên $G_{data}$ phản ánh đường truyền dữ liệu qua khối logic tổ hợp, tránh bị rút ngắn nhân tạo qua chân `CLK`.
+* **Duy trì tính liên tục của đường dẫn dữ liệu:** Các Flip-Flop không bị xóa khỏi đồ thị. Chân dữ liệu đầu vào `D` và chân ngõ ra `Q/QN` vẫn kết nối liên tục với mạch tổ hợp, bảo toàn chuỗi tín hiệu tuần tự.
+* **Tách biệt cấu trúc phân phối xung nhịp vật lý:** Đồ thị dữ liệu phản ánh luồng chuyển dịch dữ liệu chức năng của vi mạch, giảm sự phụ thuộc vào cấu trúc phân phối cây Clock vật lý (như H-tree, mesh hay buffer chain).
 
 ---
 
@@ -324,33 +326,35 @@ Dựa trên đồ thị dữ liệu sạch $G_{data}$, vector đặc trưng gồ
 5. **$PO(v)$ (Distance to Primary Output):** Khoảng cách bước nhảy ngắn nhất từ $v$ đến tập các cổng ra chính (Primary Outputs).
 
 > **Tối ưu hóa độ phức tạp:**  
-> Nhờ áp dụng `multi_source_dijkstra_path_length` với toàn bộ tập nguồn ($PI$, $PO$, $FF$) được nạp vào hàng đợi ưu tiên cùng lúc, thời gian tính toán giảm từ $O(|V| \cdot (|V| + |E|))$ xuống chỉ còn **$O(|V| \log |V| + |E_{data}|)$**, cho phép xử lý các vi mạch quy mô hàng trăm nghìn cổng chỉ trong vài giây.
+> Nhờ áp dụng `multi_source_dijkstra_path_length` với toàn bộ tập nguồn ($PI$, $PO$, $FF$) được nạp vào hàng đợi ưu tiên cùng lúc, thời gian tính toán giảm từ $O(|V| \cdot (|V| + |E|))$ xuống chỉ còn **$O(|V| \log |V| + |E_{data}|)$**, cho phép xử lý các vi mạch quy mô hàng chục nghìn cổng một cách hiệu quả.
 
 #### Nhóm 2: Bộ 8 đặc trưng Tô-pô Đồ thị Bậc cao (8 Advanced Graph Features)
-Nhằm nắm bắt các hình thái cấu trúc ẩn mà khoảng cách bước nhảy đơn thuần không thể mô tả, 8 đặc trưng tô-pô đồ thị tiên tiến được bổ sung:
+Nhằm nắm bắt các hình thái cấu trúc mà khoảng cách bước nhảy đơn thuần khó phản ánh trọn vẹn, 8 đặc trưng tô-pô đồ thị được bổ sung:
 
 6. **$In\text{-}Degree(v)$:** Bậc vào của đỉnh trong luồng dữ liệu sạch, phản ánh số lượng tín hiệu hội tụ vào node.
 
 7. **$Out\text{-}Degree(v)$:** Bậc ra của đỉnh trong luồng dữ liệu sạch, phản ánh tải logic (Fan-out) của node.
 
-8. **$PageRank(v)$:** Điểm quan trọng trung tâm dòng dữ liệu tính theo giải thuật PageRank ($\alpha = 0.85$, dung sai $10^{-6}$), đo lường xác suất một luồng tín hiệu ngẫu nhiên đi qua $v$.
+8. **$PageRank(v)$:** Điểm quan trọng trung tâm dòng dữ liệu tính theo giải thuật PageRank ($\alpha = 0.85$, dung sai $10^{-6}$), đo lường xác suất một luồng tín hiệu ngẫu nhiên đi qua $v$. *(Cần lưu ý: PageRank có phân phối phụ thuộc chặt chẽ vào topology và quy mô đồ thị, do đó có thể xuất hiện hiện tượng trượt phân phối đặc trưng (covariate shift) khi áp dụng giữa các họ vi mạch có kích thước và hình thái cấu trúc khác biệt).*
 
 9. **$Betweenness(v)$ (Betweenness Centrality):** Độ trung gian cầu nối, đo lường tỷ lệ các đường đi ngắn nhất giữa mọi cặp đỉnh trong vi mạch đi xuyên qua $v$:
    $$C_B(v) = \sum_{s \neq v \neq t} \frac{\sigma_{st}(v)}{\sigma_{st}}$$
-   *(Để đảm bảo tính khả thi trên các vi mạch lớn, thuật toán xấp xỉ lấy mẫu k-sampling với $k = 150$ được kích hoạt khi $|V| > 500$).*
+   *(Để đảm bảo tính khả thi tính toán trên các vi mạch lớn, thuật toán xấp xỉ lấy mẫu k-sampling với $k = 150$ được kích hoạt khi $|V| > 500$. Tương tự PageRank, Betweenness Centrality có phân phối phụ thuộc vào topology và quy mô vi mạch, dễ bị ảnh hưởng khi chuyển miền OOD).*
+
 10. **$Closeness(v)$ (Closeness Centrality):** Độ tiệm cận trung tâm, đo nghịch đảo tổng khoảng cách từ $v$ tới toàn bộ các node khác có thể vươn tới trong đồ thị dữ liệu.
+
 11. **$Clustering(v)$ (Clustering Coefficient):** Hệ số phân cụm cục bộ tính trên hình chiếu vô hướng của $G_{data}$, đo mức độ liên kết tam giác giữa các nút lân cận của $v$.
 12. **$CoreNumber(v)$ (k-Core Decomposition):** Cấp độ lõi k-core lớn nhất chứa đỉnh $v$ trên hình chiếu vô hướng, xác định node nằm ở vùng trung tâm dày đặc hay rìa ngoại vi của mạch.
-13. **$LogicDepthRatio(v)$ (Tỷ lệ độ sâu logic chuẩn hóa bất biến quy mô):**
+13. **$LogicDepthRatio(v)$ (Đặc trưng vị trí tương đối được chuẩn hóa quy mô - Scale-Normalized Relative-Depth Feature):**
     $$LDR(v) = \frac{PI(v)}{PI(v) + PO(v) + 10^{-5}}$$
 
-> **Ý nghĩa đột phá của $LogicDepthRatio$:**  
-> Các đặc trưng $PI(v)$ và $PO(v)$ của Hasegawa mang giá trị tuyệt đối, phụ thuộc hoàn toàn vào kích thước vi mạch (ví dụ: mạch nhỏ có độ sâu cực đại 8, mạch lớn có độ sâu 60). Khi kiểm thử trên mạch mới trong bài toán LOFO, khoảng cách tuyệt đối bị lệch phân phối hoàn toàn.  
-> Ngược lại, $LDR(v) \in [0.0, 1.0]$ chuẩn hóa vị trí tương đối của node trên chuỗi xử lý thông tin từ đầu vào đến đầu ra:
-> * $LDR(v) \approx 0$: Node nằm sát tầng cổng vào chính.
+> **Ý nghĩa kỹ thuật của $LogicDepthRatio$:**  
+> Các đặc trưng $PI(v)$ và $PO(v)$ mang giá trị tuyệt đối, phụ thuộc trực tiếp vào độ sâu logic của vi mạch (ví dụ: mạch nhỏ có độ sâu cực đại khoảng 8, mạch lớn có thể lên tới 60). Khi kiểm thử trên mạch mới trong bài toán LOFO, khoảng cách tuyệt đối dễ bị trượt phân phối.  
+> $LDR(v) \in [0.0, 1.0]$ chuẩn hóa vị trí tương đối của node trên chuỗi xử lý logic từ đầu vào đến đầu ra:
+> * $LDR(v) \approx 0$: Node nằm gần tầng cổng vào chính.
 > * $LDR(v) \approx 0.5$: Node nằm ở vùng xử lý logic trung gian.
-> * $LDR(v) \approx 1$: Node nằm sát tầng cổng ra chính.  
-> Đây chính là đặc trưng "chìa khóa" giúp mô hình bất biến với quy mô vi mạch (Scale-invariant), giải quyết trực tiếp khoảng trống nghiên cứu RG1.
+> * $LDR(v) \approx 1$: Node nằm gần tầng cổng ra chính.  
+> Việc giới hạn giá trị trong đoạn $[0, 1]$ giúp giảm thiểu sự phụ thuộc vào độ sâu đường dẫn tuyệt đối giữa các vi mạch. Tuy nhiên, cần lưu ý đây là phép chuẩn hóa cục bộ theo tỷ lệ vị trí tương đối, chứ không đảm bảo tính bất biến quy mô toán học (scale-invariance) tuyệt đối trong mọi hình thái tô-pô mạch phức tạp.
 
 ---
 
@@ -361,7 +365,7 @@ Nhằm nắm bắt các hình thái cấu trúc ẩn mà khoảng cách bước 
 Để đánh giá một cách khách quan, công bằng và toàn diện hiệu quả của Semantic Graph IR so với Baseline, nghiên cứu thiết lập một ma trận thực nghiệm gồm **4 cấu hình đối chứng (4-Way Benchmark)** như sau:
 
 #### Bảng 3.1: Ma trận 4 cấu hình thực nghiệm đối chứng
-| Cấu hình | Biểu diễn Đồ thị | Bộ Đặc trưng | Xử lý Clock / Reset | Tổng số mẫu dữ liệu |
+| Cấu hình | Biểu diễn Đồ thị | Bộ Đặc trưng | Xử lý Clock / Reset | Số lượng thực thể đồ thị được giữ lại (Retained graph entities) |
 | :--- | :--- | :--- | :--- | :--- |
 | **Exp 1 (Base-5)** | Đồ thị Baseline cũ | 5 Hasegawa cổ điển | Không lọc (áp dụng trên Baseline) | 41.577 (Train: 33.261, Test: 8.316) |
 | **Exp 2 (Base-13)**| Đồ thị Baseline cũ | 13 Đặc trưng (5 Hasegawa + 8 Graph) | Không lọc (áp dụng trên Baseline) | 41.577 (Train: 33.261, Test: 8.316) |
@@ -370,32 +374,32 @@ Nhằm nắm bắt các hình thái cấu trúc ẩn mà khoảng cách bước 
 
 #### Mô tả chi tiết 4 Cấu hình Thực nghiệm:
 
-Thiết kế 4 cấu hình này tuân theo phương pháp luận **Nghiên cứu bóc tách thành phần (Ablation Study)** có kiểm soát, giúp phân lập rành mạch tác động độc lập của hai yếu tố then chốt: **(1) Biểu diễn Đồ thị Ngữ nghĩa (Graph IR)** và **(2) Không gian Đặc trưng Tô-pô Đồ thị bậc cao (13 Features)**:
+Thiết kế 4 cấu hình này tuân theo phương pháp luận **Nghiên cứu đối chứng có kiểm soát theo phong cách bóc tách thành phần (controlled comparative study / ablation-style comparison)**, giúp phân tích ảnh hưởng của việc thay đổi biểu diễn đồ thị và xử lý luồng điều khiển trong khi giữ nguyên bộ 5 đặc trưng khoảng cách, đồng thời so sánh với tác động của việc bổ sung thêm 8 đặc trưng tô-pô bậc cao:
 
 1. **Exp 1 (Baseline - Base-5): Mốc Đối chuẩn Gốc (Anchor Baseline)**
-   * **Bản chất:** Tái lập nguyên bản $100\%$ quy trình kinh điển của Whitten et al. (2025) và Hasegawa et al. (2016).
-   * **Biểu diễn đồ thị:** Đồ thị một phía thô sơ sau khi đã qua hai hàm gọt giũa phá hủy (`remove_cells(['wire'])` và `merge_cells`). Toàn bộ các đỉnh dây dẫn bị xóa, các chân cắm bị tước bỏ, và 20 cổng Trojan (như buffer kích hoạt `U304`) bị xóa sổ vì thuật toán nhầm lẫn là cổng thừa (`out_degree == 0`).
-   * **Bộ đặc trưng:** Sử dụng đúng 5 đặc trưng khoảng cách logic truyền thống: $\text{LGFi}, \text{ffi}, \text{ffo}, \text{PI}, \text{PO}$.
+   * **Bản chất:** Tái lập quy trình phân tích của Whitten et al. (2025) và Hasegawa et al. (2016).
+   * **Biểu diễn đồ thị:** Đồ thị một phía thô sơ sau khi đã qua hai hàm gọt giũa (`remove_cells(['wire'])` và `merge_cells`). Toàn bộ các đỉnh dây dẫn bị lược bỏ, các chân cắm không được lưu giữ thuộc tính riêng, và 20 cổng Trojan (như buffer kích hoạt `U304`) bị loại bỏ trong tiền xử lý do điều kiện lọc `out_degree == 0`.
+   * **Bộ đặc trưng:** Sử dụng 5 đặc trưng khoảng cách logic truyền thống: $\text{LGFi}, \text{ffi}, \text{ffo}, \text{PI}, \text{PO}$.
    * **Hiện trạng xung nhịp:** Không có cơ chế lọc Clock/Reset; đường xung nhịp `sys_clk` bị nhập chung vào luồng dữ liệu logic, làm méo mó các đường đi Dijkstra.
-   * **Mục tiêu khoa học:** Đóng vai trò là điểm tham chiếu chuẩn (Ground-Truth Baseline) để so sánh định lượng mức độ cải thiện của tất cả các phương pháp cải tiến.
+   * **Mục tiêu khoa học:** Đóng vai trò là điểm tham chiếu chuẩn (Ground-Truth Baseline) để so sánh định lượng mức độ cải thiện của các phương pháp cải tiến.
 
 2. **Exp 2 (Baseline Extended - Base-13): Đánh giá khi Bổ sung Đặc trưng vào Đồ thị Cũ**
-   * **Bản chất:** Trích xuất toàn bộ 13 đặc trưng (5 Hasegawa + 8 đặc trưng tô-pô đồ thị bậc cao gồm: $\text{in\_degree}, \text{out\_degree}, \text{pagerank}, \text{betweenness}, \text{closeness}, \text{clustering}, \text{core\_number}, \text{logic\_depth\_ratio}$) nhưng **vẫn chạy trực tiếp trên nền đồ thị Baseline gọt giũa cũ**.
-   * **Mục tiêu khoa học:** Kiểm định giả thuyết: *"Liệu chỉ cần tính toán thêm các thuật toán đồ thị nâng cao trên cấu trúc đồ thị cũ thì có thể giải quyết được bài toán phát hiện Trojan hay không?"* Thực nghiệm này giúp chứng minh rằng nếu cấu trúc đồ thị gốc bị sai lệch (bị nhiễu bởi cây Clock toàn cục và mất mát dây dẫn), các thuật toán như PageRank và Centrality sẽ tính toán trên các đường tắt ảo và không thể phát huy hiệu quả tối ưu.
+   * **Bản chất:** Trích xuất toàn bộ 13 đặc trưng (5 Hasegawa + 8 đặc trưng tô-pô đồ thị bậc cao gồm: $\text{in\_degree}, \text{out\_degree}, \text{pagerank}, \text{betweenness}, \text{closeness}, \text{clustering}, \text{core\_number}, \text{logic\_depth\_ratio}$) nhưng **vẫn chạy trực tiếp trên nền đồ thị Baseline cũ**.
+   * **Mục tiêu khoa học:** Kiểm định giả thuyết: *"Liệu chỉ cần tính toán thêm các thuật toán đồ thị nâng cao trên cấu trúc đồ thị cũ thì có thể giải quyết được bài toán phát hiện Trojan hay không?"* Thực nghiệm này giúp khảo sát xem nếu cấu trúc đồ thị gốc có đường tắt qua cây Clock và thiếu vắng các đỉnh dây dẫn, các thuật toán như PageRank và Centrality sẽ bị ảnh hưởng ra sao.
 
 3. **Exp 3 (Graph IR Baseline - GIR-5): Đánh giá Tác động Độc lập của Semantic Graph IR**
    * **Bản chất:** Ứng dụng mô hình **Đồ thị hai phía có hướng mang thuộc tính (Semantic Graph IR)** với cơ chế lọc sạch mạng Clock/Reset qua đồ thị dữ liệu $G_{data}$ (`is_control == 0`), nhưng **chỉ giới hạn tính toán đúng 5 đặc trưng Hasegawa cổ điển**.
-   * **Quy mô dữ liệu:** Đạt **108.531 mẫu** (bảo toàn trọn vẹn cả Cổng và Dây, giữ nguyên vẹn đủ 370/370 cổng Trojan, không bị thất thoát linh kiện).
-   * **Mục tiêu khoa học:** Phân lập tác động của Biểu diễn Đồ thị. Thí nghiệm này trả lời câu hỏi: *"Nếu vẫn giữ nguyên 5 đặc trưng cũ nhưng chuyển sang tính toán trên một đồ thị chuẩn tắc, đầy đủ và không bị ô nhiễm bởi Clock thì bản thân Graph IR giúp tăng độ chính xác bao nhiêu?"*
+   * **Số lượng thực thể đồ thị được giữ lại:** Đạt **108.531 thực thể** (bảo toàn các đỉnh cell và net, giữ đầy đủ 370/370 cổng Trojan, tránh việc loại nhầm cổng trong tiền xử lý).
+   * **Mục tiêu khoa học:** Giúp phân tích ảnh hưởng của việc thay đổi representation và xử lý control-flow (qua $G_{data}$) trong khi giữ nguyên bộ 5 đặc trưng khoảng cách cổ điển của Hasegawa. Thí nghiệm này trả lời câu hỏi: *"Nếu vẫn giữ nguyên 5 đặc trưng khoảng cách truyền thống nhưng chuyển sang tính toán trên một đồ thị đầy đủ và lọc bỏ cạnh Clock/Reset thì bản thân biểu diễn đồ thị mới giúp thay đổi độ chính xác như thế nào?"*
 
 4. **Exp 4 (Graph IR Comprehensive - GIR-13): Giải pháp Toàn diện Đề xuất**
-   * **Bản chất:** Kết hợp tối đa sức mạnh của cả hai đề xuất cải tiến: Biểu diễn Đồ thị hai phía **Semantic Graph IR** (bảo toàn $100\%$ cấu trúc vật lý, cô lập Datapath sạch $G_{data}$) kết hợp cùng **Không gian 13 Đặc trưng Tô-pô Đồ thị bậc cao**.
-   * **Đặc trưng vượt trội:** Bổ sung các thước đo tập trung luồng dữ liệu (PageRank, Betweenness trên $G_{data}$), mức độ liên kết cụm (K-Core), và đặc biệt là đặc trưng tỉ lệ độ sâu bất biến theo kích thước chip ($\text{logic\_depth\_ratio} = \frac{\text{PI}}{\text{PI} + \text{PO}}$).
-   * **Mục tiêu khoa học:** Khẳng định tính ưu việt toàn diện của giải pháp đề xuất so với Baseline nguyên bản (Exp 1), tạo ra bước nhảy vọt về $F_1$-score, giảm thiểu $33\%$ báo động giả, và chứng minh tính hiệp đồng (Synergy) giữa Biểu diễn Đồ thị Ngữ nghĩa và Học máy hiện đại trước khi chuyển giao sang Graph Neural Networks (GNN).
+   * **Bản chất:** Kết hợp cả hai đề xuất cải tiến: Biểu diễn Đồ thị hai phía **Semantic Graph IR** (bảo toàn đầy đủ cấu trúc cell và net, cô lập Datapath sạch $G_{data}$) kết hợp cùng **Không gian 13 Đặc trưng Tô-pô Đồ thị bậc cao**.
+   * **Đặc trưng mở rộng:** Bổ sung các thước đo tập trung luồng dữ liệu (PageRank, Betweenness trên $G_{data}$), mức độ liên kết cụm (K-Core), và đặc trưng vị trí tương đối ($\text{logic\_depth\_ratio} = \frac{\text{PI}}{\text{PI} + \text{PO}}$).
+   * **Mục tiêu khoa học:** Đánh giá hiệu năng tổng thể của giải pháp đề xuất so với Baseline nguyên bản (Exp 1), đo lường mức độ cải thiện $F_1$-score, độ giảm báo động giả trên phân chia ngẫu nhiên, và khảo sát tính hiệp đồng (Synergy) giữa Biểu diễn Đồ thị Ngữ nghĩa và mô hình học máy trước khi nghiên cứu sâu hơn về Graph Neural Networks (GNN).
 
 #### Giao thức huấn luyện và đánh giá:
 * **Thuật toán học máy:** Chuẩn mực XGBoost Classifier (`xgb.XGBClassifier`) với bộ siêu tham số cố định xuyên suốt: `max_depth = 6`, `learning_rate = 0.3`, `n_estimators = 100`, `subsample = 0.8`, `colsample_bytree = 0.8`, trọng số phạt mất cân bằng lớp `scale_pos_weight = N_negative / N_positive`.
-* **Tối ưu hóa ngưỡng quyết định ($\tau^*$):** Thực hiện quét lưới trên 100 ngưỡng xác suất $\tau \in [0.01, 0.99]$ trên tập kiểm thử để tìm ngưỡng $\tau^*$ tối đa hóa $F_1$-score.
+* **Tối ưu hóa ngưỡng quyết định ($\tau^*$):** Thực hiện quét lưới trên 100 ngưỡng xác suất $\tau \in [0.01, 0.99]$ trên tập kiểm thử để tìm ngưỡng $\tau^*$ tối đa hóa $F_1$-score. Cần nhấn mạnh rằng việc tìm kiếm $\tau^*$ trực tiếp trên tập kiểm thử phục vụ mục đích khảo sát mức trần hiệu năng lý thuyết (upper-bound / ceiling performance study) và có thể mang lại độ lệch lạc quan (optimistic bias). Do đó, nghiên cứu đồng thời báo cáo song song kết quả tại ngưỡng mặc định tiêu chuẩn $\tau = 0.5$ để phản ánh chính xác hiệu năng vận hành thực tế không qua điều chỉnh ngưỡng hậu nghiệm.
 * **3 kịch bản kiểm định khoa học:**
   1. **Single-Seed Benchmark (Seed 42):** Đối chuẩn chi tiết các chỉ số phân loại, ma trận nhầm lẫn (Confusion Matrix), và so sánh giữa ngưỡng mặc định $\tau = 0.5$ với ngưỡng tối ưu $\tau^*$.
   2. **10-Run Multi-Seed Statistical Validation:** Kiểm định ý nghĩa thống kê qua 10 lần chạy độc lập với 10 hạt giống ngẫu nhiên khác nhau (`[42, 101, 2024, 777, 888, 999, 1234, 5678, 9999, 31415]`), báo cáo kết quả dưới dạng Trung bình $\pm$ Độ lệch chuẩn ($\text{Mean} \pm \text{Std}$).
@@ -405,11 +409,16 @@ Thiết kế 4 cấu hình này tuân theo phương pháp luận **Nghiên cứu
 
 ### 3.2. Bảng Kết quả Thực nghiệm Tổng hợp
 
+> **Lưu ý về định nghĩa thuật ngữ:**  
+> Trong báo cáo này, thuật ngữ **‘graph entity’** (thực thể đồ thị) dùng để chỉ một node được giữ lại trong biểu diễn đồ thị (cell hoặc net sau khi tiền xử lý), trong khi **‘Trojan entity / Trojan sample’** chỉ các graph entities mang nhãn Trojan ($is\_trojan = 1$). Hai khái niệm này không đồng nhất:
+> * Số lượng graph entity (108.531 ở Graph IR so với 41.577 ở Baseline) phản ánh quy mô đỉnh được mô hình hóa sau tiền xử lý (bao gồm việc giữ lại đầy đủ các đỉnh dây dẫn và cổng logic).
+> * Tổng số thực thể Trojan trên toàn bộ benchmark Trust-Hub khảo sát trong Graph IR là **370 thực thể** (được chia thành 295 mẫu huấn luyện và 75 mẫu kiểm thử trong kịch bản phân chia ngẫu nhiên 80/20 của Single Seed 42; ở Baseline do 20 cổng Trojan bị loại bỏ trong tiền xử lý nên chỉ còn 350 thực thể, chia thành 277 train và 73 test).
+
 ##### Bảng 3.2: Kết quả đánh giá đơn lần chạy (Single Seed 42 Benchmark)
 | Tiêu chí / Chỉ số đo lường | Exp 1: Base-5 | Exp 2: Base-13 | Exp 3: GIR-5 | Exp 4: GIR-13 (Đề xuất) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Số lượng mẫu (Train / Test)** | 33.261 / 8.316 | 33.261 / 8.316 | 86.824 / 21.707 | **86.824 / 21.707** |
-| **Số mẫu Trojan (Train / Test)**| 277 / 73 | 277 / 73 | 295 / 75 | **295 / 75** |
+| **Số lượng thực thể đồ thị (Train / Test)** | 33.261 / 8.316 | 33.261 / 8.316 | 86.824 / 21.707 | **86.824 / 21.707** |
+| **Số thực thể Trojan (Train / Test)**| 277 / 73 | 277 / 73 | 295 / 75 | **295 / 75** |
 | **Ngưỡng quyết định tối ưu ($\tau^*$)** | $0.9702$ | $0.9801$ | $0.9900$ | **$0.7623$** |
 | *Tại ngưỡng tối ưu $\tau^*$ :* | | | | |
 | - Độ chính xác (Precision) | $84.75\%$ | $89.29\%$ | $81.54\%$ | **$91.78\%$** |
@@ -484,116 +493,126 @@ Thiết kế 4 cấu hình này tuân theo phương pháp luận **Nghiên cứu
 ### 3.3. Thảo luận Chuyên sâu Trả lời các Câu hỏi Nghiên cứu
 
 #### 3.3.1. Trả lời RQ1 (Về mô hình hóa biểu diễn đồ thị):
-> **Câu hỏi nghiên cứu RQ1:** *Làm thế nào để xây dựng một Biểu diễn Đồ thị Trung gian (Graph IR) chuẩn hóa cho vi mạch từ Verilog Netlist, vừa bảo tồn nguyên vẹn cấu trúc đồ thị hai phía (Cells $\leftrightarrow$ Nets), bản sắc linh kiện và ngữ nghĩa chân cổng, vừa bóc tách triệt để nhiễu ngắn mạch do mạng Clock/Reset gây ra mà không làm đứt đoạn hay biến dạng đồ thị?*
+> **Câu hỏi nghiên cứu RQ1:** *Làm thế nào để xây dựng một Biểu diễn Đồ thị Trung gian (Graph IR) chuẩn hóa cho vi mạch từ Verilog Netlist, vừa bảo tồn cấu trúc đồ thị hai phía (Cells $\leftrightarrow$ Nets), bản sắc linh kiện và ngữ nghĩa chân cổng, vừa giảm thiểu nhiễu đường tắt do mạng Clock/Reset gây ra mà không làm đứt đoạn hay biến dạng đồ thị?*
 
 **Lời giải và Bằng chứng thực nghiệm:**
-1. **Khôi phục 100% tính toàn vẹn của vi mạch:**
-   * Graph IR mô hình hóa vi mạch dưới dạng đồ thị có hướng hai phía ($V_{cell} \cup V_{net}$), bảo tồn tuyệt đối từng thực thể linh kiện và dây dẫn. 
-   * Số lượng nút dữ liệu hợp lệ tăng từ **41.577** (ở Baseline) lên **108.531** (ở Graph IR) — **tăng hơn 2.6 lần**. Toàn bộ các cổng logic chuẩn (`AOI22X2`, `OAI21X2`, `NAND4X1`...) và các dây dẫn trung gian (như `n27`, `n190`) từng bị Baseline xóa sổ nay đã hiện diện đầy đủ. Đặc biệt, toàn bộ các cổng Trojan (`U294` đến `U305`) được giữ nguyên vẹn, loại bỏ hoàn toàn nguy cơ xóa nhầm nút Trojan trong pha tiền xử lý.
-2. **Hiệu quả vượt bậc của cơ chế bóc tách mạng Clock qua $G_{data}$:**
-   * Hãy so sánh trực diện giữa **Exp 1 (Base-5)** và **Exp 3 (GIR-5)**: Cả hai đều sử dụng chính xác **cùng 5 đặc trưng khoảng cách của Hasegawa**, điểm khác biệt duy nhất là Exp 3 được tính toán trên đồ thị dữ liệu sạch $G_{data}$ của Graph IR (đã loại bỏ $is\_control = 1$).
-   * Trên phân chia ngẫu nhiên: ROC-AUC tăng vọt từ **$0.9501$** lên **$0.9910$**.
-   * Trên bài toán tổng quát hóa liên họ mạch (LOFO Cross-Validation): Macro $F_1$ tăng vọt từ **$0.0362$** (Exp 1) lên **$0.1346$** (Exp 3) — **tăng hơn 3.7 lần!** Riêng trên họ mạch `RS232`, điểm $F_1$ tăng gấp **7.8 lần** (từ $0.0155$ lên $0.1216$), số lượng Trojan bắt được (TP) tăng từ 5 lên 31 nút, và ROC-AUC nhảy vọt từ $0.3815$ (tệ hơn đoán ngẫu nhiên) lên $0.6479$.
+1. **Bảo tồn đầy đủ các thực thể và kết nối logic ở mức gate-level:**
+   * Graph IR mô hình hóa vi mạch dưới dạng đồ thị có hướng không đồng nhất hai phía ($V_{cell} \cup V_{net}$), duy trì chi tiết từng thực thể linh kiện và dây dẫn. 
+   * Số lượng thực thể đồ thị được giữ lại sau tiền xử lý tăng từ **41.577** (ở Baseline) lên **108.531** (ở Graph IR) — **tăng hơn 2.6 lần**. Toàn bộ các cổng logic chuẩn (`AOI22X2`, `OAI21X2`, `NAND4X1`...) và các dây dẫn trung gian (như `n27`, `n190`) từng bị loại bỏ ở Baseline nay đã hiện diện đầy đủ. Đặc biệt, toàn bộ 370 cổng Trojan trên toàn bộ tập benchmark (bao gồm cụm `U294` đến `U305` trên RS232-T1000) được giữ lại nguyên vẹn, loại bỏ nguy cơ vô tình lọc mất linh kiện Trojan trong khâu tiền xử lý đồ thị.
+2. **Hiệu quả của cơ chế tách biệt mạng Clock qua đồ thị dữ liệu $G_{data}$:**
+   * Khi so sánh trực diện giữa **Exp 1 (Base-5)** và **Exp 3 (GIR-5)**: Cả hai đều sử dụng **cùng 5 đặc trưng khoảng cách của Hasegawa**, điểm khác biệt duy nhất là Exp 3 được tính toán trên đồ thị dữ liệu sạch $G_{data}$ của Graph IR (loại bỏ các cạnh $is\_control = 1$).
+   * Trên phân chia ngẫu nhiên (Random Split): ROC-AUC tăng từ **$0.9501$** lên **$0.9910$**.
+   * Trên bài toán tổng quát hóa liên họ mạch (LOFO Cross-Validation): Macro $F_1$ tăng từ **$0.0362$** (Exp 1) lên **$0.1346$** (Exp 3) — **tăng hơn 3.7 lần**. Riêng trên họ mạch `RS232`, điểm $F_1$ tăng từ $0.0155$ lên $0.1216$, số lượng Trojan bắt được (TP) tăng từ 5 lên 31 nút, và ROC-AUC cải thiện từ $0.3815$ lên $0.6479$.
 3. **Bảo tồn ngữ nghĩa chân cổng và hỗ trợ các mạch phức tạp:**
-   * Baseline hoàn toàn gãy đổ khi gặp các vi mạch có cấu trúc phức tạp như `s38584` (do lỗi cú pháp gộp cổng). Graph IR xử lý trôi chảy 100% các vi mạch Trust-Hub, tự động ghi nhận thuộc tính chân cắm (`port`) và gán nhãn chính xác 4 ngữ cảnh an ninh Trojan (`trigger_input`, `internal`, `payload_output`, `normal`).
+   * Baseline gặp sự cố phân tích cú pháp khi xử lý vi mạch `s38584` (do xung đột trong thuật toán gộp cổng). Graph IR xử lý trôi chảy toàn bộ các vi mạch Trust-Hub khảo sát, tự động ghi nhận thuộc tính chân cắm (`port`) và phân loại 4 ngữ cảnh an ninh Trojan (`trigger_input`, `internal`, `payload_output`, `normal`).
 
-=> **Kết luận khẳng định cho RQ1:** Semantic Graph IR cùng cơ chế đồ thị luồng dữ liệu sạch $G_{data}$ là giải pháp biểu diễn đồ thị chuẩn mực, giải quyết triệt để vấn đề đứt đoạn đồ thị và ô nhiễm xung nhịp mà không làm mất đi bất kỳ thuộc tính vật lý nào của vi mạch.
+=> **Kết luận cho RQ1:** Semantic Graph IR cùng cơ chế đồ thị luồng dữ liệu $G_{data}$ thiết lập một biểu diễn đồ thị nhất quán ở mức gate-level, giảm thiểu đứt đoạn đồ thị và hạn chế các đường tắt nhân tạo do mạng xung nhịp gây ra, đồng thời bảo toàn thuộc tính chân cắm và phân loại ngữ cảnh Trojan phục vụ cho các bước phân tích tiếp theo.
 
 ---
 
 #### 3.3.2. Trả lời RQ2 (Về hiệu năng phát hiện và khả năng tổng quát hóa OOD):
-> **Câu hỏi nghiên cứu RQ2:** *Liệu việc mở rộng các đặc trưng tô-pô đồ thị bậc cao (như PageRank, Betweenness, K-Core, Clustering, Logic Depth Ratio) được tính toán trên đồ thị luồng dữ liệu sạch của Graph IR có khắc phục được hiện tượng học đường tắt và mang lại khả năng tổng quát hóa vượt trội trên bài toán liên họ mạch (LOFO) so với Baseline hay không?*
+> **Câu hỏi nghiên cứu RQ2:** *Liệu việc chuyển các đặc trưng tô-pô từ đồ thị Baseline sang đồ thị luồng dữ liệu sạch của Graph IR có cải thiện khả năng tổng quát hóa trên bài toán liên họ mạch (LOFO) hay không, và việc bổ sung các đặc trưng tô-pô bậc cao có tiếp tục mang lại lợi ích hay bộc lộ những giới hạn khi chuyển miền?*
 
 **Lời giải và Bằng chứng thực nghiệm:**
 
-1. **Thiết lập đỉnh cao hiệu năng mới trên kịch bản phân chia ngẫu nhiên:**
-   * Cấu hình đề xuất **Exp 4 (GIR-13)** áp đảo hoàn toàn cả 3 kịch bản còn lại:
-     * Điểm $F_1$-score đạt **$0.9054$** (so với Baseline $0.7576$), tăng **$+14.78\%$**.
+1. **Hiệu năng vượt trội trên kịch bản phân chia ngẫu nhiên (In-Distribution):**
+   * Cấu hình đề xuất **Exp 4 (GIR-13)** đạt kết quả cao nhất trên kịch bản phân chia ngẫu nhiên:
+     * Điểm $F_1$-score đạt **$0.9054$** (so với Baseline $0.7576$, tăng $+14.78\%$).
      * Độ chính xác (Precision) đạt **$91.78\%$** (so với Baseline $84.75\%$).
-     * Độ nhạy (Recall) đạt **$89.33\%$** (phát hiện 67/75 node Trojan trong tập test, so với Baseline chỉ đạt $68.49\%$).
-     * ROC-AUC đạt mức gần như tuyệt đối: **$0.9975$** (kiểm định 10 runs độc lập đạt $0.9951 \pm 0.0030$).
-   * **Báo động giả giảm kỷ lục:** Tại ngưỡng tối ưu $\tau^* = 0.7623$, số ca báo động giả (False Positives) chỉ có **6 ca** trên hơn 21.000 node kiểm thử. Ngay tại ngưỡng mặc định $\tau = 0.5$, Exp 4 chỉ có **9 ca báo động giả** ($F_1 = \mathbf{0.8947}$), trong khi Baseline cũ gây ra tới **288 ca báo động giả** ($F_1 = 0.2810$).
+     * Độ nhạy (Recall) đạt **$89.33\%$** (phát hiện 67/75 node Trojan trong tập test, so với Baseline $68.49\%$).
+     * ROC-AUC đạt **$0.9975$** (kiểm định 10 runs đạt $0.9951 \pm 0.0030$).
+   * **Báo động giả giảm mạnh:** Tại ngưỡng tối ưu $\tau^* = 0.7623$, số ca báo động giả (False Positives) chỉ có **6 ca** trên hơn 21.000 node kiểm thử. Ngay tại ngưỡng mặc định $\tau = 0.5$, Exp 4 chỉ có **9 ca báo động giả** ($F_1 = \mathbf{0.8947}$), trong khi Baseline gây ra tới **288 ca báo động giả** ($F_1 = 0.2810$).
 
-2. **Triệt tiêu hiện tượng nhạy cảm ngưỡng cực đoan (Đập tan "đường tắt học vẹt"):**
-   * Trong Mục 1.2.2, chúng ta đã chỉ ra "nghịch lý phân chia ngẫu nhiên": Mô hình Baseline buộc phải đẩy ngưỡng quyết định lên sát trần $\tau^* = 0.9702 - 0.9801$ để lọc bỏ báo động giả do học vẹt mạng Clock.
-   * Khi chuyển sang **Exp 4 (GIR-13)**, ngưỡng tối ưu $\tau^*$ chuyển dịch về **$0.7623$** (trung bình 10 runs là $0.594 \pm 0.233$). Mô hình phân bổ xác suất thực chất và tự tin, duy trì hiệu năng cao ổn định ngay tại ngưỡng chuẩn $\tau = 0.5$ ($F_1 = 0.8947$). Điều này chứng minh mô hình đã học được các đặc trưng tô-pô nội tại của mã độc thay vì dựa vào các đường tắt phân phối xác suất méo mó.
+2. **Giảm thiểu độ nhạy cảm ngưỡng cực đoan và cải thiện tính ổn định ở ngưỡng mặc định:**
+   * Trong Mục 1.2.2, chúng ta đã chỉ ra hiện tượng Baseline buộc phải đẩy ngưỡng quyết định lên sát trần $\tau^* = 0.9702 - 0.9801$ để hạn chế báo động giả.
+   * Khi chuyển sang **Exp 4 (GIR-13)**, ngưỡng tối ưu $\tau^*$ dịch chuyển về vùng hợp lý hơn: **$0.7623$** (trung bình 10 runs là $0.594 \pm 0.233$). Mô hình duy trì hiệu năng cao ngay tại ngưỡng mặc định $\tau = 0.5$ ($F_1 = 0.8947$). Điều này phản ánh rằng việc làm sạch đường dẫn dữ liệu và bổ sung đặc trưng tô-pô giúp mô hình phân bổ xác suất cân bằng hơn thay vì phải dồn ngưỡng cực đoan.
 
-3. **Phân tích Thực nghiệm LOFO: Bước tiến Cục bộ và Rào cản Cốt tử của Mô hình Bảng (Tiền đề Dẫn nhập sang GNN):**
+3. **Phân tích Thực nghiệm LOFO: So sánh Chuyên sâu giữa GIR-5 và GIR-13, Giới hạn của Mô hình Bảng và Động lực Khoa học cho GNN:**
    
-   * **Những bước tiến rõ nét so với Baseline:**
-     So với Baseline (Exp 1) gần như tê liệt trên bài toán OOD (Macro $F_1 = 0.0362$, Micro $F_1 = 0.0314$ và gây ra hàng nghìn báo động giả), Graph IR mang lại những cải thiện cục bộ mang tính đột phá:
-     - Trên vi mạch quy mô lớn `s35932` (1.728 FF), Exp 4 đạt Precision lên tới **$90.00\%$** (so với Baseline $2.72\%$, tăng hơn **33 lần**), giảm báo động giả từ 966 xuống **chỉ còn đúng 1 ca**, đạt $F_1 = 0.2466$ và ROC-AUC = $0.9440$. Cấu hình Exp 3 thậm chí đạt Recall tới **$69.84\%$** (bắt được 44/63 node Trojan) với $F_1 = 0.3651$.
-     - Trên vi mạch phức tạp `s38417`, Exp 4 bắt được **$51.85\%$** Trojan (14/27 node) và ROC-AUC đạt $0.9309$, trong khi Baseline chỉ bắt được vỏn vẹn $8.00\%$ (2 node) và tạo ra 584 ca báo động giả.
-     - Điểm Macro $F_1$ tổng thể tăng từ $0.0362$ lên $0.1346$ (tăng gấp **3.7 lần** ở Exp 3) và $0.0792$ (ở Exp 4).
+   * **Những cải thiện cục bộ so với Baseline:**
+     So với Baseline (Exp 1) gần như không thể tổng quát hóa OOD (Macro $F_1 = 0.0362$, Micro $F_1 = 0.0314$ và gây ra hàng trăm báo động giả), Graph IR ghi nhận những cải thiện cục bộ đáng kể:
+     - Trên vi mạch quy mô lớn `s35932` (1.728 FF), Exp 4 đạt Precision lên tới **$90.00\%$** (so với Baseline $2.72\%$), giảm báo động giả từ 966 xuống **chỉ còn đúng 1 ca**, đạt $F_1 = 0.2466$ và ROC-AUC = $0.9440$. Cấu hình Exp 3 đạt Recall tới **$69.84\%$** (bắt được 44/63 node Trojan) với $F_1 = 0.3651$.
+     - Trên vi mạch phức tạp `s38417`, Exp 4 đạt Recall **$51.85\%$** (14/27 node Trojan) và ROC-AUC $0.9309$, trong khi Baseline chỉ bắt được $8.00\%$ (2 node) và tạo ra 584 ca báo động giả.
+     - Macro $F_1$ tổng thể của Exp 3 tăng lên **$0.1346$** (gấp 3.7 lần Baseline) và Exp 4 đạt **$0.0792$** (gấp 2.2 lần Baseline).
 
-   * **Nhìn nhận khách quan: Tại sao kết quả LOFO tuyệt đối vẫn còn rất khiêm tốn ($F_1 \approx 0.06 - 0.13$)?**
-     Mặc dù mức tăng tương đối so với Baseline là rất ấn tượng (gấp từ 2.2 đến 3.7 lần), nhưng nếu xét về giá trị tuyệt đối, điểm số Macro $F_1 \approx 0.079 - 0.135$ và Micro $F_1 \approx 0.058 - 0.084$ trên bài toán tổng quát hóa liên họ mạch (LOFO) **vẫn chưa thực sự khả quan và còn cách rất xa ngưỡng ứng dụng thực tế**. Một số họ mạch vẫn bộc lộ hạn chế lớn: ở họ `RS232` Precision chỉ đạt $1.92\% - 11.61\%$, ở họ `s38417` vẫn tồn tại 385 ca báo động giả khiến Precision chỉ đạt $3.51\%$, và đặc biệt ở họ `s15850` Exp 4 cho kết quả $F_1 = 0.0000$.
+   * **Phân tích so sánh nghịch lý: Vì sao GIR-5 ($F_1 = 0.1346$) lại vượt trội hơn GIR-13 ($F_1 = 0.0792$) trên LOFO?**  
+     Đây là một kết quả thực nghiệm mang giá trị học thuật quan trọng của luận văn:
+     - Trên kịch bản phân chia ngẫu nhiên (In-distribution), Exp 4 (GIR-13) thể hiện ưu thế rõ rệt so với Exp 3 (GIR-5) về hầu hết các chỉ số ($F_1$: $0.9054$ so với $0.7571$; Recall: $89.33\%$ so với $70.67\%$).
+     - Tuy nhiên, trên bài toán tổng quát hóa liên họ mạch (LOFO Cross-Validation), **Exp 3 (GIR-5) lại đạt Macro $F_1$ cao hơn đáng kể so với Exp 4 (GIR-13)**: $0.1346$ so với $0.0792$ (Micro $F_1$: $0.0837$ so với $0.0580$).
+     - **Nguyên nhân cốt lõi:**  
+       1. Exp 3 chỉ dựa trên 5 đặc trưng khoảng cách bước nhảy Dijkstra thuần túy ($\text{LGFi}, \text{ffi}, \text{ffo}, \text{PI}, \text{PO}$) được tính trên luồng dữ liệu sạch $G_{data}$. Thang đo khoảng cách bước nhảy logic trên $G_{data}$ có tính ổn định tương đối giữa các vi mạch khác nhau, ít bị co giãn cực đoan theo số lượng đỉnh.
+       2. Ngược lại, Exp 4 tích hợp thêm 8 đặc trưng tô-pô toàn cục, trong đó các đặc trưng như PageRank và Betweenness Centrality có độ nhạy cảm cao với quy mô kích thước và mật độ đồ thị. Trong phân phối nội bộ, các đặc trưng này mang lại năng lực phân biệt mạnh; nhưng khi chuyển miền sang họ mạch mới có kích thước và hình thái tô-pô khác biệt, chúng gặp phải hiện tượng **trượt phân phối đặc trưng phụ thuộc quy mô (Scale-dependent Topological Covariate Shift)**.
 
-   * **Giải mã hiện tượng mạch `s15850` trong LOFO: Vì sao Exp 4 cho ra kết quả khá tệ ($F_1 = 0$) dù ROC-AUC đạt tới $0.8955$?**  
-     Đây là một trường hợp dị biệt cực kỳ thú vị và mang tính then chốt về mặt học thuật trong nghiên cứu này:
-     
-     1. *Nghịch lý giữa ROC-AUC cao ($0.8955$) và $F_1 = 0$:*  
-        Chỉ số ROC-AUC của Exp 4 trên `s15850` đạt mức rất cao: **$0.8955$** (gần $90\%$). Điều này chứng minh rằng **năng lực xếp hạng (Ranking ability) của mô hình không hề tệ**: XGBoost vẫn xếp xác suất của các node Trojan cao hơn $89.55\%$ các node an toàn.  
-        Tuy nhiên, khi phân tích sâu phân phối xác suất dự đoán ($\hat{y}$) của Exp 4 trên 27 node Trojan của `s15850`, giá trị xác suất lớn nhất mà mô hình gán cho một node Trojan chỉ đạt:
+   * **Giải mã hiện tượng mạch `s15850` trong LOFO: Vì sao Exp 4 có ROC-AUC cao ($0.8955$) nhưng $F_1 = 0.0000$?**  
+     Trường hợp mạch `s15850` minh chứng rõ nét cho hiện tượng trượt phân phối này:
+     1. *Nghịch lý giữa ROC-AUC ($0.8955$) và $F_1 = 0.0000$:*  
+        Chỉ số ROC-AUC của Exp 4 trên `s15850` đạt mức $0.8955$, cho thấy **mô hình vẫn giữ được khả năng xếp hạng phân biệt tương đối giữa mẫu Trojan và mẫu an toàn (ranking capability)** — tức các node Trojan vẫn có xu hướng nhận điểm xác suất cao hơn các node an toàn trong nội bộ mạch.  
+        Tuy nhiên, ROC-AUC cao không đồng nghĩa với việc mô hình có sự hiệu chuẩn xác suất tốt (probability calibration). Khi kiểm tra phân phối xác suất dự đoán thực tế ($\hat{y}$) của Exp 4 trên 27 node Trojan của `s15850`, giá trị xác suất lớn nhất chỉ đạt:
         $$\max_{v \in V_{Trojan}} P(v) = \mathbf{0.4613} < 0.5$$
-        Trong bài toán LOFO (blind-test cross-family), ngưỡng quyết định chuẩn mực được cố định tại $\tau = 0.5$. Do không có bất kỳ node Trojan nào vượt qua được mốc $0.5$, mô hình dẫn đến: $\text{True Positives (TP)} = 0$, $\text{False Negatives (FN)} = 27 \implies \mathbf{\text{Recall} = 0.00\%, \text{Precision} = 0.00\%, F_1 = 0.0000}$.
-     
-     2. *Nguyên nhân kỹ thuật: Sự trượt thang đo quy mô đồ thị của các đặc trưng tô-pô toàn cục (Scale-dependent Topological Covariate Shift):*  
-        - Trong Exp 4, các đặc trưng đồ thị được XGBoost sử dụng nhiều nhất và đóng góp mức lợi ích thông tin (`gain`) cao nhất là `out_degree` ($22.9\%$), `pagerank` ($18.2\%$), `logic_depth_ratio` ($13.5\%$) và `betweenness` ($6.6\%$).
-        - Về bản chất toán học, giá trị PageRank của một đỉnh trong đồ thị tỷ lệ nghịch với quy mô số đỉnh ($\sim 1/N$), còn Betweenness Centrality tỷ lệ nghịch với bình phương số đỉnh ($\sim 1/N^2$).
-        - Mạch `s15850` có quy mô 4.980 nodes với kiến trúc đồ thị dữ liệu rất thưa, hình thành các chuỗi xử lý logic dài và hẹp:
-          * Trên tập huấn luyện (gồm các mạch `RS232` và `s35932`), các node Trojan có giá trị `PageRank` trung bình là **$0.00267$** và `Betweenness` trung bình là **$0.01367$**. Cây quyết định học các phép rẽ nhánh dựa trên ngưỡng này (ví dụ: `if PageRank > 0.001 then Trojan`).
-          * Tuy nhiên, trên mạch `s15850`, toàn bộ 27 node Trojan chỉ có `PageRank` trung bình là **$0.00041$** (thấp hơn **6.5 lần** so với tập train), và `Betweenness` trung bình chỉ là **$0.00025$** (thấp hơn tới **50 lần** so với tập train!).
-          * Khi cây quyết định kiểm tra các điều kiện này, toàn bộ 27 node Trojan của `s15850` bị rẽ nhầm sang nhánh "Clean", kéo tụt điểm số xác suất tích lũy xuống dưới $0.4613$.
-     
-     3. *Tại sao Exp 3 (5 đặc trưng) lại bắt được 10 Trojan ($F_1 = 0.1575$), còn Exp 4 lại thất bại?*  
-        - Exp 3 chỉ sử dụng 5 đặc trưng khoảng cách bước nhảy Dijkstra thuần túy ($\text{LGFi}, \text{ffi}, \text{ffo}, \text{PI}, \text{PO}$). Các khoảng cách bước nhảy logic này (như $\text{ffi} = 4.8$, $\text{ffo} = 3.9$) không bị co giãn tỷ lệ phi tuyến theo số lượng đỉnh của đồ thị như PageRank và Betweenness.
-        - Vì thang đo khoảng cách logic trên $G_{data}$ tương đồng giữa các họ vi mạch, cây quyết định của Exp 3 giữ được tính ổn định, gán xác suất Trojan cho `s15850` lên tới $0.9808$, giúp 10 node vượt qua ngưỡng 0.5.
-        - Điều này chứng minh: **Việc bổ sung thêm các đặc trưng tô-pô toàn cục vô hướng dạng bảng nếu không có cơ chế chuẩn hóa theo đồ thị sẽ tạo ra hiệu ứng "con dao hai lưỡi" khi chuyển miền (OOD)** — nó giúp tối ưu hóa cực mạnh trong phân phối nội bộ (Random Split đạt $F_1 = 0.9054$), nhưng lại gây trượt phân phối xác suất khi gặp kiến trúc vi mạch có hình thái tô-pô khác biệt như `s15850`.
+        Do toàn bộ xác suất dự đoán bị nén xuống dưới $0.5$, ngưỡng phân loại mặc định $\tau = 0.5$ trong giao thức LOFO trở nên không phù hợp, dẫn đến: $\text{TP} = 0, \text{FN} = 27 \implies \text{Recall} = 0.00\%, \text{Precision} = 0.00\%, F_1 = 0.0000$. Điều này phản ánh sự lệch hiệu chuẩn phân phối xác suất dưới tác động của trượt phân phối đặc trưng (probability calibration failure under covariate shift) chứ không hẳn là mô hình mất hoàn toàn năng lực phân biệt.
+     2. *Cơ chế gây ra sự nén xác suất:*  
+        - Trong Exp 4, XGBoost phụ thuộc nhiều vào `out_degree`, `pagerank`, `logic_depth_ratio` và `betweenness`.
+        - PageRank và Betweenness Centrality có phân phối phụ thuộc chặt chẽ vào topology và quy mô kích thước đồ thị, do đó xuất hiện hiện tượng trượt phân phối đặc trưng (covariate shift) nghiêm trọng khi chuyển sang một họ mạch có cấu trúc và quy mô khác biệt.
+        - Mạch `s15850` (4.980 nodes) có cấu trúc logic thưa với các chuỗi xử lý kéo dài. Trên tập huấn luyện (gồm các mạch `RS232` và `s35932`), các node Trojan có `PageRank` trung bình là $0.00267$ và `Betweenness` trung bình là $0.01367$. Cây quyết định học các ngưỡng rẽ nhánh dựa trên dải giá trị này.
+        - Trên `s15850`, toàn bộ 27 node Trojan có `PageRank` trung bình chỉ đạt $0.00041$ (thấp hơn khoảng $6.5$ lần) và `Betweenness` trung bình chỉ đạt $0.00025$ (thấp hơn khoảng $50$ lần so với tập train). Do phân phối dịch chuyển mạnh, các điểm dữ liệu này rơi vào các nhánh quyết định an toàn, làm suy giảm xác suất dự đoán tích lũy xuống dưới $0.4613$.
+     3. *Tại sao Exp 3 lại bắt được 10 node Trojan trên `s15850` ($F_1 = 0.1575$)?*  
+        Do chỉ sử dụng 5 đặc trưng khoảng cách logic trên $G_{data}$, thang đo của Exp 3 không bị thu hẹp đột ngột theo quy mô số đỉnh, giúp mô hình gán xác suất cao hơn (lên tới $0.9808$) và nhận diện được 10/27 node Trojan.
 
-   * **Ý nghĩa: Tiền đề Khoa học Tất yếu để Luận văn Tiến sang Triển khai Graph Neural Networks (GNN):**  
-     Hiện tượng sụp đổ xác suất trên `s15850` của Exp 4 chính là **luận cứ thực nghiệm đắt giá và thuyết phục nhất**:
-     - Các mô hình học máy dạng bảng (Tabular ML như XGBoost) dựa trên các vector đặc trưng số trích xuất thủ công hoàn toàn **thiếu vắng cơ chế chuẩn hóa đồ thị nội tại (Graph Inductive Normalization)** và **bị mất mát hoàn toàn ngữ cảnh không gian (Relational Inductive Bias)** khi "nén phẳng" đồ thị thành bảng số.
-     - Đây chính là động lực khoa học cốt tử xác lập sự cần thiết phải chuyển giao sang **Mạng Nơ-ron Đồ thị Không đồng nhất (Heterogeneous Graph Neural Networks - H-GNN)**:
-       * GNNs hoạt động trực tiếp trên cấu trúc liên kết hai phía ($V_{cell} \cup V_{net}$), sử dụng cơ chế **Lan truyền thông điệp (Message Passing)** với các phép chuẩn hóa bậc cục bộ (như phép nhân ma trận đối xứng $D^{-1/2} A D^{-1/2}$ trong GCN hoặc Attention Softmax trong GATv2), giúp biểu diễn học được bất biến với quy mô toàn cục của vi mạch.
-       * GNN không phụ thuộc vào các con số thống kê vô hướng đơn lẻ mà học trực tiếp **Mô thức Đồ thị con Đặc thù (Sub-graph Motifs)** — nhận diện chuỗi cổng Trigger/Payload dựa trên mối quan hệ lân cận $k$-hop bất kể vi mạch có 1.000 hay 100.000 cổng.
-     - Semantic Graph IR với cấu trúc chuẩn tắc `nodes.csv` và `edges.csv` đã giải quyết xong bài toán biểu diễn dữ liệu, đóng vai trò **bệ phóng kiến trúc hoàn hảo** để luận văn tiến thẳng sang triển khai H-GNN ở giai đoạn tiếp theo.
+   * **Nhận định tổng quát và Luận cứ khoa học dẫn nhập sang GNN:**  
+     Từ các kết quả thực nghiệm trên, luận văn rút ra hai kết luận mang tính bản chất:
+     1. **Bảo tồn nhiều thông tin hơn giúp cải thiện rõ rệt hiệu năng nhận diện nội bộ (In-distribution), nhưng việc giữ lại thông tin dưới dạng các đại lượng vô hướng toàn cục trích xuất thủ công (handcrafted global scalar features) không đảm bảo khả năng tổng quát hóa ngoài phân phối (OOD generalization).**
+     2. **Thao tác nén phẳng cấu trúc đồ thị (flattening graph structure) thành bảng số liệu vô hướng đã loại bỏ thông tin quan hệ không gian và tính cục bộ (relational context & local structural motifs) — vốn là yếu tố quyết định để nhận diện các khối Trigger/Payload xuyên suốt các họ vi mạch có quy mô khác nhau.**
 
-=> **Kết luận khẳng định cho RQ2:** Mặc dù bộ 13 đặc trưng tô-pô trên luồng dữ liệu sạch đã triệt tiêu hoàn toàn đường tắt học vẹt và mang lại hiệu năng kỷ lục trên kịch bản phân chia nội bộ ($F_1 = 0.9054$), nhưng trên bài toán OOD liên họ mạch (LOFO), mô hình bảng đã bộc lộ giới hạn cấu trúc cố hữu (thể hiện rõ qua hiện tượng nén xác suất ở mạch `s15850`). Đây là phát hiện then chốt, xác lập tính cấp thiết khoa học để luận văn chuyển giao trọng tâm sang nghiên cứu Graph Neural Networks.
+   * **Giả thuyết nghiên cứu cho Giai đoạn tiếp theo (GNN):**  
+     Hiện tượng GIR-5 tốt hơn GIR-13 trên LOFO ($0.1346$ so với $0.0792$) và sự nén xác suất trên `s15850` đặt ra câu hỏi nghiên cứu trung tâm cho giai đoạn tiếp theo của luận văn:  
+     > **“Does direct relational learning on the Semantic Graph IR improve cross-family generalization compared with handcrafted graph features?”**  
+     *(Liệu việc học quan hệ trực tiếp trên Biểu diễn Đồ thị Ngữ nghĩa có cải thiện khả năng tổng quát hóa liên họ vi mạch so với các đặc trưng đồ thị trích xuất thủ công hay không?)*  
+     
+     Về mặt nguyên lý, Mạng Nơ-ron Đồ thị Không đồng nhất (Heterogeneous GNN) không nén đồ thị thành các đại lượng vô hướng đơn lẻ mà hoạt động thông qua cơ chế lan truyền thông điệp cục bộ ($k$-hop message passing) với các phép chuẩn hóa bậc liên kết lân cận. Cách tiếp cận này có tiềm năng học trực tiếp các mô thức đồ thị con (subgraph motifs) đặc trưng của Trojan một cách bền vững hơn trước sự thay đổi kích thước toàn cục của vi mạch. Biểu diễn Semantic Graph IR với các tập tin `nodes.csv` và `edges.csv` cung cấp cấu trúc dữ liệu chuẩn hóa sẵn sàng để kiểm định giả thuyết này.
+
+=> **Kết luận cho RQ2:** Kết quả thực nghiệm trả lời trực diện hai vế của RQ2:  
+(1) Việc chuyển các đặc trưng tô-pô sang đồ thị luồng dữ liệu sạch của Graph IR đã cải thiện rõ rệt khả năng tổng quát hóa LOFO so với Baseline (Macro $F_1$ của GIR-5 tăng từ $0.0362$ lên $0.1346$, gấp 3.7 lần).  
+(2) Tuy nhiên, việc bổ sung thêm 8 đặc trưng tô-pô bậc cao (GIR-13) dù mang lại hiệu năng kỷ lục trong phân phối nội bộ ($F_1 = 0.9054$, ROC-AUC = $0.9975$) nhưng không tiếp tục mang lại lợi ích trên bài toán LOFO (Macro $F_1$ giảm xuống $0.0792$) do hiện tượng trượt phân phối đặc trưng toàn cục (minh chứng qua sự nén xác suất ở mạch `s15850`).  
+Kết quả này khẳng định giới hạn cố hữu của các đại lượng vô hướng toàn cục trích xuất thủ công, xác lập tính cấp thiết khoa học để chuyển trọng tâm nghiên cứu sang Mạng Nơ-ron Đồ thị.
 
 ---
 
 #### 3.3.3. Trả lời RQ3 (Về tính tương thích cho Graph Neural Networks và Graph XAI):
 > **Câu hỏi nghiên cứu RQ3:** *Biểu diễn Graph IR đề xuất có đáp ứng đầy đủ tính tương thích chuẩn mực để làm nền tảng đầu vào cho việc huấn luyện trực tiếp các mô hình Graph Neural Networks (GNN) và các phương pháp giải thích dựa trên đồ thị (Graph-based XAI) ở các giai đoạn tiếp theo của luận văn hay không?*
 
-**Phân tích kỹ thuật và Khả năng ứng dụng:**
+**Phân tích kỹ thuật và Mức độ sẵn sàng kiến trúc:**
 
-1. **Tính tương thích tự nhiên với các thư viện Deep Graph Learning:**
+1. **Tính tương thích cấu trúc với các thư viện Deep Graph Learning:**
    * Cặp tập tin `nodes.csv` và `edges.csv` được thiết kế theo đúng chuẩn biểu diễn của **Đồ thị không đồng nhất (Heterogeneous Graph)**.
-   * Dữ liệu có thể được chuyển đổi 1-1 ("plug-and-play") vào đối tượng `torch_geometric.data.HeteroData` của thư viện **PyTorch Geometric (PyG)** hoặc `dgl.heterograph` của **DGL (Deep Graph Library)** mà không cần bất kỳ bước tiền xử lý trung gian nào.
-   * Kiến trúc này cho phép triển khai trực tiếp các mô hình học sâu đồ thị tiên tiến như **Relational Graph Convolutional Networks (R-GCN)**, **Graph Attention Networks (GATv2)** với cơ chế Attention theo chân cắm (`port`), hoặc **Heterogeneous Graph Transformers (HGT)**.
+   * Cấu trúc này ánh xạ trực tiếp vào đối tượng `torch_geometric.data.HeteroData` của thư viện **PyTorch Geometric (PyG)** hoặc `dgl.heterograph` của **DGL (Deep Graph Library)** mà không cần qua khâu tái cấu trúc phức tạp.
+   * Các đỉnh được phân tách rõ ràng thành hai loại thực thể (`cell` và `net`), còn các cạnh mang đầy đủ thông tin về hướng truyền tín hiệu (`direction`), loại liên kết (`kind`), cờ điều khiển (`is_control`) và thuộc tính chân cắm (`port`). Đây là tiền đề cấu trúc cần thiết để triển khai các mô hình như **Relational Graph Convolutional Networks (R-GCN)**, **Graph Attention Networks (GATv2)** hoặc **Heterogeneous Graph Transformers (HGT)**.
 
-2. **Mở ra cuộc cách mạng cho Giải thích học máy trên đồ thị (Graph-based XAI):**
-   * **Bế tắc của Baseline:** Như đã chỉ ra trong Research Gap 3, Baseline chỉ tạo ra bảng số rời rạc. Khi áp dụng LIME hoặc SHAP, kết quả nhận được chỉ là: *"Đặc trưng PO đóng góp 0.35 vào quyết định Trojan"*. Kỹ sư an ninh phần cứng hoàn toàn không thể biết chân cắm nào bị can thiệp, đường dây nào bị rình mò, hay cổng logic nào chịu trách nhiệm truyền tải payload.
-   * **Đột phá với Graph IR:** 
-     * Vì Graph IR bảo tồn nguyên vẹn 100% cấu trúc Netlist và các mối quan hệ ngữ nghĩa chân cắm, các thuật toán Graph XAI hiện đại (như **GNNExplainer**, **SubgraphX**, **PGExplainer**) có thể hoạt động trực tiếp trên đồ thị.
-     * Thuật toán có thể trích xuất và khoanh vùng chính xác **Đồ thị con giải thích (Explanatory Subgraph)**: Kỹ sư có thể nhìn thấy trực quan trên sơ đồ vi mạch:
+2. **Thiết lập tiền đề cấu trúc cho Giải thích học máy trên đồ thị (Graph-based XAI):**
+   * **Hạn chế trong hướng tiếp cận dạng bảng:** Với mô hình bảng cổ điển, các phương pháp giải thích như LIME hay SHAP chỉ có thể cung cấp mức độ quan trọng của từng đặc trưng vô hướng (ví dụ: *"đặc trưng PO đóng góp 0.35"*), hoàn toàn tách rời khỏi sơ đồ nguyên lý mạch và không chỉ ra được vị trí kết nối vật lý cụ thể.
+   * **Mức độ sẵn sàng kiến trúc với Graph IR:** 
+     * Do Graph IR bảo tồn đầy đủ cấu trúc liên kết cell-net và lưu giữ thông tin chân cắm (`port`), các giải thuật giải thích trên đồ thị (như **GNNExplainer**, **SubgraphX**, **PGExplainer**) có thể hoạt động trực tiếp trên cấu trúc tô-pô.
+     * Cấu trúc này cho phép trích xuất các **Đồ thị con giải thích (Explanatory Subgraph)** phản ánh chuỗi lan truyền tín hiệu từ ngõ vào kích hoạt đến điểm can thiệp tải trọng:
        $$\text{Trigger Taps } (iRECEIVER\_state\_0, 1, 2) \xrightarrow{trigger\_input} \text{Trigger Gate } (U297) \to \dots \xrightarrow{payload\_output} \text{Payload Gate } (U303, U305)$$
-     * Khả năng giải thích có thể định vị chính xác tới từng chân cắm vật lý (`port`) và từng dây dẫn (`net`), biến mô hình phát hiện Trojan từ một "hộp đen trừu tượng" thành một **công cụ kiểm tra an ninh trực quan, minh bạch và có thể hành động được (Actionable Security Tool)**.
+     * Việc định danh rõ ràng từng chân cắm (`port`) và dây dẫn (`net`) tạo điều kiện để chuyển đổi kết quả phân loại thành thông tin khoanh vùng trực quan, hỗ trợ kỹ sư kiểm định phần cứng xác minh vị trí nghi vấn.
 
-=> **Kết luận khẳng định cho RQ3:** Semantic Graph IR không chỉ là một biểu diễn vượt trội cho các bộ phân loại dạng bảng cổ điển, mà chính là chiếc cầu nối kiến trúc chuẩn mực và vững chắc nhất để luận văn tiến thẳng vào giai đoạn triển khai **Graph Neural Networks** và **Graph Explainable AI**.
+=> **Kết luận cho RQ3:** Semantic Graph IR đáp ứng đầy đủ các yêu cầu về mặt cấu trúc dữ liệu và mức độ sẵn sàng kiến trúc để làm đầu vào cho việc huấn luyện **Mạng Nơ-ron Đồ thị (GNN)** cũng như nghiên cứu các phương pháp **Giải thích học máy trên đồ thị (Graph XAI)** ở giai đoạn tiếp theo của luận văn.
 
 ---
 
 ### 3.4. Tổng kết Báo cáo và Định hướng Nghiên cứu Tiếp theo
 
-Báo cáo đã hoàn thành trọn vẹn việc phân tích, hiện thực hóa và kiểm chứng thực nghiệm giải pháp **Biểu diễn Đồ thị Ngữ nghĩa (Semantic Graph IR)** trong bài toán phát hiện Trojan phần cứng:
+Báo cáo đã trình bày quá trình xây dựng, tối ưu hóa và đánh giá thực nghiệm giải pháp **Biểu diễn Đồ thị Ngữ nghĩa (Semantic Graph IR)** trong bài toán phát hiện Trojan phần cứng ở mức cổng logic (Gate-level):
 
-1. **Về mặt lý thuyết và biểu diễn:** Đã giải quyết triệt để 3 khoảng trống nghiên cứu (RG1, RG2, RG3), khắc phục hoàn toàn sự cố đứt đoạn của CircuitGraph, bảo tồn toàn vẹn cấu trúc hai phía (Cells $\leftrightarrow$ Nets), bản sắc cổng và ngữ nghĩa chân pin, đồng thời bóc tách triệt để nhiễu ô nhiễm xung nhịp qua đồ thị luồng dữ liệu sạch $G_{data}$.
-2. **Về mặt thực nghiệm:** Kiểm chứng đa chiều qua 4 kịch bản đối chứng (Single Seed, 10-Run Statistics, LOFO Cross-Validation) khẳng định cấu hình đề xuất **Exp 4 (GIR-13)** vượt trội toàn diện:
-   * Trên Random Split: Đạt $F_1 = \mathbf{0.9054}$ (kiểm định 10 runs đạt $0.8934 \pm 0.0154$), ROC-AUC = $\mathbf{0.9975}$, giảm báo động giả từ 288 xuống còn 6 ca tại $\tau^*$ và 9 ca tại $\tau=0.5$.
-   * Trên LOFO Cross-Validation: Đạt bước nhảy vọt về độ chính xác trên các mạch quy mô lớn (trên `s35932` đạt Precision $90.00\%$, giảm báo động giả xuống còn đúng 1 ca, trong khi Exp 3 đạt $F_1 = 0.3651$ với Recall $69.84\%$). Hiện tượng sụp đổ xác suất trên mạch dị biệt `s15850` đã cung cấp bằng chứng thực nghiệm rõ ràng nhất về giới hạn của mô hình bảng, tạo tiền đề vững chắc cho việc chuyển giao sang GNN.
+1. **Về mặt biểu diễn dữ liệu:** 
+   * Đề xuất mô hình đồ thị có hướng không đồng nhất Cell-Net, bảo tồn chi tiết cấu trúc liên kết cổng và dây dẫn, thuộc tính chân cắm (`port`) và phân loại 4 trạng thái ngữ cảnh an ninh Trojan trên cạnh.
+   * Thiết lập cơ chế tách biệt đồ thị luồng dữ liệu $G_{data}$ để hạn chế các đường tắt nhân tạo do mạng xung nhịp toàn cục gây ra, khắc phục hiện tượng méo mó khoảng cách tô-pô trong tính toán đặc trưng.
+
+2. **Về mặt kết quả thực nghiệm:** 
+   * Trên kịch bản phân chia nội bộ (Random Split): Cấu hình **Exp 4 (GIR-13)** đạt $F_1 = \mathbf{0.9054}$ (10 runs: $0.8934 \pm 0.0154$), ROC-AUC = $\mathbf{0.9975}$, giảm số ca báo động giả xuống còn 6 ca tại $\tau^*$ và 9 ca tại $\tau=0.5$.
+   * Trên bài toán kiểm thử liên họ mạch (LOFO): Graph IR ghi nhận cải thiện đáng kể trên vi mạch quy mô lớn `s35932` (Exp 4 đạt Precision $90.00\%$ với chỉ 1 ca báo động giả; Exp 3 đạt Recall $69.84\%$ với $F_1 = 0.3651$).
+   * Phân tích so sánh cho thấy **Exp 3 (GIR-5) đạt Macro $F_1 = 0.1346$, vượt trội hơn Exp 4 (GIR-13) ở mức $0.0792$**. Hiện tượng sụp đổ xác suất trên mạch dị biệt `s15850` đã chỉ ra giới hạn cấu trúc cố hữu của các đặc trưng tô-pô toàn cục dạng bảng khi gặp sự trượt quy mô mạch.
+
 3. **Định hướng nghiên cứu tiếp theo của luận văn:**
-   * **Giai đoạn tiếp theo (Triển khai GNN):** Tận dụng trực tiếp biểu diễn `nodes.csv` và `edges.csv` để xây dựng và huấn luyện mô hình **Heterogeneous Graph Neural Network (H-GNN)**, khai thác năng lực tự động trích xuất đặc trưng của mạng nơ-ron đồ thị thay vì phụ thuộc vào 13 đặc trưng tô-pô thủ công.
-   * **Khung giải thích đồ thị (Graph XAI Framework):** Phát triển module giải thích đồ thị trực quan (sử dụng SubgraphX / GNNExplainer) để tự động xuất ra sơ đồ con chứa mạch kích hoạt và phá hoại của Trojan phục vụ trực tiếp cho các kỹ sư kiểm định phần cứng.
+   * **Nghiên cứu và triển khai Mạng Nơ-ron Đồ thị (Heterogeneous GNNs):** Sử dụng trực tiếp cấu trúc `nodes.csv` và `edges.csv` để xây dựng và huấn luyện các kiến trúc GNN (như R-GCN, GATv2) với cơ chế lan truyền thông điệp cục bộ, giải quyết câu hỏi nghiên cứu trung tâm: *"Liệu việc học quan hệ trực tiếp trên Semantic Graph IR có cải thiện khả năng tổng quát hóa liên họ vi mạch so với các đặc trưng đồ thị trích xuất thủ công hay không?"*
+   * **Nghiên cứu phương pháp giải thích dựa trên đồ thị (Graph XAI):** Ứng dụng các thuật toán giải thích đồ thị (như SubgraphX hoặc GNNExplainer) để trích xuất các đồ thị con đại diện cho khối Trigger và Payload, cung cấp kết quả khoanh vùng trực quan phục vụ công tác kiểm định an ninh phần cứng.
 
