@@ -1,4 +1,5 @@
 """Utils for parsing verilog with Lark."""
+import csv
 from pathlib import Path
 
 from lark import Lark, Transformer
@@ -60,7 +61,9 @@ class VerilogParsingWarning(Exception):
 class _VerilogCircuitGraphTransformer(Transformer):
     """A lark.Transformer for parsing a verilog netlist."""
 
-    def __init__(self, text, blackboxes, warnings=False, error_on_warning=False):
+    def __init__(
+        self, text, blackboxes, warnings=False, error_on_warning=False, csv_output_dir=None, trojans=None
+    ):
         """
         Initialize a new transformer.
 
@@ -76,7 +79,11 @@ class _VerilogCircuitGraphTransformer(Transformer):
         error_on_warning: bool
                 If True, unused nets will cause raise `VerilogParsingWarning`
                 exceptions.
-
+        csv_output_dir: str or pathlib.Path, optional
+                Directory in which to write ``nodes.csv`` and ``edges.csv``
+                for the parsed circuit.
+        trojans: list of str, optional
+                List of trojan instances or pins.
         """
         super().__init__()
         self.c = Circuit()
@@ -84,6 +91,8 @@ class _VerilogCircuitGraphTransformer(Transformer):
         self.blackboxes = blackboxes
         self.warnings = warnings
         self.error_on_warning = error_on_warning
+        self.csv_output_dir = Path(csv_output_dir) if csv_output_dir else None
+        self.trojans = trojans or []
         self.tie_0 = self.c.add("tie_0", "0")
         self.tie_1 = self.c.add("tie_1", "1")
         self.tie_x = self.c.add("tie_x", "x")
@@ -181,6 +190,148 @@ class _VerilogCircuitGraphTransformer(Transformer):
             ] and not self.c.fanin(n):
                 self.warn(f"{n} doesn't have any drivers.")
 
+    def write_graph_csv(self):
+        """Write a structural graph that preserves Verilog nets and cell instances.
+
+        CircuitGraph represents a blackbox instance through separate
+        ``bb_input`` and ``bb_output`` pin nodes, without an edge through the
+        blackbox. That representation is appropriate for the parser, but it
+        splits a netlist visualisation into many disconnected components. The
+        CSV representation instead uses the original instance as one node and
+        records the connected pin name and direction on every edge.
+        """
+        if self.csv_output_dir is None:
+            return
+
+        self.csv_output_dir.mkdir(parents=True, exist_ok=True)
+
+        raw_nodes = {}
+        raw_edges = []
+
+        # Keep every real signal node and its attributes. bb_* nodes are
+        # parser-internal port nodes and are represented by the ``port`` edge
+        # attribute below rather than as separate CSV nodes.
+        for node, attributes in self.c.graph.nodes(data=True):
+            if attributes.get("type") not in {"bb_input", "bb_output"}:
+                raw_nodes[str(node)] = {"kind": "net", **attributes}
+
+        for instance, blackbox in self.c.blackboxes.items():
+            instance = str(instance)
+            if instance in raw_nodes:
+                raise ValueError(
+                    f"Cannot export structural CSV: instance name '{instance}' "
+                    "collides with a signal name."
+                )
+            raw_nodes[instance] = {
+                "kind": "cell",
+                "type": blackbox.name,
+                "cell_type": blackbox.name,
+            }
+
+            # Reconstruct each original named/positional port connection:
+            # net -> instance for input ports and instance -> net for outputs.
+            for port in blackbox.inputs():
+                port_node = f"{instance}.{port}"
+                if port_node in self.c.graph:
+                    for source, _ in self.c.graph.in_edges(port_node):
+                        raw_edges.append(
+                            (str(source), instance, {"kind": "connection", "port": port, "direction": "input"})
+                        )
+            for port in blackbox.outputs():
+                port_node = f"{instance}.{port}"
+                if port_node in self.c.graph:
+                    for _, target in self.c.graph.out_edges(port_node):
+                        raw_edges.append(
+                            (instance, str(target), {"kind": "connection", "port": port, "direction": "output"})
+                        )
+
+        # Preserve direct connections created by continuous assignments and
+        # primitive expressions. Connections touching bb_* pins were already
+        # emitted above with their original cell instance and port.
+        for source, target, attributes in self.c.graph.edges(data=True):
+            source_type = self.c.graph.nodes[source].get("type")
+            target_type = self.c.graph.nodes[target].get("type")
+            if source_type not in {"bb_input", "bb_output"} and target_type not in {"bb_input", "bb_output"}:
+                raw_edges.append((str(source), str(target), {"kind": "direct", **attributes}))
+
+        # Build set of trojan instances/pins for matching
+        trojan_inst_set = set()
+        for t in (self.trojans or []):
+            inst = t.split('.', 1)[0] if '.' in str(t) else str(t)
+            trojan_inst_set.add(inst)
+            trojan_inst_set.add(str(t))
+
+        # Annotate nodes with Trojan label
+        for node, attributes in raw_nodes.items():
+            node_str = str(node)
+            node_inst = node_str.split('.', 1)[0] if '.' in node_str else node_str
+            is_t = 1 if (node_inst in trojan_inst_set or node_str in trojan_inst_set) else 0
+            attributes["is_trojan"] = is_t
+            attributes["trojan"] = is_t
+
+        # Control ports for clock/reset
+        CONTROL_PORTS = {"CLK", "CK", "RSTB", "RN", "SETB", "SN", "test_se"}
+
+        # Annotate edges with control, trojan_edge, and trojan_context
+        for source, target, attributes in raw_edges:
+            src_str = str(source)
+            dst_str = str(target)
+            src_inst = src_str.split('.', 1)[0] if '.' in src_str else src_str
+            dst_inst = dst_str.split('.', 1)[0] if '.' in dst_str else dst_str
+
+            src_is_t = (src_inst in trojan_inst_set or src_str in trojan_inst_set)
+            dst_is_t = (dst_inst in trojan_inst_set or dst_str in trojan_inst_set)
+
+            port_name = attributes.get("port", "")
+            attributes["is_control"] = 1 if port_name in CONTROL_PORTS else 0
+
+            if src_is_t and dst_is_t:
+                attributes["is_trojan_edge"] = 1
+                attributes["trojan_context"] = "internal"
+            elif dst_is_t:
+                attributes["is_trojan_edge"] = 1
+                attributes["trojan_context"] = "trigger_input"
+            elif src_is_t:
+                attributes["is_trojan_edge"] = 1
+                attributes["trojan_context"] = "payload_output"
+            else:
+                attributes["is_trojan_edge"] = 0
+                attributes["trojan_context"] = "normal"
+
+        # Attributes are not necessarily uniform. Build a complete schema so
+        # no source attribute is discarded from either CSV.
+        node_attributes = sorted(
+            {
+                attribute
+                for attributes in raw_nodes.values()
+                for attribute in attributes
+            }
+        )
+        edge_attributes = sorted(
+            {
+                attribute
+                for _, _, attributes in raw_edges
+                for attribute in attributes
+            }
+        )
+
+        with open(self.csv_output_dir / "nodes.csv", "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["node", *node_attributes])
+            for node in sorted(raw_nodes):
+                attributes = raw_nodes[node]
+                writer.writerow([str(node), *(attributes.get(attribute, "") for attribute in node_attributes)])
+
+        with open(self.csv_output_dir / "edges.csv", "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["source", "target", *edge_attributes])
+            for source, target, attributes in sorted(
+                raw_edges, key=lambda edge: (edge[0], edge[1], edge[2].get("port", ""))
+            ):
+                writer.writerow(
+                    [str(source), str(target), *(attributes.get(attribute, "") for attribute in edge_attributes)]
+                )
+
     # 1. Source text
     def start(self, description):
         return description
@@ -235,6 +386,9 @@ class _VerilogCircuitGraphTransformer(Transformer):
         # Check for warnings
         if self.warnings:
             self.check_for_warnings()
+
+        # Export before downstream processing merges cells or removes wire nodes.
+        self.write_graph_csv()
 
         return self.c
 
@@ -627,7 +781,9 @@ class _VerilogCircuitGraphTransformer(Transformer):
         return node
 
 
-def parse_verilog_netlist(netlist, blackboxes, warnings=False, error_on_warning=False):
+def parse_verilog_netlist(
+    netlist, blackboxes, warnings=False, error_on_warning=False, csv_output_dir=None, trojans=None
+):
     """
     Parse a verilog netlist into a Circuit.
 
@@ -642,6 +798,10 @@ def parse_verilog_netlist(netlist, blackboxes, warnings=False, error_on_warning=
     error_on_warning: bool
             If True, unused nets will cause raise `VerilogParsingWarning`
             exceptions.
+    csv_output_dir: str or pathlib.Path, optional
+            Directory in which to write ``nodes.csv`` and ``edges.csv``.
+    trojans: list of str, optional
+            List of trojan instances or pins.
 
     Returns
     -------
@@ -650,7 +810,7 @@ def parse_verilog_netlist(netlist, blackboxes, warnings=False, error_on_warning=
 
     """
     transformer = _VerilogCircuitGraphTransformer(
-        netlist, blackboxes, warnings, error_on_warning
+        netlist, blackboxes, warnings, error_on_warning, csv_output_dir, trojans
     )
     with open(Path(__file__).parent.absolute() / "verilog.lark") as f:
         parser = Lark(f, parser="lalr", transformer=transformer)

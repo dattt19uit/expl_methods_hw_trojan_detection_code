@@ -478,6 +478,7 @@ def metric_paths(G, start, end, cache=None): # must not have cycle!
 # merge_cells(list_cell_names())
 # remove_cells(['not'])
 #
+# Đoạn này tính 5 chỉ số Hasegawa từ Baseline
 def write_metrics(c, trojans, filename):
     start_time = time.perf_counter()
     timing_breakdown = {}
@@ -516,13 +517,39 @@ def write_metrics(c, trojans, filename):
     
     # Phase 3: Pre-compute all shortest path lengths (OPTIMIZATION: O(V^2 log V) once vs O(N*V*E) repeated searches)
     phase_start = time.perf_counter()
-    print(f"\nPre-computing all shortest path lengths...")
+    # Phase 3: Pre-compute graph metrics on baseline graph (c.graph)
+    phase_start = time.perf_counter()
+    print(f"\nPre-computing shortest paths and graph metrics...")
     print(f"  Graph nodes: {len(GR.nodes)}, edges: {len(GR.edges)}")
     
-    # Compute all-pairs shortest path lengths for both graphs
-    # This replaces 4*N individual searches with O(V^2 log V) pre-computation
+    # Compute all-pairs shortest path lengths
     all_lengths_GR = dict(nx.all_pairs_dijkstra_path_length(GR, weight=None))
     all_lengths_GC = dict(nx.all_pairs_dijkstra_path_length(GC, weight=None))
+
+    # Compute advanced graph features on baseline graph
+    try:
+        pr_scores = nx.pagerank(GC, alpha=0.85, max_iter=200, tol=1e-6)
+    except Exception:
+        pr_scores = {n: 1.0 / max(1, len(GC)) for n in GC}
+
+    in_degrees = dict(GC.in_degree())
+    out_degrees = dict(GC.out_degree())
+
+    G_undir = GC.to_undirected()
+    clustering_coeffs = nx.clustering(G_undir)
+    core_numbers = nx.core_number(G_undir)
+
+    n_nodes = len(GC)
+    k_samples = min(n_nodes, 150) if n_nodes > 500 else None
+    try:
+        betweenness_scores = nx.betweenness_centrality(GC, k=k_samples, normalized=True)
+    except Exception:
+        betweenness_scores = {n: 0.0 for n in GC}
+
+    try:
+        closeness_scores = nx.closeness_centrality(GC)
+    except Exception:
+        closeness_scores = {n: 0.0 for n in GC}
     
     print(f"  Pre-computation complete in {time.perf_counter() - phase_start:.3f}s")
     timing_breakdown['3_precompute_paths'] = time.perf_counter() - phase_start
@@ -530,10 +557,10 @@ def write_metrics(c, trojans, filename):
     # Phase 4: File setup
     phase_start = time.perf_counter()
     fp = open(filename, "w") 
-    fp.write(f"Line,type,name,net,LGFi,ffi,ffo,PI,PO,Trojan\n")
+    fp.write("Line,type,name,net,LGFi,ffi,ffo,PI,PO,Trojan\n")
     timing_breakdown['4_file_setup'] = time.perf_counter() - phase_start
     
-    # Phase 5: Main metric calculation loop (OPTIMIZED: O(1) lookups instead of O(V+E) searches)
+    # Phase 5: Main metric calculation loop
     loop_start = time.perf_counter()
     metrics_time = 0
     path_lookup_time = 0
@@ -552,15 +579,14 @@ def write_metrics(c, trojans, filename):
         LGFi = len(fanin)
         metrics_time += time.perf_counter() - t0
         
-        # Timing: path lookups (OPTIMIZED: O(1) dictionary lookup vs O(V+E) search)
+        # Timing: path lookups
         t0 = time.perf_counter()
         
-        # Get pre-computed distances for this node (O(1) dictionary lookup)
         distances_from_net_GR = all_lengths_GR.get(net, {})
         distances_from_net_GC = all_lengths_GC.get(net, {})
         
         # Find shortest distance to flip-flops (ffi and ffo)
-        if net in FF:    # Directed graph, make sure shortest path flipflop net will not see itself
+        if net in FF:
             F = [f for f in FF if f != net]
             ffi_dist = min([distances_from_net_GR.get(f, 99999) for f in F if f in distances_from_net_GR], default=99999)
         else:
@@ -574,34 +600,24 @@ def write_metrics(c, trojans, filename):
         
         path_lookup_time += time.perf_counter() - t0
         
-        # Timing: metric computation (using pre-computed distances)
+        # Timing: metric computation
         t0 = time.perf_counter()
-        # Match trojan by instance name (pin-agnostic) to handle 90nm/180nm differences
         net_inst = net.split('.', 1)[0] if '.' in net else net
         Trojan = 1 if net_inst in trojan_instances else 0
-        
-        # Convert distances to path lengths (distance + 1 = path length)
-        # Original logic: path length 0 = node itself, 1 = one hop, 2+ = longer paths
-        # Distance 0 = same node, distance 1 = one edge, etc.
-        # So for metrics: subtract 1 from distance to get "hops" (edges beyond node itself)
-        # But if distance is 99999 (no path), keep as 99999
         
         nPO = 0 if net in PO else (99999 if nPO_dist >= 99999 else max(0, nPO_dist - 1))
         nPI = 0 if net in PI else (99999 if nPI_dist >= 99999 else max(0, nPI_dist - 1))
         
-        # For flip-flop distances: 
-        # - 99999 = no path
-        # - Use nPI/nPO if no FF path found
         ffi = nPI if ffi_dist >= 99999 else (0 if ffi_dist <= 1 else ffi_dist - 1)
         ffo = nPO if ffo_dist >= 99999 else (0 if ffo_dist <= 1 else ffo_dist - 1)
         
         if net in ['tie_0', 'tie_1', 'tie_x']:
             nPI = 0
             ffi = 0
-        
+
         ctype = 'PI' if net in PI else 'PO' if net in PO else 'ff' if net in FF else 'nn'
         S = net.split('.', 1)
-        U = S[0] if len(S)>=1 else ''   # instance
+        U = S[0] if len(S)>=1 else ''
         cname = c.blackboxes[U].name if U in c.blackboxes else 'net'
         metrics_time += time.perf_counter() - t0
 
@@ -642,7 +658,9 @@ def write_metrics(c, trojans, filename):
     return timing_breakdown
 
 # c = nl.read_netlist('./s27_90nm.v', name='s27', fmt='verilog', blackboxes=BB, techlib='90nm')
-def read_netlist(filename, name, fmt='verilog', blackboxes=None, techlib='default'):
+def read_netlist(
+    filename, name, fmt='verilog', blackboxes=None, techlib='default', csv_output_dir=None, trojans=None
+):
     BB = []
     if techlib == '180nm':
         BUFX1   = cg.BlackBox(name="BUFX1",    inputs=["A"], outputs=["Y"])
@@ -766,7 +784,6 @@ def read_netlist(filename, name, fmt='verilog', blackboxes=None, techlib='defaul
         BB.append(blackboxes)
 
     c = cg.from_file(filename, name=name, fmt=fmt, 
-                     blackboxes=BB, warnings=False, error_on_warning=False, fast=False)
+                     blackboxes=BB, warnings=False, error_on_warning=False, fast=False,
+                     csv_output_dir=csv_output_dir, trojans=trojans)
     return c
-
-

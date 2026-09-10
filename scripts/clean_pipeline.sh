@@ -27,7 +27,9 @@ fi
 # Directories to remove (everything except raw/)
 DIRS_TO_CLEAN=(
     "circuits"
+    "circuits_graph_ir"
     "processed"
+    "processed_graph_ir"
     "models"
     "explanations"
     "experiments"
