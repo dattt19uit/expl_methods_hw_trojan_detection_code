@@ -140,13 +140,30 @@ def create_classifier(random_state=42, scale_pos_weight=1.0):
         return FastBalancedForestFallback(n_estimators=60, max_depth=6, random_state=random_state)
 
 
-def load_dataset_from_dir(data_dir: Path, feature_cols=None):
-    """Load train.csv and test.csv, extracting specific feature columns."""
+from sklearn.model_selection import train_test_split
+
+
+def split_train_val_test(X, y, train_ratio=0.6, val_ratio=0.2, test_ratio=0.2, seed=42):
+    """
+    Stratified split into Train (60%), Validation (20%), and Test (20%).
+    Preserves exact positive (Trojan) ratio across all three splits.
+    """
+    test_and_val_ratio = val_ratio + test_ratio  # 0.40
+    X_train, X_temp, y_train, y_temp = train_test_split(
+        X, y, test_size=test_and_val_ratio, random_state=seed, stratify=y
+    )
+    val_relative_ratio = val_ratio / test_and_val_ratio  # 0.50
+    X_val, X_test, y_val, y_test = train_test_split(
+        X_temp, y_temp, test_size=(1.0 - val_relative_ratio), random_state=seed, stratify=y_temp
+    )
+    return X_train, y_train, X_val, y_val, X_test, y_test
+
+
+def load_full_dataset_from_dir(data_dir: Path, feature_cols=None):
+    """Load all.csv (or combine train.csv + test.csv) into unified X, y arrays."""
+    all_path = data_dir / 'all.csv'
     train_path = data_dir / 'train.csv'
     test_path = data_dir / 'test.csv'
-
-    if not train_path.exists() or not test_path.exists():
-        raise FileNotFoundError(f"Missing train.csv or test.csv in {data_dir}")
 
     def _read_csv(filepath):
         X, y = [], []
@@ -159,9 +176,14 @@ def load_dataset_from_dir(data_dir: Path, feature_cols=None):
                 y.append(label)
         return np.array(X, dtype=np.float32), np.array(y, dtype=np.int32)
 
-    X_train, y_train = _read_csv(train_path)
-    X_test, y_test = _read_csv(test_path)
-    return X_train, y_train, X_test, y_test
+    if all_path.exists():
+        return _read_csv(all_path)
+    elif train_path.exists() and test_path.exists():
+        X_tr, y_tr = _read_csv(train_path)
+        X_te, y_te = _read_csv(test_path)
+        return np.vstack([X_tr, X_te]), np.concatenate([y_tr, y_te])
+    else:
+        raise FileNotFoundError(f"Missing all.csv or train.csv/test.csv in {data_dir}")
 
 
 def load_full_circuit_data(circuits_dir: Path, feature_cols):
@@ -214,10 +236,11 @@ def compute_metrics(y_true, y_pred, y_prob=None):
     return res
 
 
-def run_experiment(X_train, y_train, X_test, y_test, exp_name, seed=42, verbose=False):
+def run_experiment(X_train, y_train, X_val, y_val, X_test, y_test, exp_name, seed=42, verbose=False):
     """
-    Train model and execute threshold optimization over 100 thresholds (tau in [0.01, 0.99])
-    strictly following Method 2 protocol.
+    Train model on Train set (60%).
+    Optimize decision threshold tau over 100 thresholds on Validation set (20%) to maximize F1.
+    Evaluate final unbiased metrics on Test set (20%) at both default tau=0.5 and optimal tau*.
     """
     n_neg = np.sum(y_train == 0)
     n_pos = np.sum(y_train == 1)
@@ -226,54 +249,76 @@ def run_experiment(X_train, y_train, X_test, y_test, exp_name, seed=42, verbose=
     clf = create_classifier(random_state=seed, scale_pos_weight=scale_pos_weight)
     clf.fit(X_train, y_train)
 
+    # 1. Predict probabilities on Validation set (20%)
     if hasattr(clf, 'predict_proba'):
-        prob_raw = clf.predict_proba(X_test)
-        y_prob = prob_raw[:, 1] if prob_raw.ndim == 2 else prob_raw
+        prob_raw_val = clf.predict_proba(X_val)
+        y_prob_val = prob_raw_val[:, 1] if prob_raw_val.ndim == 2 else prob_raw_val
     else:
-        y_prob = clf.predict_proba(X_test)
+        y_prob_val = clf.predict_proba(X_val)
 
-    # 1. Default Threshold (0.500)
-    y_pred_def = (y_prob >= 0.5).astype(int)
-    met_def = compute_metrics(y_test, y_pred_def, y_prob)
-    met_def['threshold'] = 0.5
-
-    # 2. Threshold Optimization: Grid Search over 100 thresholds
+    # 2. Threshold Optimization on Validation Set: Grid Search over 100 thresholds
     thresholds = np.linspace(0.01, 0.99, 100)
-    best_thresh, best_f1 = 0.5, 0.0
+    best_thresh, best_val_f1 = 0.5, 0.0
     for th in thresholds:
-        th_pred = (y_prob >= th).astype(int)
-        tp = np.sum((y_test == 1) & (th_pred == 1))
-        fp = np.sum((y_test == 0) & (th_pred == 1))
-        fn = np.sum((y_test == 1) & (th_pred == 0))
+        th_pred = (y_prob_val >= th).astype(int)
+        tp = np.sum((y_val == 1) & (th_pred == 1))
+        fp = np.sum((y_val == 0) & (th_pred == 1))
+        fn = np.sum((y_val == 1) & (th_pred == 0))
         prec = tp / (tp + fp) if (tp + fp) > 0 else 0
         rec = tp / (tp + fn) if (tp + fn) > 0 else 0
         th_f1 = 2 * prec * rec / (prec + rec) if (prec + rec) > 0 else 0
-        if th_f1 > best_f1:
-            best_f1 = th_f1
+        if th_f1 > best_val_f1:
+            best_val_f1 = th_f1
             best_thresh = th
 
-    y_pred_opt = (y_prob >= best_thresh).astype(int)
-    met_opt = compute_metrics(y_test, y_pred_opt, y_prob)
+    # Compute validation metrics at best threshold
+    y_val_pred_opt = (y_prob_val >= best_thresh).astype(int)
+    met_val_opt = compute_metrics(y_val, y_val_pred_opt, y_prob_val)
+    met_val_opt['threshold'] = float(best_thresh)
+
+    # 3. Predict probabilities on Test set (20%)
+    if hasattr(clf, 'predict_proba'):
+        prob_raw_test = clf.predict_proba(X_test)
+        y_prob_test = prob_raw_test[:, 1] if prob_raw_test.ndim == 2 else prob_raw_test
+    else:
+        y_prob_test = clf.predict_proba(X_test)
+
+    # 4. Evaluate on Test Set at default threshold (0.500)
+    y_pred_def = (y_prob_test >= 0.5).astype(int)
+    met_def = compute_metrics(y_test, y_pred_def, y_prob_test)
+    met_def['threshold'] = 0.5
+
+    # 5. Evaluate on Test Set at optimal threshold tau* (determined on Validation set)
+    y_pred_opt = (y_prob_test >= best_thresh).astype(int)
+    met_opt = compute_metrics(y_test, y_pred_opt, y_prob_test)
     met_opt['threshold'] = float(best_thresh)
+    met_opt['val_f1'] = float(best_val_f1)
 
     if verbose:
-        logger.info(f"[{exp_name}] Threshold Optimization: Default tau=0.500 (F1: {met_def['f1']:.4f}) -> Optimal tau*={best_thresh:.3f} (F1: {best_f1:.4f}, Prec: {met_opt['precision']:.2%}, Rec: {met_opt['recall']:.2%})")
+        logger.info(
+            f"[{exp_name}] Val Tuning: Optimal tau*={best_thresh:.3f} (Val F1: {best_val_f1:.4f}) -> "
+            f"Test F1 at tau*: {met_opt['f1']:.4f} (Prec: {met_opt['precision']:.2%}, Rec: {met_opt['recall']:.2%}, FP: {met_opt['fp']}) vs "
+            f"Test at tau=0.5 F1: {met_def['f1']:.4f} (FP: {met_def['fp']})"
+        )
 
     return {
         'exp_name': exp_name,
         'train_samples': int(len(y_train)),
         'train_trojans': int(np.sum(y_train)),
+        'val_samples': int(len(y_val)),
+        'val_trojans': int(np.sum(y_val)),
         'test_samples': int(len(y_test)),
         'test_trojans': int(np.sum(y_test)),
         'num_features': X_train.shape[1],
+        'validation_at_optimal': met_val_opt,
         'default_threshold': met_def,
         'optimal_threshold': met_opt,
-        'roc_auc': met_def.get('roc_auc', 0.0),
+        'roc_auc': met_opt.get('roc_auc', 0.0),
     }
 
 
 def run_10_repeated_evaluations(base_circuits_dir, gir_circuits_dir):
-    """Run 10 repeated independent random splits to calculate Mean +/- Std."""
+    """Run 10 repeated independent 60/20/20 stratified splits to calculate Mean +/- Std."""
     X_base_5, y_base = load_full_circuit_data(base_circuits_dir, BASE_5_FEATURES)
     X_base_13, _ = load_full_circuit_data(base_circuits_dir, ALL_13_FEATURES)
     X_gir_5, y_gir = load_full_circuit_data(gir_circuits_dir, BASE_5_FEATURES)
@@ -282,27 +327,23 @@ def run_10_repeated_evaluations(base_circuits_dir, gir_circuits_dir):
     results = {'Exp 1 (Base-5)': [], 'Exp 2 (Base-13)': [], 'Exp 3 (GIR-5)': [], 'Exp 4 (GIR-13)': []}
 
     for seed in SEEDS_10_RUNS:
-        rng = np.random.RandomState(seed)
-        
-        idx_b = np.arange(len(y_base))
-        rng.shuffle(idx_b)
-        sp_b = int(0.8 * len(y_base))
-        tr_b, te_b = idx_b[:sp_b], idx_b[sp_b:]
-        
-        idx_g = np.arange(len(y_gir))
-        rng.shuffle(idx_g)
-        sp_g = int(0.8 * len(y_gir))
-        tr_g, te_g = idx_g[:sp_g], idx_g[sp_g:]
-        
+        # Stratified 60/20/20 split for Baseline
+        X_tr_b5, y_tr_b, X_va_b5, y_va_b, X_te_b5, y_te_b = split_train_val_test(X_base_5, y_base, seed=seed)
+        X_tr_b13, _, X_va_b13, _, X_te_b13, _ = split_train_val_test(X_base_13, y_base, seed=seed)
+
+        # Stratified 60/20/20 split for Graph IR
+        X_tr_g5, y_tr_g, X_va_g5, y_va_g, X_te_g5, y_te_g = split_train_val_test(X_gir_5, y_gir, seed=seed)
+        X_tr_g13, _, X_va_g13, _, X_te_g13, _ = split_train_val_test(X_gir_13, y_gir, seed=seed)
+
         configs = [
-            ('Exp 1 (Base-5)', X_base_5[tr_b], y_base[tr_b], X_base_5[te_b], y_base[te_b]),
-            ('Exp 2 (Base-13)', X_base_13[tr_b], y_base[tr_b], X_base_13[te_b], y_base[te_b]),
-            ('Exp 3 (GIR-5)', X_gir_5[tr_g], y_gir[tr_g], X_gir_5[te_g], y_gir[te_g]),
-            ('Exp 4 (GIR-13)', X_gir_13[tr_g], y_gir[tr_g], X_gir_13[te_g], y_gir[te_g]),
+            ('Exp 1 (Base-5)', X_tr_b5, y_tr_b, X_va_b5, y_va_b, X_te_b5, y_te_b),
+            ('Exp 2 (Base-13)', X_tr_b13, y_tr_b, X_va_b13, y_va_b, X_te_b13, y_te_b),
+            ('Exp 3 (GIR-5)', X_tr_g5, y_tr_g, X_va_g5, y_va_g, X_te_g5, y_te_g),
+            ('Exp 4 (GIR-13)', X_tr_g13, y_tr_g, X_va_g13, y_va_g, X_te_g13, y_te_g),
         ]
-        
-        for name, Xtr, ytr, Xte, yte in configs:
-            res = run_experiment(Xtr, ytr, Xte, yte, name, seed=seed, verbose=False)
+
+        for name, Xtr, ytr, Xva, yva, Xte, yte in configs:
+            res = run_experiment(Xtr, ytr, Xva, yva, Xte, yte, name, seed=seed, verbose=False)
             results[name].append(res['optimal_threshold'])
 
     summary = {}
@@ -401,22 +442,28 @@ def main():
 
     logger.info("=" * 90)
     logger.info("4-WAY COMPREHENSIVE BENCHMARK: BASELINE vs GRAPH IR on 5 & 13 FEATURES")
+    logger.info("Protocol: Stratified 60% Train / 20% Val / 20% Test (Threshold Optimized on Val)")
     logger.info("=" * 90)
 
-    # 1. Single Seed Deterministic Benchmark with Threshold Optimization
-    logger.info("Running Single-Seed Benchmark with Threshold Optimization...")
-    X_tr_e1, y_tr_e1, X_te_e1, y_te_e1 = load_dataset_from_dir(base_data_dir, BASE_5_FEATURES)
-    X_tr_e2, y_tr_e2, X_te_e2, y_te_e2 = load_dataset_from_dir(base_data_dir, ALL_13_FEATURES)
-    X_tr_e3, y_tr_e3, X_te_e3, y_te_e3 = load_dataset_from_dir(gir_data_dir, BASE_5_FEATURES)
-    X_tr_e4, y_tr_e4, X_te_e4, y_te_e4 = load_dataset_from_dir(gir_data_dir, ALL_13_FEATURES)
+    # 1. Single Seed Deterministic Benchmark (Seed 42) with 60/20/20 Stratified Split
+    logger.info("Running Single-Seed Benchmark with 60/20/20 Stratified Split and Val-Tuned Threshold...")
+    X_base_5, y_base = load_full_dataset_from_dir(base_data_dir, BASE_5_FEATURES)
+    X_base_13, _ = load_full_dataset_from_dir(base_data_dir, ALL_13_FEATURES)
+    X_gir_5, y_gir = load_full_dataset_from_dir(gir_data_dir, BASE_5_FEATURES)
+    X_gir_13, _ = load_full_dataset_from_dir(gir_data_dir, ALL_13_FEATURES)
 
-    res_e1 = run_experiment(X_tr_e1, y_tr_e1, X_te_e1, y_te_e1, "Exp 1: Baseline (5 Hasegawa)", verbose=True)
-    res_e2 = run_experiment(X_tr_e2, y_tr_e2, X_te_e2, y_te_e2, "Exp 2: Baseline + Graph (13 Feats)", verbose=True)
-    res_e3 = run_experiment(X_tr_e3, y_tr_e3, X_te_e3, y_te_e3, "Exp 3: Graph IR (5 Hasegawa)", verbose=True)
-    res_e4 = run_experiment(X_tr_e4, y_tr_e4, X_te_e4, y_te_e4, "Exp 4: Graph IR + Graph (13 Feats)", verbose=True)
+    X_tr_e1, y_tr_e1, X_va_e1, y_va_e1, X_te_e1, y_te_e1 = split_train_val_test(X_base_5, y_base, seed=42)
+    X_tr_e2, y_tr_e2, X_va_e2, y_va_e2, X_te_e2, y_te_e2 = split_train_val_test(X_base_13, y_base, seed=42)
+    X_tr_e3, y_tr_e3, X_va_e3, y_va_e3, X_te_e3, y_te_e3 = split_train_val_test(X_gir_5, y_gir, seed=42)
+    X_tr_e4, y_tr_e4, X_va_e4, y_va_e4, X_te_e4, y_te_e4 = split_train_val_test(X_gir_13, y_gir, seed=42)
+
+    res_e1 = run_experiment(X_tr_e1, y_tr_e1, X_va_e1, y_va_e1, X_te_e1, y_te_e1, "Exp 1: Baseline (5 Hasegawa)", verbose=True)
+    res_e2 = run_experiment(X_tr_e2, y_tr_e2, X_va_e2, y_va_e2, X_te_e2, y_te_e2, "Exp 2: Baseline + Graph (13 Feats)", verbose=True)
+    res_e3 = run_experiment(X_tr_e3, y_tr_e3, X_va_e3, y_va_e3, X_te_e3, y_te_e3, "Exp 3: Graph IR (5 Hasegawa)", verbose=True)
+    res_e4 = run_experiment(X_tr_e4, y_tr_e4, X_va_e4, y_va_e4, X_te_e4, y_te_e4, "Exp 4: Graph IR + Graph (13 Feats)", verbose=True)
 
     # 2. 10-Fold Repeated Multi-Seed Statistical Validation
-    logger.info("Running 10 Repeated Multi-Seed Runs with Threshold Optimization for Statistical Validation...")
+    logger.info("Running 10 Repeated Multi-Seed Runs with 60/20/20 Stratified Split for Statistical Validation...")
     stat_10_runs = run_10_repeated_evaluations(base_circuits_dir, gir_circuits_dir)
 
     # 3. LOFO Cross-Validation
@@ -428,22 +475,26 @@ def main():
 
     # 4. Print Comparative Tables
     print("\n" + "=" * 105)
-    print("                    4-WAY BENCHMARK EVALUATION TABLE (SINGLE SEED 42)")
+    print("      4-WAY BENCHMARK EVALUATION TABLE (60/20/20 SPLIT - TEST RESULTS AT VAL-TUNED TAU*)")
     print("=" * 105)
     header_str = f"{'Metric':<25} | {'Exp 1 (Base-5)':<17} | {'Exp 2 (Base-13)':<17} | {'Exp 3 (GIR-5)':<17} | {'Exp 4 (GIR-13)':<17}"
     print(header_str)
     print("-" * 105)
-    print(f"{'Optimal Threshold (tau*)':<25} | {res_e1['optimal_threshold']['threshold']:>17.3f} | {res_e2['optimal_threshold']['threshold']:>17.3f} | {res_e3['optimal_threshold']['threshold']:>17.3f} | {res_e4['optimal_threshold']['threshold']:>17.3f}")
-    print(f"{'Precision (at tau*)':<25} | {res_e1['optimal_threshold']['precision']*100:>16.2f}% | {res_e2['optimal_threshold']['precision']*100:>16.2f}% | {res_e3['optimal_threshold']['precision']*100:>16.2f}% | {res_e4['optimal_threshold']['precision']*100:>16.2f}%")
-    print(f"{'Recall (at tau*)':<25} | {res_e1['optimal_threshold']['recall']*100:>16.2f}% | {res_e2['optimal_threshold']['recall']*100:>16.2f}% | {res_e3['optimal_threshold']['recall']*100:>16.2f}% | {res_e4['optimal_threshold']['recall']*100:>16.2f}%")
-    print(f"{'F1-Score (at tau*)':<25} | {res_e1['optimal_threshold']['f1']:>17.4f} | {res_e2['optimal_threshold']['f1']:>17.4f} | {res_e3['optimal_threshold']['f1']:>17.4f} | {res_e4['optimal_threshold']['f1']:>17.4f}")
-    print(f"{'MCC (at tau*)':<25} | {res_e1['optimal_threshold']['mcc']:>17.4f} | {res_e2['optimal_threshold']['mcc']:>17.4f} | {res_e3['optimal_threshold']['mcc']:>17.4f} | {res_e4['optimal_threshold']['mcc']:>17.4f}")
-    print(f"{'False Positives (FP)':<25} | {res_e1['optimal_threshold']['fp']:>17} | {res_e2['optimal_threshold']['fp']:>17} | {res_e3['optimal_threshold']['fp']:>17} | {res_e4['optimal_threshold']['fp']:>17}")
-    print(f"{'ROC-AUC':<25} | {res_e1['roc_auc']:>17.4f} | {res_e2['roc_auc']:>17.4f} | {res_e3['roc_auc']:>17.4f} | {res_e4['roc_auc']:>17.4f}")
+    print(f"{'Split (Train / Val / Test)':<25} | {res_e1['train_samples']}/{res_e1['val_samples']}/{res_e1['test_samples']} | {res_e2['train_samples']}/{res_e2['val_samples']}/{res_e2['test_samples']} | {res_e3['train_samples']}/{res_e3['val_samples']}/{res_e3['test_samples']} | {res_e4['train_samples']}/{res_e4['val_samples']}/{res_e4['test_samples']}")
+    print(f"{'Val Optimal Tau*':<25} | {res_e1['optimal_threshold']['threshold']:>17.3f} | {res_e2['optimal_threshold']['threshold']:>17.3f} | {res_e3['optimal_threshold']['threshold']:>17.3f} | {res_e4['optimal_threshold']['threshold']:>17.3f}")
+    print(f"{'Val F1 (at tau*)':<25} | {res_e1['optimal_threshold']['val_f1']:>17.4f} | {res_e2['optimal_threshold']['val_f1']:>17.4f} | {res_e3['optimal_threshold']['val_f1']:>17.4f} | {res_e4['optimal_threshold']['val_f1']:>17.4f}")
+    print("-" * 105)
+    print(f"{'Test Precision (at tau*)':<25} | {res_e1['optimal_threshold']['precision']*100:>16.2f}% | {res_e2['optimal_threshold']['precision']*100:>16.2f}% | {res_e3['optimal_threshold']['precision']*100:>16.2f}% | {res_e4['optimal_threshold']['precision']*100:>16.2f}%")
+    print(f"{'Test Recall (at tau*)':<25} | {res_e1['optimal_threshold']['recall']*100:>16.2f}% | {res_e2['optimal_threshold']['recall']*100:>16.2f}% | {res_e3['optimal_threshold']['recall']*100:>16.2f}% | {res_e4['optimal_threshold']['recall']*100:>16.2f}%")
+    print(f"{'Test F1-Score (at tau*)':<25} | {res_e1['optimal_threshold']['f1']:>17.4f} | {res_e2['optimal_threshold']['f1']:>17.4f} | {res_e3['optimal_threshold']['f1']:>17.4f} | {res_e4['optimal_threshold']['f1']:>17.4f}")
+    print(f"{'Test MCC (at tau*)':<25} | {res_e1['optimal_threshold']['mcc']:>17.4f} | {res_e2['optimal_threshold']['mcc']:>17.4f} | {res_e3['optimal_threshold']['mcc']:>17.4f} | {res_e4['optimal_threshold']['mcc']:>17.4f}")
+    print(f"{'Test False Positives (FP)':<25} | {res_e1['optimal_threshold']['fp']:>17} | {res_e2['optimal_threshold']['fp']:>17} | {res_e3['optimal_threshold']['fp']:>17} | {res_e4['optimal_threshold']['fp']:>17}")
+    print(f"{'Test F1 (at tau=0.5)':<25} | {res_e1['default_threshold']['f1']:>17.4f} | {res_e2['default_threshold']['f1']:>17.4f} | {res_e3['default_threshold']['f1']:>17.4f} | {res_e4['default_threshold']['f1']:>17.4f}")
+    print(f"{'Test ROC-AUC':<25} | {res_e1['roc_auc']:>17.4f} | {res_e2['roc_auc']:>17.4f} | {res_e3['roc_auc']:>17.4f} | {res_e4['roc_auc']:>17.4f}")
     print("=" * 105)
 
     print("\n" + "=" * 105)
-    print("      STATISTICAL SIGNIFICANCE BENCHMARK: 10 REPEATED MULTI-SEED RUNS (MEAN +/- STD)")
+    print("      STATISTICAL SIGNIFICANCE BENCHMARK: 10 REPEATED MULTI-SEED RUNS (60/20/20 MEAN +/- STD)")
     print("=" * 105)
     print(header_str)
     print("-" * 105)
@@ -484,3 +535,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
