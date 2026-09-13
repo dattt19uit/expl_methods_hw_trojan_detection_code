@@ -536,8 +536,12 @@ def write_metrics(c, trojans, filename):
     out_degrees = dict(GC.out_degree())
 
     G_undir = GC.to_undirected()
+    G_undir.remove_edges_from(nx.selfloop_edges(G_undir))
     clustering_coeffs = nx.clustering(G_undir)
-    core_numbers = nx.core_number(G_undir)
+    try:
+        core_numbers = nx.core_number(G_undir)
+    except Exception:
+        core_numbers = {n: 0 for n in G_undir}
 
     n_nodes = len(GC)
     k_samples = min(n_nodes, 150) if n_nodes > 500 else None
@@ -557,7 +561,7 @@ def write_metrics(c, trojans, filename):
     # Phase 4: File setup
     phase_start = time.perf_counter()
     fp = open(filename, "w") 
-    fp.write("Line,type,name,net,LGFi,ffi,ffo,PI,PO,Trojan\n")
+    fp.write("Line,type,name,net,LGFi,ffi,ffo,PI,PO,in_degree,out_degree,pagerank,betweenness,closeness,clustering,core_number,logic_depth_ratio,Trojan\n")
     timing_breakdown['4_file_setup'] = time.perf_counter() - phase_start
     
     # Phase 5: Main metric calculation loop
@@ -615,6 +619,19 @@ def write_metrics(c, trojans, filename):
             nPI = 0
             ffi = 0
 
+        # Scale-invariant Logic Depth Ratio
+        finite_pi = nPI if nPI < 99999 else 0
+        finite_po = nPO if nPO < 99999 else 0
+        depth_ratio = finite_pi / (finite_pi + finite_po + 1e-5)
+
+        in_deg = in_degrees.get(net, 0)
+        out_deg = out_degrees.get(net, 0)
+        pr = pr_scores.get(net, 0.0)
+        btw = betweenness_scores.get(net, 0.0)
+        cls_cent = closeness_scores.get(net, 0.0)
+        clust = clustering_coeffs.get(net, 0.0)
+        k_core = core_numbers.get(net, 0)
+
         ctype = 'PI' if net in PI else 'PO' if net in PO else 'ff' if net in FF else 'nn'
         S = net.split('.', 1)
         U = S[0] if len(S)>=1 else ''
@@ -623,7 +640,7 @@ def write_metrics(c, trojans, filename):
 
         # Timing: file write
         t0 = time.perf_counter()
-        fp.write(f"{Line:07},{ctype},{cname},{net},{LGFi},{ffi},{ffo},{nPI},{nPO},{Trojan}\n")
+        fp.write(f"{Line:07},{ctype},{cname},{net},{LGFi},{ffi},{ffo},{nPI},{nPO},{in_deg},{out_deg},{pr:.6f},{btw:.6f},{cls_cent:.6f},{clust:.6f},{k_core},{depth_ratio:.6f},{Trojan}\n")
         write_time += time.perf_counter() - t0
     
     timing_breakdown['5_loop_total'] = time.perf_counter() - loop_start

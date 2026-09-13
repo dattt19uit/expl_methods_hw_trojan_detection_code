@@ -315,22 +315,25 @@ class _VerilogCircuitGraphTransformer(Transformer):
             }
         )
 
-        with open(self.csv_output_dir / "nodes.csv", "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["node", *node_attributes])
-            for node in sorted(raw_nodes):
-                attributes = raw_nodes[node]
-                writer.writerow([str(node), *(attributes.get(attribute, "") for attribute in node_attributes)])
+        nodes_csv = self.csv_output_dir / "nodes.csv"
+        edges_csv = self.csv_output_dir / "edges.csv"
+        if not (nodes_csv.exists() and edges_csv.exists()):
+            with open(nodes_csv, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(["node", *node_attributes])
+                for node in sorted(raw_nodes):
+                    attributes = raw_nodes[node]
+                    writer.writerow([str(node), *(attributes.get(attribute, "") for attribute in node_attributes)])
 
-        with open(self.csv_output_dir / "edges.csv", "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["source", "target", *edge_attributes])
-            for source, target, attributes in sorted(
-                raw_edges, key=lambda edge: (edge[0], edge[1], edge[2].get("port", ""))
-            ):
-                writer.writerow(
-                    [str(source), str(target), *(attributes.get(attribute, "") for attribute in edge_attributes)]
-                )
+            with open(edges_csv, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(["source", "target", *edge_attributes])
+                for source, target, attributes in sorted(
+                    raw_edges, key=lambda edge: (edge[0], edge[1], edge[2].get("port", ""))
+                ):
+                    writer.writerow(
+                        [str(source), str(target), *(attributes.get(attribute, "") for attribute in edge_attributes)]
+                    )
 
     # 1. Source text
     def start(self, description):

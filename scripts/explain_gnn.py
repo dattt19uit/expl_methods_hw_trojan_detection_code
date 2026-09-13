@@ -179,7 +179,7 @@ def run_graph_xai_benchmark(
     converter = CircuitPyGConverter()
 
     model = HeteroTrojanGNN(hidden_dim=64, num_layers=2)
-    ckpt = torch.load(model_path, map_location='cpu')
+    ckpt = torch.load(model_path, map_location='cpu', weights_only=False)
     model.load_state_dict(ckpt['model_state_dict'])
     model.eval()
 

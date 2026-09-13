@@ -219,6 +219,14 @@ def process_circuit(config, output_dir='.', skip_graph=False):
         output_path.mkdir(parents=True, exist_ok=True)
         
         base_name = f'{part}-{impl}_{tech}'
+        csv_output = output_path / f'{base_name}.csv'
+        if csv_output.exists():
+            with open(csv_output, 'r', encoding='utf-8') as f:
+                header_line = f.readline()
+                if 'in_degree' in header_line:
+                    logger.info(f'[OK] {base_name} already processed with 13 features. Skipping...')
+                    return True
+
         logger.info(f'Processing -- part: {part}, impl: {impl}, tech: {tech}')
         
         # Map tech to netlistx-compatible library name
@@ -325,7 +333,12 @@ def process_circuit(config, output_dir='.', skip_graph=False):
         # Sum only numeric timing values (exclude dict breakdowns)
         total_time = sum(v for v in timing.values() if isinstance(v, (int, float)))
         logger.info(f'[OK] {base_name} complete - CSV saved to {csv_output}')
-        logger.info(f'  Parsed graph CSVs: {graph_csv_output / "nodes.csv"}, {graph_csv_output / "edges.csv"}')
+        nodes_csv = graph_csv_output / "nodes.csv"
+        edges_csv = graph_csv_output / "edges.csv"
+        if nodes_csv.exists() and edges_csv.exists():
+            logger.info(f'  Graph CSVs reused (skipped recreation): {nodes_csv}')
+        else:
+            logger.info(f'  Parsed graph CSVs: {nodes_csv}, {edges_csv}')
         logger.info(f'  Timing: Parse={timing.get("parse", 0):.2f}s, Merge={timing["merge_cells"]:.2f}s, Metrics={timing["extract_metrics"]:.2f}s, Total={total_time:.2f}s')
         return True
         

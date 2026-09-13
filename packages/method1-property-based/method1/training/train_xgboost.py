@@ -340,7 +340,8 @@ def train_models(data_folder, output_folder, jobs=None, no_parallel=False):
     # ========================================================================
     logger.info("Generating feature combinations...")
     
-    n_features = len(train_data[0])
+    # Method 1 is specifically defined on the 5 Hasegawa properties (2^5 - 1 = 31 models)
+    n_features = min(5, len(train_data[0]))
     columns = list(range(n_features))
     
     properties = []
