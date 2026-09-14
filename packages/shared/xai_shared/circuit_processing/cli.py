@@ -25,6 +25,7 @@ def main():
     parser.add_argument('--config', default='circuit_configs.json')
     parser.add_argument('--batch', action='store_true')
     parser.add_argument('--output-dir', default='data/circuits/')
+    parser.add_argument('--output-dir-13', default=None, help='Optional output directory for 13 baseline features')
     parser.add_argument('--skip-graph', action='store_true')
     parser.add_argument('--log-dir', default='logs')
     parser.add_argument('--verbose', '-v', action='store_true')
@@ -33,14 +34,14 @@ def main():
     args = parser.parse_args()
     
     logger = setup_logging(args.log_dir, args.verbose)
-    logger.info(f"Config: {args.config}, Output: {args.output_dir}")
+    logger.info(f"Config: {args.config}, Output: {args.output_dir}, Output-13: {args.output_dir_13}")
     
     try:
         configs = load_config(args.config)
         
         if args.batch:
             num_processes = None if (args.num_processes is None or args.num_processes == 0) else args.num_processes
-            process_batch(configs, args.output_dir, args.skip_graph, parallel=True, num_processes=num_processes)
+            process_batch(configs, args.output_dir, args.skip_graph, parallel=True, num_processes=num_processes, output_dir_13=args.output_dir_13)
         else:
             if not args.circuit:
                 logger.error("Specify a circuit name or use --batch")
@@ -48,7 +49,7 @@ def main():
             if args.circuit not in configs:
                 logger.error(f"Circuit '{args.circuit}' not found")
                 return 1
-            success = process_circuit(configs[args.circuit], args.output_dir, args.skip_graph)
+            success = process_circuit(configs[args.circuit], args.output_dir, args.skip_graph, output_dir_13=args.output_dir_13)
             return 0 if success else 1
     except Exception as e:
         logger.error(f"Error: {e}")

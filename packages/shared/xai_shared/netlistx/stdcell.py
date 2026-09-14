@@ -15,6 +15,8 @@ import circuitgraph as cg
 import sys
 import os
 import time
+from collections import deque
+from pathlib import Path
 
 import networkx as nx
 import pylab as plt        # not used
@@ -475,11 +477,31 @@ def metric_paths(G, start, end, cache=None): # must not have cycle!
     cache[cache_key] = s
     return s
 
+def _find_nearest_ff_upstream_bfs(gr, start_node, ff_set):
+    """Find shortest path distance in GR (upstream in GC) from start_node to any other flip-flop node.
+    Terminates early as soon as the nearest FF node is found.
+    """
+    queue = deque([start_node])
+    visited = {start_node}
+    dist = 0
+    while queue:
+        dist += 1
+        for _ in range(len(queue)):
+            curr = queue.popleft()
+            for nbr in gr.successors(curr):
+                if nbr not in visited:
+                    if nbr in ff_set:
+                        return dist
+                    visited.add(nbr)
+                    queue.append(nbr)
+    return 99999
+
+
 # merge_cells(list_cell_names())
 # remove_cells(['not'])
 #
 # Đoạn này tính 5 chỉ số Hasegawa từ Baseline
-def write_metrics(c, trojans, filename):
+def write_metrics(c, trojans, filename, output_13_file=None):
     start_time = time.perf_counter()
     timing_breakdown = {}
     
@@ -515,53 +537,64 @@ def write_metrics(c, trojans, filename):
     GR = nx.DiGraph.reverse(c.graph)
     timing_breakdown['2_graph_reverse'] = time.perf_counter() - phase_start
     
-    # Phase 3: Pre-compute all shortest path lengths (OPTIMIZATION: O(V^2 log V) once vs O(N*V*E) repeated searches)
+    # Phase 3: Pre-compute shortest path lengths efficiently using multi-source Dijkstra
     phase_start = time.perf_counter()
-    # Phase 3: Pre-compute graph metrics on baseline graph (c.graph)
-    phase_start = time.perf_counter()
-    print(f"\nPre-computing shortest paths and graph metrics...")
+    print(f"\nPre-computing shortest paths...")
     print(f"  Graph nodes: {len(GR.nodes)}, edges: {len(GR.edges)}")
     
-    # Compute all-pairs shortest path lengths
-    all_lengths_GR = dict(nx.all_pairs_dijkstra_path_length(GR, weight=None))
-    all_lengths_GC = dict(nx.all_pairs_dijkstra_path_length(GC, weight=None))
+    # Compute multi-source shortest path lengths in O(V + E) time and O(V) space (< 1 MB RAM),
+    # replacing previous O(V^2) all-pairs Dijkstra that caused memory explosion and OOM kills.
+    dist_to_PI = dict(nx.multi_source_dijkstra_path_length(GC, PI)) if PI else {}
+    dist_to_PO = dict(nx.multi_source_dijkstra_path_length(GR, PO)) if PO else {}
+    dist_to_FF_in = dict(nx.multi_source_dijkstra_path_length(GC, FF)) if FF else {}
+    dist_to_FF_out = dict(nx.multi_source_dijkstra_path_length(GR, FF)) if FF else {}
+    FF_set = set(FF)
 
-    # Compute advanced graph features on baseline graph
-    try:
-        pr_scores = nx.pagerank(GC, alpha=0.85, max_iter=200, tol=1e-6)
-    except Exception:
-        pr_scores = {n: 1.0 / max(1, len(GC)) for n in GC}
+    compute_13 = (output_13_file is not None)
+    if compute_13:
+        print("  Pre-computing 8 advanced graph metrics for baseline 13 features...")
+        try:
+            pr_scores = nx.pagerank(GC, alpha=0.85, max_iter=200, tol=1e-6)
+        except Exception:
+            pr_scores = {n: 1.0 / max(1, len(GC)) for n in GC}
 
-    in_degrees = dict(GC.in_degree())
-    out_degrees = dict(GC.out_degree())
+        in_degrees = dict(GC.in_degree())
+        out_degrees = dict(GC.out_degree())
 
-    G_undir = GC.to_undirected()
-    G_undir.remove_edges_from(nx.selfloop_edges(G_undir))
-    clustering_coeffs = nx.clustering(G_undir)
-    try:
-        core_numbers = nx.core_number(G_undir)
-    except Exception:
-        core_numbers = {n: 0 for n in G_undir}
+        G_undir = GC.to_undirected()
+        G_undir.remove_edges_from(nx.selfloop_edges(G_undir))
+        clustering_coeffs = nx.clustering(G_undir)
+        try:
+            core_numbers = nx.core_number(G_undir)
+        except Exception:
+            core_numbers = {n: 0 for n in G_undir}
 
-    n_nodes = len(GC)
-    k_samples = min(n_nodes, 150) if n_nodes > 500 else None
-    try:
-        betweenness_scores = nx.betweenness_centrality(GC, k=k_samples, normalized=True)
-    except Exception:
-        betweenness_scores = {n: 0.0 for n in GC}
+        n_nodes = len(GC)
+        k_samples = min(n_nodes, 150) if n_nodes > 500 else None
+        try:
+            betweenness_scores = nx.betweenness_centrality(GC, k=k_samples, normalized=True)
+        except Exception:
+            betweenness_scores = {n: 0.0 for n in GC}
 
-    try:
-        closeness_scores = nx.closeness_centrality(GC)
-    except Exception:
-        closeness_scores = {n: 0.0 for n in GC}
-    
+        try:
+            closeness_scores = nx.closeness_centrality(GC)
+        except Exception:
+            closeness_scores = {n: 0.0 for n in GC}
+
     print(f"  Pre-computation complete in {time.perf_counter() - phase_start:.3f}s")
     timing_breakdown['3_precompute_paths'] = time.perf_counter() - phase_start
     
     # Phase 4: File setup
     phase_start = time.perf_counter()
+    Path(filename).parent.mkdir(parents=True, exist_ok=True)
     fp = open(filename, "w") 
-    fp.write("Line,type,name,net,LGFi,ffi,ffo,PI,PO,in_degree,out_degree,pagerank,betweenness,closeness,clustering,core_number,logic_depth_ratio,Trojan\n")
+    fp.write("Line,type,name,net,LGFi,ffi,ffo,PI,PO,Trojan\n")
+
+    fp13 = None
+    if compute_13:
+        Path(output_13_file).parent.mkdir(parents=True, exist_ok=True)
+        fp13 = open(output_13_file, "w")
+        fp13.write("Line,type,name,net,LGFi,ffi,ffo,PI,PO,in_degree,out_degree,pagerank,betweenness,closeness,clustering,core_number,logic_depth_ratio,Trojan\n")
     timing_breakdown['4_file_setup'] = time.perf_counter() - phase_start
     
     # Phase 5: Main metric calculation loop
@@ -586,21 +619,17 @@ def write_metrics(c, trojans, filename):
         # Timing: path lookups
         t0 = time.perf_counter()
         
-        distances_from_net_GR = all_lengths_GR.get(net, {})
-        distances_from_net_GC = all_lengths_GC.get(net, {})
-        
         # Find shortest distance to flip-flops (ffi and ffo)
-        if net in FF:
-            F = [f for f in FF if f != net]
-            ffi_dist = min([distances_from_net_GR.get(f, 99999) for f in F if f in distances_from_net_GR], default=99999)
+        if net in FF_set:
+            ffi_dist = _find_nearest_ff_upstream_bfs(GR, net, FF_set)
         else:
-            ffi_dist = min([distances_from_net_GR.get(f, 99999) for f in FF if f in distances_from_net_GR], default=99999)
+            ffi_dist = dist_to_FF_in.get(net, 99999)
         
-        ffo_dist = min([distances_from_net_GC.get(f, 99999) for f in FF if f in distances_from_net_GC], default=99999)
+        ffo_dist = dist_to_FF_out.get(net, 99999)
         
         # Find shortest distance to primary inputs/outputs
-        nPI_dist = min([distances_from_net_GR.get(p, 99999) for p in PI if p in distances_from_net_GR], default=99999)
-        nPO_dist = min([distances_from_net_GC.get(p, 99999) for p in PO if p in distances_from_net_GC], default=99999)
+        nPI_dist = dist_to_PI.get(net, 99999)
+        nPO_dist = dist_to_PO.get(net, 99999)
         
         path_lookup_time += time.perf_counter() - t0
         
@@ -619,19 +648,6 @@ def write_metrics(c, trojans, filename):
             nPI = 0
             ffi = 0
 
-        # Scale-invariant Logic Depth Ratio
-        finite_pi = nPI if nPI < 99999 else 0
-        finite_po = nPO if nPO < 99999 else 0
-        depth_ratio = finite_pi / (finite_pi + finite_po + 1e-5)
-
-        in_deg = in_degrees.get(net, 0)
-        out_deg = out_degrees.get(net, 0)
-        pr = pr_scores.get(net, 0.0)
-        btw = betweenness_scores.get(net, 0.0)
-        cls_cent = closeness_scores.get(net, 0.0)
-        clust = clustering_coeffs.get(net, 0.0)
-        k_core = core_numbers.get(net, 0)
-
         ctype = 'PI' if net in PI else 'PO' if net in PO else 'ff' if net in FF else 'nn'
         S = net.split('.', 1)
         U = S[0] if len(S)>=1 else ''
@@ -640,7 +656,21 @@ def write_metrics(c, trojans, filename):
 
         # Timing: file write
         t0 = time.perf_counter()
-        fp.write(f"{Line:07},{ctype},{cname},{net},{LGFi},{ffi},{ffo},{nPI},{nPO},{in_deg},{out_deg},{pr:.6f},{btw:.6f},{cls_cent:.6f},{clust:.6f},{k_core},{depth_ratio:.6f},{Trojan}\n")
+        fp.write(f"{Line:07},{ctype},{cname},{net},{LGFi},{ffi},{ffo},{nPI},{nPO},{Trojan}\n")
+        
+        if fp13:
+            finite_pi = nPI if nPI < 99999 else 0
+            finite_po = nPO if nPO < 99999 else 0
+            depth_ratio = finite_pi / (finite_pi + finite_po + 1e-5)
+            in_deg = in_degrees.get(net, 0)
+            out_deg = out_degrees.get(net, 0)
+            pr = pr_scores.get(net, 0.0)
+            btw = betweenness_scores.get(net, 0.0)
+            cls_cent = closeness_scores.get(net, 0.0)
+            clust = clustering_coeffs.get(net, 0.0)
+            k_core = core_numbers.get(net, 0)
+            fp13.write(f"{Line:07},{ctype},{cname},{net},{LGFi},{ffi},{ffo},{nPI},{nPO},{in_deg},{out_deg},{pr:.6f},{btw:.6f},{cls_cent:.6f},{clust:.6f},{k_core},{depth_ratio:.6f},{Trojan}\n")
+
         write_time += time.perf_counter() - t0
     
     timing_breakdown['5_loop_total'] = time.perf_counter() - loop_start
@@ -649,6 +679,8 @@ def write_metrics(c, trojans, filename):
     timing_breakdown['5c_file_writes'] = write_time
     
     fp.close()
+    if fp13:
+        fp13.close()
     
     # Phase 6: Report timing
     total_time = time.perf_counter() - start_time

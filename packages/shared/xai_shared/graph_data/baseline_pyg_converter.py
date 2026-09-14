@@ -36,14 +36,17 @@ class BaselinePyGConverter:
 
     def __init__(
         self,
-        circuits_csv_dir: Union[str, Path] = 'data/circuits',
+        circuits_csv_dir: Union[str, Path] = 'data/circuits_baseline_13',
         circuit_configs_path: Union[str, Path] = 'configs/circuit_configs.json',
         cache_dir: Union[str, Path] = 'data/circuits/baseline_pyg',
         edges_dir: Union[str, Path] = 'data/circuits/baseline_graphs',
         feature_cols: Optional[List[str]] = None,
         bidirectional: bool = True,
     ):
-        self.circuits_csv_dir = Path(circuits_csv_dir)
+        circuits_dir_p = Path(circuits_csv_dir)
+        if not circuits_dir_p.exists() and Path('data/circuits').exists():
+            circuits_dir_p = Path('data/circuits')
+        self.circuits_csv_dir = circuits_dir_p
         self.circuit_configs_path = Path(circuit_configs_path)
         self.cache_dir = Path(cache_dir)
         self.edges_dir = Path(edges_dir)

@@ -101,11 +101,8 @@ Examples:
     # Load model (auto-detect SVM or XGBoost)
     model, scaler, feature_columns, model_type = load_model(args.model)
     
-    # Verify feature names match
-    if feature_columns != FEATURE_NAMES:
-        print(f"WARNING: Feature mismatch!")
-        print(f"  Expected: {FEATURE_NAMES}")
-        print(f"  Model has: {feature_columns}")
+    # Model feature info
+    print(f"  Model features ({len(feature_columns)}): {feature_columns}")
     
     # Load data
     print()
@@ -191,7 +188,7 @@ Examples:
     # Create LIME explainer (use unscaled training data)
     explainer = LimeTabularExplainer(
         training_data=X_train,
-        feature_names=FEATURE_NAMES,
+        feature_names=feature_columns,
         class_names=['Clean', 'Trojan'],
         mode='classification',
         discretize_continuous=True
@@ -235,7 +232,7 @@ Examples:
         result = {
             'sample_index': int(idx),
             'original_test_index': int(selected_indices[idx]),  # Map back to full test set
-            'features': {feat: float(val) for feat, val in zip(FEATURE_NAMES, sample)},
+            'features': {feat: float(val) for feat, val in zip(feature_columns, sample)},
             'prediction': {
                 'class': int(pred_class),
                 'confidence': float(pred_proba[pred_class]),
@@ -255,16 +252,15 @@ Examples:
         """Extract base feature name from LIME's discretized strings.
         
         LIME produces strings like '2.00 < PO <= 4.00', 'ffo <= 0.00',
-        'PO > 6.00'. The split()[0] approach fails when the string starts
-        with a threshold number. Instead, match against known feature names.
+        'PO > 6.00'. Match against known feature names sorted by length descending.
         """
-        for name in FEATURE_NAMES:
+        for name in sorted(feature_columns, key=len, reverse=True):
             if name in lime_str:
                 return name
         return lime_str  # fallback for unknown features
     
     # Count most important features
-    feature_importance_counts = {f: 0 for f in FEATURE_NAMES}
+    feature_importance_counts = {f: 0 for f in feature_columns}
     for result in results:
         top_feature_str = result['lime_ranking'][0]['feature']
         base_feature = extract_base_feature(top_feature_str)
@@ -272,7 +268,7 @@ Examples:
             feature_importance_counts[base_feature] += 1
     
     # Compute average absolute weights
-    avg_abs_weights = {f: [] for f in FEATURE_NAMES}
+    avg_abs_weights = {f: [] for f in feature_columns}
     for result in results:
         for item in result['lime_ranking']:
             feature_str = item['feature']
@@ -302,7 +298,7 @@ Examples:
         'explanations': results,
         'summary': {
             'num_samples': len(results),
-            'feature_names': FEATURE_NAMES,
+            'feature_names': feature_columns,
             'num_perturbations': args.num_samples,
             'top_feature_frequency': feature_importance_counts,
             'avg_feature_weights': avg_weights_summary,

@@ -317,10 +317,12 @@ def run_experiment(X_train, y_train, X_val, y_val, X_test, y_test, exp_name, see
     }
 
 
-def run_10_repeated_evaluations(base_circuits_dir, gir_circuits_dir):
+def run_10_repeated_evaluations(base_circuits_dir, gir_circuits_dir, base_13_circuits_dir=None):
     """Run 10 repeated independent 60/20/20 stratified splits to calculate Mean +/- Std."""
+    if base_13_circuits_dir is None or not Path(base_13_circuits_dir).exists():
+        base_13_circuits_dir = base_circuits_dir
     X_base_5, y_base = load_full_circuit_data(base_circuits_dir, BASE_5_FEATURES)
-    X_base_13, _ = load_full_circuit_data(base_circuits_dir, ALL_13_FEATURES)
+    X_base_13, _ = load_full_circuit_data(base_13_circuits_dir, ALL_13_FEATURES)
     X_gir_5, y_gir = load_full_circuit_data(gir_circuits_dir, BASE_5_FEATURES)
     X_gir_13, _ = load_full_circuit_data(gir_circuits_dir, ALL_13_FEATURES)
 
@@ -434,8 +436,10 @@ def run_lofo_evaluation(circuits_dir: Path, feature_cols):
 
 def main():
     base_data_dir = Path('data/processed')
+    base_13_data_dir = Path('data/processed_baseline_13') if Path('data/processed_baseline_13').exists() else base_data_dir
     gir_data_dir = Path('data/processed_graph_ir')
     base_circuits_dir = Path('data/circuits')
+    base_13_circuits_dir = Path('data/circuits_baseline_13') if Path('data/circuits_baseline_13').exists() else base_circuits_dir
     gir_circuits_dir = Path('data/circuits_graph_ir')
     output_report = Path('data/models/comparison_4_experiments.json')
     output_report.parent.mkdir(parents=True, exist_ok=True)
@@ -448,7 +452,7 @@ def main():
     # 1. Single Seed Deterministic Benchmark (Seed 42) with 60/20/20 Stratified Split
     logger.info("Running Single-Seed Benchmark with 60/20/20 Stratified Split and Val-Tuned Threshold...")
     X_base_5, y_base = load_full_dataset_from_dir(base_data_dir, BASE_5_FEATURES)
-    X_base_13, _ = load_full_dataset_from_dir(base_data_dir, ALL_13_FEATURES)
+    X_base_13, _ = load_full_dataset_from_dir(base_13_data_dir, ALL_13_FEATURES)
     X_gir_5, y_gir = load_full_dataset_from_dir(gir_data_dir, BASE_5_FEATURES)
     X_gir_13, _ = load_full_dataset_from_dir(gir_data_dir, ALL_13_FEATURES)
 
@@ -464,12 +468,12 @@ def main():
 
     # 2. 10-Fold Repeated Multi-Seed Statistical Validation
     logger.info("Running 10 Repeated Multi-Seed Runs with 60/20/20 Stratified Split for Statistical Validation...")
-    stat_10_runs = run_10_repeated_evaluations(base_circuits_dir, gir_circuits_dir)
+    stat_10_runs = run_10_repeated_evaluations(base_circuits_dir, gir_circuits_dir, base_13_circuits_dir=base_13_circuits_dir)
 
     # 3. LOFO Cross-Validation
     logger.info("Running LOFO Cross-Validation for all 4 configurations...")
     lofo_e1 = run_lofo_evaluation(base_circuits_dir, BASE_5_FEATURES)
-    lofo_e2 = run_lofo_evaluation(base_circuits_dir, ALL_13_FEATURES)
+    lofo_e2 = run_lofo_evaluation(base_13_circuits_dir, ALL_13_FEATURES)
     lofo_e3 = run_lofo_evaluation(gir_circuits_dir, BASE_5_FEATURES)
     lofo_e4 = run_lofo_evaluation(gir_circuits_dir, ALL_13_FEATURES)
 

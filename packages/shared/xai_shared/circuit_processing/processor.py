@@ -178,7 +178,7 @@ def extract_cells_from_netlist(verilog_path):
         return []
 
 
-def process_circuit(config, output_dir='.', skip_graph=False):
+def process_circuit(config, output_dir='.', skip_graph=False, output_dir_13=None):
     """Process a single circuit netlist and extract metrics.
     
     This function performs the standard processing pipeline:
@@ -220,12 +220,10 @@ def process_circuit(config, output_dir='.', skip_graph=False):
         
         base_name = f'{part}-{impl}_{tech}'
         csv_output = output_path / f'{base_name}.csv'
-        if csv_output.exists():
-            with open(csv_output, 'r', encoding='utf-8') as f:
-                header_line = f.readline()
-                if 'in_degree' in header_line:
-                    logger.info(f'[OK] {base_name} already processed with 13 features. Skipping...')
-                    return True
+        csv_13_output = Path(output_dir_13) / f'{base_name}.csv' if output_dir_13 else None
+        if csv_output.exists() and (csv_13_output is None or csv_13_output.exists()):
+            logger.info(f'[OK] {base_name} already processed. Skipping...')
+            return True
 
         logger.info(f'Processing -- part: {part}, impl: {impl}, tech: {tech}')
         
@@ -326,13 +324,16 @@ def process_circuit(config, output_dir='.', skip_graph=False):
         t0 = time.perf_counter()
         logger.debug(f"Extracting {len(nodes)} trojan node metrics...")
         csv_output = str(output_path / f'{base_name}.csv')
-        metrics_timing = nl.write_metrics(c, nodes, csv_output)
+        csv_output_13 = str(Path(output_dir_13) / f'{base_name}.csv') if output_dir_13 else None
+        metrics_timing = nl.write_metrics(c, nodes, csv_output, output_13_file=csv_output_13)
         timing['extract_metrics'] = time.perf_counter() - t0
         timing['metrics_breakdown'] = metrics_timing
         
         # Sum only numeric timing values (exclude dict breakdowns)
         total_time = sum(v for v in timing.values() if isinstance(v, (int, float)))
-        logger.info(f'[OK] {base_name} complete - CSV saved to {csv_output}')
+        logger.info(f'[OK] {base_name} complete - 5-feat CSV saved to {csv_output}')
+        if csv_output_13:
+            logger.info(f'  13-feat Baseline CSV saved to {csv_output_13}')
         nodes_csv = graph_csv_output / "nodes.csv"
         edges_csv = graph_csv_output / "edges.csv"
         if nodes_csv.exists() and edges_csv.exists():
@@ -392,20 +393,24 @@ def process_single_circuit_simple(args):
     """Simplified wrapper for multiprocessing without Queue-based logging.
     
     Args:
-        args: Tuple of (key, config, output_dir, skip_graph)
+        args: Tuple of (key, config, output_dir, skip_graph) or (key, config, output_dir, skip_graph, output_dir_13)
         
     Returns:
         Dictionary with circuit status and timing
     """
     import time
     
-    key, config, output_dir, skip_graph = args
+    if len(args) >= 5:
+        key, config, output_dir, skip_graph, output_dir_13 = args[:5]
+    else:
+        key, config, output_dir, skip_graph = args
+        output_dir_13 = None
     circuit_start = time.time()
     
     try:
         # Simple print-based logging for workers (no Queue needed)
         print(f"[Worker] Processing {key}...")
-        result = process_circuit(config, output_dir, skip_graph)
+        result = process_circuit(config, output_dir, skip_graph, output_dir_13=output_dir_13)
         elapsed = time.time() - circuit_start
         status_msg = 'completed' if result else 'skipped'
         print(f"[Worker] {key} {status_msg} in {elapsed:.2f}s")
@@ -427,7 +432,7 @@ def process_single_circuit_simple(args):
 
 
 
-def process_batch(config_dict, output_dir='.', skip_graph=False, parallel=True, num_processes=None):
+def process_batch(config_dict, output_dir='.', skip_graph=False, parallel=True, num_processes=None, output_dir_13=None):
     """Process all circuits in configuration dictionary.
     
     Phase 1 optimization: Enables parallel processing of multiple circuits using multiprocessing.Pool.
@@ -441,6 +446,7 @@ def process_batch(config_dict, output_dir='.', skip_graph=False, parallel=True, 
         skip_graph: If True, skip graph generation
         parallel: If True, use multiprocessing (default); if False, process sequentially
         num_processes: Number of worker processes (default: cpu_count - 1, leaving 1 core free)
+        output_dir_13: Optional directory for baseline 13-feature CSVs
         
     Returns:
         Tuple of (successful_count, failed_count, skipped_count)
@@ -468,7 +474,7 @@ def process_batch(config_dict, output_dir='.', skip_graph=False, parallel=True, 
         
         # Prepare arguments for worker processes (no Queue!)
         process_args = [
-            (key, config, output_dir, skip_graph)
+            (key, config, output_dir, skip_graph, output_dir_13)
             for key, config in config_dict.items()
         ]
         
@@ -498,7 +504,7 @@ def process_batch(config_dict, output_dir='.', skip_graph=False, parallel=True, 
                 circuit_start = time.time()
                 logger.info(f"[{i}/{total}] Processing {key} (sequential fallback)...")
                 try:
-                    if process_circuit(config, output_dir, skip_graph):
+                    if process_circuit(config, output_dir, skip_graph, output_dir_13=output_dir_13):
                         elapsed = time.time() - circuit_start
                         logger.info(f"  [OK] Completed in {elapsed:.2f}s")
                         successful += 1
@@ -521,7 +527,7 @@ def process_batch(config_dict, output_dir='.', skip_graph=False, parallel=True, 
             circuit_start = time.time()
             logger.info(f"[{i}/{total}] Processing {key}...")
             try:
-                if process_circuit(config, output_dir, skip_graph):
+                if process_circuit(config, output_dir, skip_graph, output_dir_13=output_dir_13):
                     elapsed = time.time() - circuit_start
                     logger.info(f"  [OK] Completed in {elapsed:.2f}s")
                     successful += 1

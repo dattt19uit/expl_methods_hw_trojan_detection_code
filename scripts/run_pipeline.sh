@@ -33,6 +33,8 @@ PROCESSED_DIR="$DATA_DIR/processed"
 MODELS_DIR="$DATA_DIR/models"
 LOGS_DIR="logs"
 CIRCUIT_CONFIGS="configs/circuit_configs.json"
+# Number of parallel worker processes (defaults to 2 for safe WSL RAM usage, honors user env variable)
+NCORES="${NCORES:-2}"
 
 # Create directories
 mkdir -p "$RAW_DIR" "$PROCESSED_DIR" "$MODELS_DIR" "$LOGS_DIR"
@@ -62,35 +64,25 @@ fi
 echo ""
 echo ""
 echo "========================================="
-echo "Phase 1: Circuit Processing (Baseline 13 Features)"
+echo "Phase 1: Circuit Processing (Baseline 5 Features & Structural Graphs)"
 echo "========================================="
-# Check if 30 circuits already exist with all 13 features
 CIRCUIT_COUNT=$(ls -1 "$DATA_DIR/circuits"/*.csv 2>/dev/null | wc -l)
-FEAT13_COUNT=$(grep -l "in_degree" "$DATA_DIR/circuits"/*.csv 2>/dev/null | wc -l)
-
-if [ "$CIRCUIT_COUNT" -eq 30 ] && [ "$FEAT13_COUNT" -eq 30 ] && [ -f "$PROCESSED_DIR/train.csv" ]; then
-    echo "Circuits with 13 features and training data already exist (30/30). Skipping..."
-else
-    echo "Processing circuits and extracting 13 features (Baseline 5 + 8 Graph)..."
-    # Use 4 parallel workers for fast processing on multicore
-    NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) / 2 ))
-    [ "$NCORES" -lt 2 ] && NCORES=2
-    xai-process-circuit --batch --config "$CIRCUIT_CONFIGS" --output-dir "$DATA_DIR/circuits" --skip-graph -j "$NCORES"
-    
-    echo "Aggregating training data..."
-    xai-aggregate-data --folder "$DATA_DIR/circuits" --output "$PROCESSED_DIR"
-fi
-
-# Versions created before structural graph export or before trojan labeling
-# need regeneration. If nodes.csv and edges.csv exist for all circuits, do not recreate.
 STRUCTURAL_GRAPH_COUNT=$(find "$DATA_DIR/circuits/graphs" -type f -name nodes.csv -exec grep -l 'is_trojan' {} + 2>/dev/null | wc -l)
-if [ "$STRUCTURAL_GRAPH_COUNT" -lt 30 ]; then
-    echo "Exporting structural nodes.csv and edges.csv with is_trojan labels for each Verilog netlist ($STRUCTURAL_GRAPH_COUNT/30 updated)..."
-    NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) / 2 ))
-    [ "$NCORES" -lt 2 ] && NCORES=2
-    xai-process-circuit --batch --config "$CIRCUIT_CONFIGS" --output-dir "$DATA_DIR/circuits" --skip-graph -j "$NCORES"
+BASE13_DIR="$DATA_DIR/circuits_baseline_13"
+BASE13_PROCESSED="$DATA_DIR/processed_baseline_13"
+mkdir -p "$BASE13_DIR" "$BASE13_PROCESSED"
+
+if [ "$CIRCUIT_COUNT" -eq 30 ] && [ "$STRUCTURAL_GRAPH_COUNT" -eq 30 ] && [ -f "$PROCESSED_DIR/train.csv" ]; then
+    echo "Baseline 5-feature circuits, graphs, and training data already exist (30/30). Skipping..."
 else
-    echo "Structural nodes.csv and edges.csv already exist ($STRUCTURAL_GRAPH_COUNT/30). Skipping graph re-export..."
+    echo "Processing circuits: extracting Baseline 5 features, Baseline 13 features, and structural graphs (workers: $NCORES)..."
+    xai-process-circuit --batch --config "$CIRCUIT_CONFIGS" --output-dir "$DATA_DIR/circuits" --output-dir-13 "$BASE13_DIR" --skip-graph -j "$NCORES"
+    
+    echo "Aggregating Baseline 5-feature training data (data/processed)..."
+    xai-aggregate-data --folder "$DATA_DIR/circuits" --output "$PROCESSED_DIR"
+
+    echo "Aggregating Baseline 13-feature training data (data/processed_baseline_13 for Exp 2)..."
+    xai-aggregate-data --folder "$BASE13_DIR" --output "$BASE13_PROCESSED"
 fi
 
 echo ""
@@ -103,9 +95,7 @@ mkdir -p "$GRAPH_IR_CIRCUITS" "$GRAPH_IR_PROCESSED"
 
 GIR_CIRCUIT_COUNT=$(ls -1 "$GRAPH_IR_CIRCUITS"/*.csv 2>/dev/null | wc -l)
 if [ "$GIR_CIRCUIT_COUNT" -lt 30 ] || [ ! -f "$GRAPH_IR_PROCESSED/train.csv" ]; then
-    echo "Extracting 13 metrics from structural nodes.csv and edges.csv for all circuits..."
-    NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) / 2 ))
-    [ "$NCORES" -lt 2 ] && NCORES=2
+    echo "Extracting 13 metrics from structural nodes.csv and edges.csv for all circuits (workers: $NCORES)..."
     python3 -m xai_shared.circuit_processing.compute_graph_metrics_cli \
         --graphs-dir "$DATA_DIR/circuits/graphs" \
         --output-dir "$GRAPH_IR_CIRCUITS" \
@@ -284,6 +274,7 @@ if [ ! -f "$MODELS_DIR/method3/lime_explanations.json" ]; then
         --test-data "$PROCESSED_DIR/test.csv" \
         --output "$MODELS_DIR/method3" \
         --num-samples 1000 \
+        --max-samples 1500 \
         --predictions "$MODELS_DIR/method2/predictions.json" \
         --prioritize-critical
 else
