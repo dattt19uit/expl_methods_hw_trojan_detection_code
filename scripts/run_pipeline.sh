@@ -23,6 +23,9 @@ else
     exit 1
 fi
 
+export MPLCONFIGDIR="/tmp/matplotlib"
+mkdir -p "$MPLCONFIGDIR"
+
 # Configuration
 DATA_DIR="data"
 RAW_DIR="$DATA_DIR/raw"
@@ -57,40 +60,37 @@ else
 fi
 
 echo ""
+echo ""
 echo "========================================="
-echo "Phase 1: Circuit Processing"
+echo "Phase 1: Circuit Processing (Baseline 13 Features)"
 echo "========================================="
-# Check if circuits already exist
+# Check if 30 circuits already exist with all 13 features
 CIRCUIT_COUNT=$(ls -1 "$DATA_DIR/circuits"/*.csv 2>/dev/null | wc -l)
-if [ "$CIRCUIT_COUNT" -gt 0 ] && [ -f "$PROCESSED_DIR/train.csv" ]; then
-    echo "Circuits and training data already exist. Skipping..."
-elif [ "$CIRCUIT_COUNT" -gt 0 ]; then
-    echo "Circuits exist ($CIRCUIT_COUNT files). Aggregating training data..."
-    xai-aggregate-data --folder "$DATA_DIR/circuits" --output "$PROCESSED_DIR"
-elif [ ! -f "$PROCESSED_DIR/train.csv" ]; then
-    echo "Processing circuits and extracting features..."
-    # Use --skip-graph to avoid slow GraphViz visualization generation
-    # Use all but one CPU core for parallel circuit processing
-    # NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) - 1 ))
-    # [ "$NCORES" -lt 1 ] && NCORES=1
-    NCORES=2
+FEAT13_COUNT=$(grep -l "in_degree" "$DATA_DIR/circuits"/*.csv 2>/dev/null | wc -l)
+
+if [ "$CIRCUIT_COUNT" -eq 30 ] && [ "$FEAT13_COUNT" -eq 30 ] && [ -f "$PROCESSED_DIR/train.csv" ]; then
+    echo "Circuits with 13 features and training data already exist (30/30). Skipping..."
+else
+    echo "Processing circuits and extracting 13 features (Baseline 5 + 8 Graph)..."
+    # Use 4 parallel workers for fast processing on multicore
+    NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) / 2 ))
+    [ "$NCORES" -lt 2 ] && NCORES=2
     xai-process-circuit --batch --config "$CIRCUIT_CONFIGS" --output-dir "$DATA_DIR/circuits" --skip-graph -j "$NCORES"
     
     echo "Aggregating training data..."
     xai-aggregate-data --folder "$DATA_DIR/circuits" --output "$PROCESSED_DIR"
-else
-    echo "Training data already exists. Skipping..."
 fi
 
 # Versions created before structural graph export or before trojan labeling
-# need regeneration. Regenerate once when an existing pipeline cache is reused.
+# need regeneration. If nodes.csv and edges.csv exist for all circuits, do not recreate.
 STRUCTURAL_GRAPH_COUNT=$(find "$DATA_DIR/circuits/graphs" -type f -name nodes.csv -exec grep -l 'is_trojan' {} + 2>/dev/null | wc -l)
-if [ "$CIRCUIT_COUNT" -gt 0 ] && [ "$STRUCTURAL_GRAPH_COUNT" -lt "$CIRCUIT_COUNT" ]; then
-    echo "Exporting structural nodes.csv and edges.csv with is_trojan labels for each Verilog netlist ($STRUCTURAL_GRAPH_COUNT/$CIRCUIT_COUNT updated)..."
-    # NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) - 1 ))
-    # [ "$NCORES" -lt 1 ] && NCORES=1
-    NCORES=2
+if [ "$STRUCTURAL_GRAPH_COUNT" -lt 30 ]; then
+    echo "Exporting structural nodes.csv and edges.csv with is_trojan labels for each Verilog netlist ($STRUCTURAL_GRAPH_COUNT/30 updated)..."
+    NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) / 2 ))
+    [ "$NCORES" -lt 2 ] && NCORES=2
     xai-process-circuit --batch --config "$CIRCUIT_CONFIGS" --output-dir "$DATA_DIR/circuits" --skip-graph -j "$NCORES"
+else
+    echo "Structural nodes.csv and edges.csv already exist ($STRUCTURAL_GRAPH_COUNT/30). Skipping graph re-export..."
 fi
 
 echo ""
@@ -102,11 +102,10 @@ GRAPH_IR_PROCESSED="$DATA_DIR/processed_graph_ir"
 mkdir -p "$GRAPH_IR_CIRCUITS" "$GRAPH_IR_PROCESSED"
 
 GIR_CIRCUIT_COUNT=$(ls -1 "$GRAPH_IR_CIRCUITS"/*.csv 2>/dev/null | wc -l)
-if [ "$GIR_CIRCUIT_COUNT" -lt "$CIRCUIT_COUNT" ] || [ ! -f "$GRAPH_IR_PROCESSED/train.csv" ]; then
-    echo "Extracting 5 Hasegawa metrics from structural nodes.csv and edges.csv for all circuits..."
-    # NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) - 1 ))
-    # [ "$NCORES" -lt 1 ] && NCORES=1
-    NCORES=2
+if [ "$GIR_CIRCUIT_COUNT" -lt 30 ] || [ ! -f "$GRAPH_IR_PROCESSED/train.csv" ]; then
+    echo "Extracting 13 metrics from structural nodes.csv and edges.csv for all circuits..."
+    NCORES=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4) / 2 ))
+    [ "$NCORES" -lt 2 ] && NCORES=2
     python3 -m xai_shared.circuit_processing.compute_graph_metrics_cli \
         --graphs-dir "$DATA_DIR/circuits/graphs" \
         --output-dir "$GRAPH_IR_CIRCUITS" \
@@ -264,6 +263,12 @@ python3 "$REPO_DIR/scripts/compare_baseline_vs_graph_ir.py"
 
 echo ""
 echo "========================================="
+echo "Phase 8c: GNN Training & 6-Way Benchmark (Exp 5: Baseline GNN, Exp 6: Hetero-GNN vs Exp 1-4)"
+echo "========================================="
+python3 "$REPO_DIR/scripts/train_and_benchmark_gnn.py"
+
+echo ""
+echo "========================================="
 echo "Phase 9: Method 3 - LIME Explanations"
 echo "========================================="
 if [ ! -f "$MODELS_DIR/method3/lime_explanations.json" ]; then
@@ -325,6 +330,20 @@ fi
 
 echo ""
 echo "========================================="
+echo "Phase 11b: Graph XAI & Benchmark Comparison (Graph XAI vs Baseline Tabular XAI)"
+echo "========================================="
+if [ ! -f "$EXPLANATIONS_DIR/gnn/gnn_explanations.json" ]; then
+    echo "Running Graph XAI (GNNExplainer on HeteroTrojanGNN)..."
+    python3 "$REPO_DIR/scripts/explain_gnn.py"
+else
+    echo "Graph XAI explanations already generated. Skipping..."
+fi
+
+echo "Comparing Graph XAI with Baseline Tabular XAI (SHAP, LIME, Gradient Attribution)..."
+python3 "$REPO_DIR/scripts/compare_xai_methods.py"
+
+echo ""
+echo "========================================="
 echo "Phase 12: Same Circuit Family (SCF) Cross-Validation"
 echo "========================================="
 SCF_DIR="$DATA_DIR/experiments/scf_analysis"
@@ -371,6 +390,11 @@ echo ""
 echo "SCF Cross-Validation Results:"
 echo "  Results:  $SCF_DIR/scf_results.json"
 echo "  Summary:  $SCF_DIR/scf_summary.txt"
+echo ""
+echo "6-Way Benchmark & Graph XAI Results:"
+echo "  6-Way Benchmark: $MODELS_DIR/comparison_6_experiments.json"
+echo "  GNN Explanations: $EXPLANATIONS_DIR/gnn/gnn_explanations.json"
+echo "  XAI Comparison:   $EXPLANATIONS_DIR/xai_comparison_benchmark.json"
 echo ""
 echo "View results:"
 echo "  Method 1: ls -lh $MODELS_DIR/method1/explanations/"
