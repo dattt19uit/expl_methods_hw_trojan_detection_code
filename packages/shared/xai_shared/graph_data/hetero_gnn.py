@@ -23,6 +23,7 @@ class HeteroTrojanGNN(nn.Module):
         num_layers: int = 2,
         dropout: float = 0.2,
         conv_type: str = 'sage',
+        edge_types: Optional[List[Tuple[str, str, str]]] = None,
     ):
         super().__init__()
         self.hidden_dim = hidden_dim
@@ -37,14 +38,16 @@ class HeteroTrojanGNN(nn.Module):
         self.convs = nn.ModuleList()
         self.norms = nn.ModuleList()
 
-        edge_types = [
-            ('net', 'data_input', 'cell'),
-            ('net', 'control_input', 'cell'),
-            ('cell', 'outputs', 'net'),
-            ('cell', 'rev_data_input', 'net'),
-            ('cell', 'rev_control_input', 'net'),
-            ('net', 'rev_outputs', 'cell'),
-        ]
+        if edge_types is None:
+            edge_types = [
+                ('net', 'data_input', 'cell'),
+                ('net', 'control_input', 'cell'),
+                ('cell', 'outputs', 'net'),
+                ('cell', 'rev_data_input', 'net'),
+                ('cell', 'rev_control_input', 'net'),
+                ('net', 'rev_outputs', 'cell'),
+            ]
+        self.edge_types = edge_types
 
         for _ in range(num_layers):
             conv_dict = {}
