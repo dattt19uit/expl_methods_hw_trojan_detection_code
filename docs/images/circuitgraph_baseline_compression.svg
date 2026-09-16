@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 380" width="100%" height="100%">
+  <defs>
+    <style>
+      .title { font-family: sans-serif; font-size: 17px; font-weight: bold; fill: #1a1a1a; }
+      .subtitle { font-family: sans-serif; font-size: 13px; fill: #555; }
+      .node-text { font-family: sans-serif; font-size: 13px; font-weight: bold; fill: #1864ab; text-anchor: middle; }
+      .node-subtext { font-family: sans-serif; font-size: 10.5px; fill: #495057; text-anchor: middle; }
+      .step-tag { font-family: sans-serif; font-size: 11px; font-weight: bold; fill: #e67700; text-anchor: middle; }
+      .action-tag { font-family: sans-serif; font-size: 10px; font-weight: bold; fill: #c92a2a; text-anchor: middle; }
+      .note-text { font-family: sans-serif; font-size: 11px; fill: #333; }
+      .stat-num { font-family: sans-serif; font-size: 15px; font-weight: bold; fill: #c92a2a; }
+    </style>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#fa5252" />
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#228be6" />
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="380" fill="#ffffff" rx="10" stroke="#dee2e6" stroke-width="1.5"/>
+
+  <!-- Header Banner -->
+  <rect x="20" y="15" width="960" height="50" rx="6" fill="#f8f9fa" stroke="#e9ecef" stroke-width="1"/>
+  <text x="500" y="36" class="title" text-anchor="middle">CƠ CHẾ NÉN THÔ BẠO CỦA BASELINE (WHITTEN &amp; WOLFF, 2026)</text>
+  <text x="500" y="54" class="subtitle" text-anchor="middle">Biến đổi Netlist thành Đồ thị Thuần nhất Cổng-Cổng thông qua merge_cells và remove_cells(wire)</text>
+
+  <!-- 1. Primary Input Node -->
+  <g transform="translate(40, 100)" filter="url(#shadow)">
+    <rect width="140" height="120" rx="8" fill="#e3fafc" stroke="#15aabf" stroke-width="2"/>
+    <rect x="0" y="0" width="140" height="26" rx="8" fill="#15aabf"/>
+    <text x="70" y="18" font-family="sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">PRIMARY INPUT (PI)</text>
+    <circle cx="70" cy="60" r="18" fill="#ffffff" stroke="#15aabf" stroke-width="2"/>
+    <text x="70" y="65" font-family="sans-serif" font-size="13" font-weight="bold" fill="#0c8599" text-anchor="middle">PI</text>
+    <text x="70" y="98" font-family="sans-serif" font-size="12" font-weight="bold" fill="#0c8599" text-anchor="middle">xmit_dataH[0]</text>
+    <text x="70" y="112" class="node-subtext">Chân ngõ vào chip</text>
+  </g>
+
+  <!-- Step 1: merge_cells Bypass Arrow -->
+  <g transform="translate(180, 110)">
+    <path d="M 5 50 L 105 50" fill="none" stroke="#fa5252" stroke-width="3" stroke-dasharray="6 3" marker-end="url(#arrow-red)"/>
+    <rect x="10" y="12" width="90" height="26" rx="4" fill="#fff3bf" stroke="#fab005" stroke-width="1"/>
+    <text x="55" y="29" class="step-tag">merge_cells</text>
+    <text x="55" y="68" class="action-tag">Xóa chân IN1..4</text>
+    <text x="55" y="80" font-family="sans-serif" font-size="8.5" fill="#868e96" text-anchor="middle">Nối tắt nhân tạo</text>
+  </g>
+
+  <!-- 2. Gate U33 Representative Node -->
+  <g transform="translate(295, 100)" filter="url(#shadow)">
+    <rect width="180" height="120" rx="8" fill="#e7f5ff" stroke="#228be6" stroke-width="2"/>
+    <rect x="0" y="0" width="180" height="26" rx="8" fill="#228be6"/>
+    <text x="90" y="18" font-family="sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">NODE CỔNG U33 GỘP</text>
+    <text x="90" y="58" class="node-text">"U33 AOI22X2"</text>
+    <text x="90" y="76" class="node-subtext">Đại diện bằng chân U33.QN</text>
+    <rect x="20" y="88" width="140" height="22" rx="4" fill="#d0ebff"/>
+    <text x="90" y="103" font-family="sans-serif" font-size="10" font-weight="bold" fill="#1864ab" text-anchor="middle">Bản sắc cổng bị tiêu biến</text>
+  </g>
+
+  <!-- Step 2: remove_cells(wire) Bypass Arrow -->
+  <g transform="translate(475, 110)">
+    <path d="M 5 50 L 115 50" fill="none" stroke="#fa5252" stroke-width="3" stroke-dasharray="6 3" marker-end="url(#arrow-red)"/>
+    <rect x="10" y="12" width="100" height="26" rx="4" fill="#fff3bf" stroke="#fab005" stroke-width="1"/>
+    <text x="60" y="29" class="step-tag">remove_cells</text>
+    <text x="60" y="68" class="action-tag">Xóa bỏ dây n27</text>
+    <text x="60" y="80" font-family="sans-serif" font-size="8.5" fill="#868e96" text-anchor="middle">Nối thẳng QN → QN</text>
+  </g>
+
+  <!-- 3. Gate U32 Representative Node -->
+  <g transform="translate(600, 100)" filter="url(#shadow)">
+    <rect width="180" height="120" rx="8" fill="#e7f5ff" stroke="#228be6" stroke-width="2"/>
+    <rect x="0" y="0" width="180" height="26" rx="8" fill="#228be6"/>
+    <text x="90" y="18" font-family="sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">NODE CỔNG U32 GỘP</text>
+    <text x="90" y="58" class="node-text">"U32 OAI21X2"</text>
+    <text x="90" y="76" class="node-subtext">Đại diện bằng chân U32.QN</text>
+    <rect x="20" y="88" width="140" height="22" rx="4" fill="#d0ebff"/>
+    <text x="90" y="103" font-family="sans-serif" font-size="10" font-weight="bold" fill="#1864ab" text-anchor="middle">Mất vai trò chân IN3</text>
+  </g>
+
+  <!-- Next Gate Arrow -->
+  <g transform="translate(780, 110)">
+    <path d="M 5 50 L 45 50" fill="none" stroke="#fa5252" stroke-width="3" stroke-dasharray="6 3" marker-end="url(#arrow-red)"/>
+    <text x="25" y="42" class="action-tag">Xóa n190</text>
+  </g>
+
+  <!-- 4. Next gates -->
+  <g transform="translate(835, 120)" filter="url(#shadow)">
+    <rect width="125" height="80" rx="8" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.5"/>
+    <text x="62" y="38" font-family="sans-serif" font-size="12" font-weight="bold" fill="#868e96" text-anchor="middle">Các Cổng</text>
+    <text x="62" y="56" font-family="sans-serif" font-size="12" font-weight="bold" fill="#868e96" text-anchor="middle">Tiếp Theo...</text>
+  </g>
+
+  <!-- Bottom Summary Stats -->
+  <g transform="translate(20, 245)">
+    <rect width="960" height="115" rx="8" fill="#fdf2e9" stroke="#f76707" stroke-width="1.5"/>
+    <text x="30" y="24" font-family="sans-serif" font-size="13" font-weight="bold" fill="#d9480f">CÁI GIÁ CỦA VIỆC NÉN CẤU TRÚC ĐỂ THỰC THI THUẬT TOÁN ĐƯỜNG ĐI:</text>
+    <text x="30" y="46" class="note-text">• <tspan class="stat-num">Cắt giảm 61.7% thực thể:</tspan> Tổng số nút trên 30 mạch Trust-Hub bị thu hẹp từ <tspan font-weight="bold">108,531 thực thể</tspan> (Cell + Net) xuống chỉ còn <tspan font-weight="bold">41,577 thực thể</tspan>.</text>
+    <text x="30" y="68" class="note-text">• <tspan class="stat-num">Phá hủy tính hai phía:</tspan> Đồ thị thuần nhất mất hoàn toàn khả năng phân biệt nút cổng logic (Cell) và nút dây dẫn (Net), triệt tiêu cấu trúc rẽ nhánh (Fanout).</text>
+    <text x="30" y="90" class="note-text">• <tspan class="stat-num">Xóa sạch ngữ nghĩa chân cắm:</tspan> Không thể phân biệt chân dữ liệu (Data) với chân xung nhịp (Clock) và chân Reset, dẫn tới hiện tượng đường tắt toàn cục (Clock Interference) và sụp đổ ngoại suy LOFO.</text>
+  </g>
+</svg>

@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="100%" height="100%">
+  <defs>
+    <style>
+      .title { font-family: sans-serif; font-size: 17px; font-weight: bold; fill: #1a1a1a; }
+      .subtitle { font-family: sans-serif; font-size: 13px; fill: #555; }
+      .node-text { font-family: sans-serif; font-size: 12px; font-weight: bold; fill: #212529; text-anchor: middle; }
+      .node-subtext { font-family: sans-serif; font-size: 10px; fill: #666; text-anchor: middle; }
+      .box-label { font-family: sans-serif; font-size: 13px; font-weight: bold; fill: #d9480f; }
+      .deadlock-text { font-family: sans-serif; font-size: 11px; font-weight: bold; fill: #c92a2a; text-anchor: middle; }
+      .deadlock-sub { font-family: sans-serif; font-size: 9.5px; fill: #e03131; text-anchor: middle; }
+      .note-text { font-family: sans-serif; font-size: 11px; fill: #333; }
+      .edge-label { font-family: sans-serif; font-size: 10px; fill: #495057; font-weight: 500; text-anchor: middle; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#228be6" />
+    </marker>
+    <marker id="arrow-gray" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#495057" />
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="420" fill="#ffffff" rx="10" stroke="#dee2e6" stroke-width="1.5"/>
+
+  <!-- Header Banner -->
+  <rect x="20" y="15" width="960" height="50" rx="6" fill="#f8f9fa" stroke="#e9ecef" stroke-width="1"/>
+  <text x="500" y="36" class="title" text-anchor="middle">HIỆN TƯỢNG ĐỨT ĐOẠN CẤU TRÚC LOGIC KHI CIRCUITGRAPH MÔ HÌNH HÓA NETLIST</text>
+  <text x="500" y="54" class="subtitle" text-anchor="middle">Chuỗi tín hiệu UART RS232: Chân Primary Input xmit_dataH[0] → Cổng U33 (AOI22X2) → Dây n27 → Cổng U32 (OAI21X2) → Dây n190</text>
+
+  <!-- 1. Primary Input Node -->
+  <g transform="translate(35, 130)" filter="url(#shadow)">
+    <rect width="130" height="110" rx="8" fill="#e3fafc" stroke="#15aabf" stroke-width="2"/>
+    <rect x="0" y="0" width="130" height="26" rx="8" fill="#15aabf"/>
+    <text x="65" y="18" font-family="sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">PRIMARY INPUT (PI)</text>
+    <circle cx="65" cy="58" r="16" fill="#ffffff" stroke="#15aabf" stroke-width="2"/>
+    <text x="65" y="62" font-family="sans-serif" font-size="14" font-weight="bold" fill="#0c8599" text-anchor="middle">IN</text>
+    <text x="65" y="93" class="node-text">xmit_dataH[0]</text>
+    <text x="65" y="106" class="node-subtext">Chân ngõ vào chip</text>
+  </g>
+
+  <!-- Connection PI -> U33.IN1 -->
+  <path d="M 165 185 L 205 185" fill="none" stroke="#228be6" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="185" y="177" class="edge-label">c.graph</text>
+
+  <!-- 2. Cổng U33 (AOI22X2) BlackBox -->
+  <g transform="translate(215, 90)" filter="url(#shadow)">
+    <rect width="265" height="190" rx="10" fill="#fff9db" stroke="#fab005" stroke-width="2" stroke-dasharray="6 4"/>
+    <rect x="12" y="10" width="241" height="24" rx="4" fill="#fff3bf"/>
+    <text x="132" y="27" class="box-label" text-anchor="middle">BlackBox: Cổng U33 (AOI22X2)</text>
+
+    <!-- Chân vào IN1 -->
+    <rect x="18" y="55" width="85" height="50" rx="6" fill="#ffe3e3" stroke="#fa5252" stroke-width="2"/>
+    <text x="60" y="75" class="node-text" fill="#c92a2a">U33.IN1</text>
+    <text x="60" y="92" class="node-subtext" fill="#e03131">bb_input</text>
+
+    <!-- Chân vào phụ IN2..IN4 -->
+    <rect x="18" y="115" width="85" height="40" rx="4" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.2"/>
+    <text x="60" y="132" font-family="sans-serif" font-size="9.5" fill="#868e96" text-anchor="middle">IN2, IN3, IN4</text>
+    <text x="60" y="145" font-family="sans-serif" font-size="8.5" fill="#adb5bd" text-anchor="middle">(tín hiệu khác)</text>
+
+    <!-- BARRIER DEAD END -->
+    <g transform="translate(108, 50)">
+      <rect width="52" height="110" rx="6" fill="#fff5f5" stroke="#e03131" stroke-width="1.8" stroke-dasharray="4 3"/>
+      <circle cx="26" cy="30" r="14" fill="#ffc9c9" stroke="#c92a2a" stroke-width="1.5"/>
+      <text x="26" y="36" font-family="sans-serif" font-size="16" font-weight="bold" fill="#c92a2a" text-anchor="middle">⛔</text>
+      <text x="26" y="60" class="deadlock-text">ĐỨT ĐOẠN</text>
+      <text x="26" y="73" class="deadlock-sub">Không có</text>
+      <text x="26" y="85" class="deadlock-sub">cạnh nối</text>
+      <text x="26" y="97" class="deadlock-sub">sang QN!</text>
+    </g>
+
+    <!-- Chân ra QN -->
+    <rect x="165" y="75" width="85" height="55" rx="6" fill="#d0ebff" stroke="#228be6" stroke-width="2"/>
+    <text x="207" y="98" class="node-text" fill="#1864ab">U33.QN</text>
+    <text x="207" y="116" class="node-subtext" fill="#1c7ed6">bb_output</text>
+  </g>
+
+  <!-- Connection U33.QN -> n27 -->
+  <path d="M 480 185 L 515 185" fill="none" stroke="#228be6" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="498" y="177" class="edge-label">c.graph</text>
+
+  <!-- 3. Wire Net n27 -->
+  <g transform="translate(525, 140)" filter="url(#shadow)">
+    <rect width="80" height="90" rx="8" fill="#f1f3f5" stroke="#495057" stroke-width="2"/>
+    <rect x="0" y="0" width="80" height="22" rx="8" fill="#495057"/>
+    <text x="40" y="15" font-family="sans-serif" font-size="10" font-weight="bold" fill="#ffffff" text-anchor="middle">NET / WIRE</text>
+    <circle cx="40" cy="48" r="13" fill="#ffffff" stroke="#495057" stroke-width="1.8"/>
+    <text x="40" y="52" font-family="sans-serif" font-size="11" font-weight="bold" fill="#343a40" text-anchor="middle">n27</text>
+    <text x="40" y="78" class="node-subtext">Dây dẫn</text>
+  </g>
+
+  <!-- Connection n27 -> U32.IN3 -->
+  <path d="M 605 185 L 645 185" fill="none" stroke="#228be6" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="625" y="177" class="edge-label">c.graph</text>
+
+  <!-- 4. Cổng U32 (OAI21X2) BlackBox -->
+  <g transform="translate(655, 90)" filter="url(#shadow)">
+    <rect width="265" height="190" rx="10" fill="#fff9db" stroke="#fab005" stroke-width="2" stroke-dasharray="6 4"/>
+    <rect x="12" y="10" width="241" height="24" rx="4" fill="#fff3bf"/>
+    <text x="132" y="27" class="box-label" text-anchor="middle">BlackBox: Cổng U32 (OAI21X2)</text>
+
+    <!-- Chân vào IN3 -->
+    <rect x="18" y="55" width="85" height="50" rx="6" fill="#ffe3e3" stroke="#fa5252" stroke-width="2"/>
+    <text x="60" y="75" class="node-text" fill="#c92a2a">U32.IN3</text>
+    <text x="60" y="92" class="node-subtext" fill="#e03131">bb_input</text>
+
+    <!-- Chân vào phụ IN1..IN2 -->
+    <rect x="18" y="115" width="85" height="40" rx="4" fill="#f8f9fa" stroke="#ced4da" stroke-width="1.2"/>
+    <text x="60" y="132" font-family="sans-serif" font-size="9.5" fill="#868e96" text-anchor="middle">IN1, IN2</text>
+    <text x="60" y="145" font-family="sans-serif" font-size="8.5" fill="#adb5bd" text-anchor="middle">(tín hiệu khác)</text>
+
+    <!-- BARRIER DEAD END -->
+    <g transform="translate(108, 50)">
+      <rect width="52" height="110" rx="6" fill="#fff5f5" stroke="#e03131" stroke-width="1.8" stroke-dasharray="4 3"/>
+      <circle cx="26" cy="30" r="14" fill="#ffc9c9" stroke="#c92a2a" stroke-width="1.5"/>
+      <text x="26" y="36" font-family="sans-serif" font-size="16" font-weight="bold" fill="#c92a2a" text-anchor="middle">⛔</text>
+      <text x="26" y="60" class="deadlock-text">ĐỨT ĐOẠN</text>
+      <text x="26" y="73" class="deadlock-sub">Không có</text>
+      <text x="26" y="85" class="deadlock-sub">cạnh nối</text>
+      <text x="26" y="97" class="deadlock-sub">sang QN!</text>
+    </g>
+
+    <!-- Chân ra QN -->
+    <rect x="165" y="75" width="85" height="55" rx="6" fill="#d0ebff" stroke="#228be6" stroke-width="2"/>
+    <text x="207" y="98" class="node-text" fill="#1864ab">U32.QN</text>
+    <text x="207" y="116" class="node-subtext" fill="#1c7ed6">bb_output</text>
+  </g>
+
+  <!-- Connection U32.QN -> n190 -->
+  <path d="M 920 185 L 945 185" fill="none" stroke="#228be6" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Bottom Alert Bar -->
+  <g transform="translate(20, 300)">
+    <rect width="960" height="100" rx="8" fill="#fff5f5" stroke="#ffc9c9" stroke-width="1.5"/>
+    <text x="35" y="26" font-family="sans-serif" font-size="13" font-weight="bold" fill="#c92a2a">HẬU QUẢ TOÁN HỌC TRÊN ĐỒ THỊ NETLIST THUẦN:</text>
+    <text x="35" y="48" class="note-text">• Thuật toán tìm đường đi ngắn nhất (BFS / Dijkstra) từ ngõ vào <tspan font-weight="bold">xmit_dataH[0]</tspan> dừng lại ngay tại node chân vào <tspan font-weight="bold" fill="#c92a2a">U33.IN1</tspan> vì không có cạnh ra.</text>
+    <text x="35" y="68" class="note-text">• Node chân ra <tspan font-weight="bold" fill="#1864ab">U33.QN</tspan> phát tín hiệu ra dây <tspan font-weight="bold">n27</tspan> nhưng hoàn toàn không có cạnh đến, khiến khoảng cách giữa <tspan font-weight="bold">xmit_dataH[0]</tspan> và <tspan font-weight="bold">n190</tspan> bị tính bằng <tspan font-weight="bold" fill="#c92a2a">VÔ CÙNG (d = ∞)</tspan>.</text>
+    <text x="35" y="88" class="note-text">• Đây là lý do cốt lõi buộc nhóm tác giả Whitten &amp; Wolff (2026) phải áp dụng hai bước nén thô bạo: <tspan font-weight="bold">merge_cells</tspan> (xóa chân vào) và <tspan font-weight="bold">remove_cells(wire)</tspan> (xóa dây dẫn).</text>
+  </g>
+</svg>
