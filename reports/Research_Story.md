@@ -2,8 +2,8 @@
 ## Phương Pháp Biểu Diễn Đồ Thị Ngữ Nghĩa Hai Phía và Học Máy Quan Hệ Trong Định Vị Mã Độc Phần Cứng Trên Netlist Vi Mạch
 
 * **Đề tài Luận văn (Định hình chính thức):**  
-  *Tiếng Việt:* **Nghiên cứu Phương pháp Biểu diễn Đồ thị và Học Máy Quan hệ phục vụ Phát hiện Mã độc Phần cứng Liên Họ trên Netlist Vi mạch**  
-  *Tiếng Anh:* **Graph-based Representation and Relational Learning for Cross-Family Hardware Trojan Detection in Gate-Level Netlists**  
+  *Tiếng Việt:* **Biểu diễn Đồ thị Ngữ nghĩa và Học Đồ thị phục vụ Phát hiện Mã độc Phần cứng trên Netlist Vi mạch**  
+  *Tiếng Anh:* **Semantic Graph Representation and Graph Learning for Hardware Trojan Detection in Gate-Level Netlists**  
 * **Học viên thực hiện:** Trần Tấn Đạt  
 
 ---

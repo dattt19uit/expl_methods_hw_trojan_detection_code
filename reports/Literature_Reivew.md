@@ -37,7 +37,72 @@
 
 ## 1. Tuyên bố Tái Định Hình Hướng Nghiên Cứu (Research Reframing Statement)
 
-### 1.1. Từ "So Sánh XAI Dạng Bảng" sang "Học Đồ Thị Bản Địa và Giải Thích Đồ Thị Con Hành Động Được"
+### 1.1. Bối Cảnh An Ninh Vi Mạch & Hiểm Họa Hardware Trojan Mức Netlist
+
+#### Bối Cảnh Toàn Cầu Hóa Chuỗi Cung Ứng Bán Dẫn
+Trong kỷ nguyên số, vi mạch tích hợp (Integrated Circuit - IC) là "trái tim" của mọi hạ tầng trọng yếu từ trí tuệ nhân tạo, trung tâm dữ liệu đám mây đến hệ thống điều khiển quốc phòng và thiết bị y tế. Tuy nhiên, việc xây dựng và duy trì một dây chuyền chế tạo bán dẫn tiên tiến (Fab) đòi hỏi chi phí đầu tư khổng lồ (hơn 10 đến 20 tỷ USD cho tiến trình dưới 5nm). Điều này dẫn tới sự chuyển dịch cấu trúc toàn cầu: hầu hết các hãng công nghệ vi mạch đều hoạt động theo mô hình không có nhà máy (Fabless - như Apple, Qualcomm, NVIDIA) và phụ thuộc hoàn toàn vào các xưởng đúc bên ngoài (Foundry - như TSMC, Samsung) hoặc tích hợp các khối Sở hữu Trí tuệ của bên thứ ba (Third-Party Intellectual Property - 3PIP).
+
+Chính sự phân tán chuỗi cung ứng trên toàn cầu đã mở ra một bề mặt tấn công vật lý chưa từng có: các xưởng gia công chế tạo không tin cậy hoặc các nhà cung cấp IP có ý đồ xấu hoàn toàn có thể can thiệp âm thầm vào sơ đồ mạch mức cổng (gate-level netlist) để cài cắm **Mã độc Phần cứng (Hardware Trojan - HT)**.
+
+#### Hardware Trojan Là Gì? (Khảo Cứu Từ Bài Báo Cơ Sở Whitten & Wolff, 2026)
+Trong bài báo cơ sở của Paul Whitten & Francis Wolff (JETTA 2026) [[30]](#ref-30), nhóm tác giả đã dành riêng **Mục 2.1 (Background: Hardware Trojans)** để hệ thống hóa bối cảnh và định nghĩa chuẩn về Hardware Trojan. Theo phân loại y văn quốc tế, một Hardware Trojan luôn được cấu thành từ hai khối chức năng cơ bản:
+
+1. **Khối Kích Hoạt (Trigger Zone):**  
+   Được thiết kế để theo dõi các điều kiện trạng thái nội vi cực hiếm (rare-event conditions) trong quá trình chip vận hành. Trigger có thể là mạch tổ hợp (như cổng AND nhận nhiều bit ngõ vào hiếm gặp) hoặc mạch tuần tự (như bộ đếm lật trạng thái sau hàng triệu chu kỳ xung nhịp). Trong điều kiện hoạt động bình thường, Trigger luôn xuất giá trị $0$, giữ cho toàn bộ Trojan ở trạng thái **"ngủ say" (dormant state)**.
+2. **Khối Thực Thi Phá Hoại (Payload Zone):**  
+   Là một hoặc một cụm cổng logic can thiệp (thường là cổng MUX hoặc XOR) được mắc xen ngang vào luồng truyền dữ liệu chính tới các chân xuất tín hiệu (Primary Outputs) hoặc các thanh ghi nội vi quan trọng. Khi Trigger được kích hoạt (chuyển sang $1$), Payload lập tức bẻ gãy hành vi hợp lệ của vi mạch: tráo đổi kết quả tính toán, gây treo hệ thống (Denial-of-Service - DoS), hoặc mở kênh rò rỉ khóa bí mật mã hóa (như khóa AES) ra ngoài chân chip mà người dùng không hề hay biết.
+
+Sự tương tác giữa mạch chủ và Hardware Trojan được trực quan hóa qua sơ đồ sau:
+
+![Hình 1.1: Cấu trúc và cơ chế hoạt động của Hardware Trojan](../docs/images/hardware_trojan_concept.svg)
+
+```mermaid
+graph LR
+    subgraph Normal_Circuit ["MẠCH SỐ BÌNH THƯỜNG - BENIGN HOST CIRCUIT"]
+        direction LR
+        PI["Ngõ vào chính PI"] ==>|Dữ liệu vào| LOGIC["Mạng logic xử lý chính"]
+        LOGIC ==>|Dòng tín hiệu gốc| PAYLOAD
+        PAYLOAD ==>|Dữ liệu ra| PO["Ngõ ra chính PO"]
+    end
+
+    subgraph Hardware_Trojan ["MÃ ĐỘC PHẦN CỨNG - HARDWARE TROJAN"]
+        direction TB
+        subgraph Trigger_Block ["1. Khối Kích Hoạt Trigger"]
+            SENS["Điểm giám sát ngầm nội vi"] -.->|Theo dõi trạng thái hiếm| TRIG_GATE["Mạch Trigger: AND hoặc Bộ đếm"]
+        end
+
+        subgraph Payload_Block ["2. Khối Phá Hoại Payload"]
+            PAYLOAD{{"Cổng can thiệp: MUX hoặc XOR"}}
+            MAL_SRC["Nguồn độc hại: Khóa rò rỉ hoặc Mã lỗi"] -.-> PAYLOAD
+        end
+
+        TRIG_GATE ==>|Tín hiệu kích hoạt hiếm| PAYLOAD
+    end
+
+    style Normal_Circuit fill:#f8f9fa,stroke:#adb5bd,stroke-width:2px;
+    style Hardware_Trojan fill:#fff5f5,stroke:#e03131,stroke-width:2px;
+    style Trigger_Block fill:#fff9db,stroke:#f59f00,stroke-width:1.5px;
+    style Payload_Block fill:#ffe3e3,stroke:#c92a2a,stroke-width:1.5px;
+    style PAYLOAD fill:#ff6b6b,stroke:#c92a2a,stroke-width:2px;
+    style TRIG_GATE fill:#ffd43b,stroke:#f59f00,stroke-width:2px;
+    style PI fill:#e3fafc,stroke:#15aabf,stroke-width:2px;
+    style PO fill:#e3fafc,stroke:#15aabf,stroke-width:2px;
+    style LOGIC fill:#e7f5ff,stroke:#228be6,stroke-width:2px;
+    style MAL_SRC fill:#ffc9c9,stroke:#fa5252,stroke-width:1px;
+    style SENS fill:#fff3bf,stroke:#fab005,stroke-width:1px;
+```
+
+#### Vì Sao Kiểm Thử Truyền Thống Bất Lực Nhưng Mô Hình Đồ Thị Lại Phát Hiện Được?
+* **Sự bất lực của kiểm thử chức năng (ATPG / Simulation):**  
+  Do xác suất xuất hiện của sự kiện kích hoạt cực thấp (thường là $P < 10^{-6}$), quá trình sinh mẫu kiểm thử tự động (Automatic Test Pattern Generation - ATPG) hoặc mô phỏng ngẫu nhiên không thể tình cờ kích hoạt được Trigger trong thời gian kiểm thử giới hạn của dây chuyền sản xuất. Do đó, vi mạch chứa Trojan vẫn vượt qua $100\%$ các bài kiểm tra chức năng xuất xưởng.
+* **Cơ hội từ biểu diễn đồ thị (Graph Learning):**  
+  Dù Trojan hoàn toàn "tàng hình" về mặt tín hiệu chức năng khi ngủ say, **về mặt cấu trúc đồ thị (Circuit Topology), các cổng của nó bắt buộc phải tồn tại vật lý và gắn kết vào mạng lưới netlist**. 
+  - Các cổng Trigger thường có độ phức tạp Fan-in cao bất thường và nằm gần các Flip-Flop nội vi.
+  - Các cổng Payload bắt buộc phải tạo ra liên kết can thiệp hướng về các chân Primary Output.  
+  
+  Đây chính là tiền đề cốt lõi mà bài báo cơ sở của Whitten & Wolff (2026) [[30]](#ref-30) dựa vào để trích xuất 5 đặc trưng tô-pô của Hasegawa ($LGFi, ffi, ffo, PI, PO$), và cũng là động lực để đề tài này phát triển biểu diễn đồ thị ngữ nghĩa (Semantic Graph IR) cùng mạng nơ-ron đồ thị quan hệ (HeteroTrojanGNN) nhằm phát hiện và định vị chính xác từng cổng Trojan.
+
+### 1.2. Từ "So Sánh XAI Dạng Bảng" sang "Học Đồ Thị Bản Địa và Giải Thích Đồ Thị Con Hành Động Được"
 Ban đầu, hướng nghiên cứu tiếp cận theo đề tài của bài báo cơ sở Whitten & Wolff (2026) [[30]](#ref-30): *So sánh có hệ thống các kỹ thuật XAI (SHAP, LIME, Gradient) trên mô hình phân loại dạng bảng XGBoost*. Tuy nhiên, qua quá trình tái lập thực nghiệm độc lập và khảo sát toàn diện y văn thế giới từ năm 2021 đến 2026, nghiên cứu nhận thấy rằng việc dừng lại ở phân tích đặc trưng dạng bảng chỉ giúp mô tả mô hình học máy một cách thụ động, mà **không giải quyết được bài toán bảo mật vi mạch trong thực tế công nghiệp EDA (Electronic Design Automation)**.
 
 Do đó, đề tài được chính thức **tái định hình (reframed)** theo một trục chuyển dịch khoa học chặt chẽ:
@@ -50,7 +115,7 @@ $$\begin{matrix}
 \text{Generic Feature Attribution (SHAP/LIME)} & \longrightarrow & \text{Đồ thị con Giải thích Cấu trúc (Actionable Subgraph for ECO)}
 \end{matrix}$$
 
-### 1.2. Phát biểu Mục tiêu Mới của Luận văn
+### 1.3. Phát biểu Mục tiêu Mới của Luận văn
 * **Tiêu đề Luận văn Tinh chỉnh:**  
   *Tiếng Việt:* **Phát hiện, Định vị và Giải thích Mã độc Phần cứng trên Netlist Vi mạch dựa trên Biểu diễn Đồ thị Ngữ nghĩa Dị thể và Học Đồ thị Quan hệ**  
   *Tiếng Anh:* **Robust and Explainable Hardware Trojan Localization via Heterogeneous Semantic Graph Representation and Relational Graph Learning**

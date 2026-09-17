@@ -1,11 +1,10 @@
 # BÁO CÁO TIẾN ĐỘ & KẾT QUẢ NGHIÊN CỨU TOÀN DIỆN LUẬN VĂN THẠC SĨ
 ## Kiểm Toán Khoa Học Dữ Liệu, Đặc Tả Semantic Graph IR, Kiến Trúc HeteroTrojanGNN và Thực Nghiệm Đối Chứng Đầy Đủ (A–F) Trong Định Vị Mã Độc Phần Cứng
 
-**Đề tài (English):** *Semantic Graph-based Representation for Robust and Explainable Hardware Trojan Localization*  
-**Đề tài (Tiếng Việt):** *Nghiên cứu Phương pháp Biểu diễn Đồ thị Ngữ nghĩa phục vụ Định vị Mã độc Phần cứng Bền vững và Có thể Giải thích được trên Netlist Vi mạch*  
+**Đề tài (English):** *Semantic Graph Representation and Graph Learning for Hardware Trojan Detection in Gate-Level Netlists*  
+**Đề tài (Tiếng Việt):** *Biểu diễn Đồ thị Ngữ nghĩa và Học Đồ thị phục vụ Phát hiện Mã độc Phần cứng trên Netlist Vi mạch*  
 **Học viên thực hiện:** Trần Tấn Đạt  
-**Ngày cập nhật:** 16/09/2026 (Phiên bản Toàn diện A–F, Kiểm toán Khoa học & Chuẩn hóa Bằng chứng)  
-**Tài liệu định hướng nghiên cứu:** `research_plan/ANTIGRAVITY_RESEARCH_EXECUTION_PLAN.md`  
+**Ngày cập nhật:** 16/09/2026
 
 ---
 

@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="100%" height="100%">
+  <defs>
+    <style>
+      .title { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 17px; font-weight: bold; fill: #1a1a1a; }
+      .subtitle { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; fill: #555; }
+      .header-text { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+      .node-title { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: bold; fill: #212529; text-anchor: middle; }
+      .node-desc { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 10px; fill: #495057; text-anchor: middle; }
+      .trojan-title { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: bold; fill: #c92a2a; text-anchor: middle; }
+      .trojan-desc { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 10.5px; fill: #a61e4d; text-anchor: middle; }
+      .edge-label { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 10px; font-weight: bold; fill: #495057; text-anchor: middle; }
+      .edge-label-red { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 10.5px; font-weight: bold; fill: #c92a2a; text-anchor: middle; }
+      .box-badge { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 11px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+      .note-text { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 11px; fill: #333333; }
+    </style>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#1c7ed6" />
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e03131" />
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59f00" />
+    </marker>
+    <filter id="card-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="2" stdDeviation="3" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="480" fill="#ffffff" rx="10" stroke="#dee2e6" stroke-width="1.5"/>
+
+  <!-- Header Banner -->
+  <rect x="20" y="15" width="960" height="50" rx="6" fill="#f8f9fa" stroke="#e9ecef" stroke-width="1"/>
+  <text x="500" y="36" class="title" text-anchor="middle">CẤU TRÚC VÀ CƠ CHẾ HOẠT ĐỘNG CỦA HARDWARE TROJAN TRÊN VI MẠCH</text>
+  <text x="500" y="54" class="subtitle" text-anchor="middle">Mô hình phân loại an ninh chuẩn quốc tế &amp; Nền tảng phân tích trong bài báo cơ sở Whitten &amp; Wolff (2026)</text>
+
+  <!-- ================= 1. MẠCH CHỦ SẠCH (BENIGN HOST CIRCUIT) ================= -->
+  <g transform="translate(30, 80)">
+    <rect width="940" height="150" rx="10" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <rect x="15" y="10" width="220" height="24" rx="4" fill="#495057"/>
+    <text x="125" y="26" class="header-text">MẠCH CHỦ HỢP LỆ (BENIGN CIRCUIT)</text>
+
+    <!-- Primary Input (PI) -->
+    <g transform="translate(30, 45)" filter="url(#card-shadow)">
+      <rect width="130" height="80" rx="8" fill="#e3fafc" stroke="#15aabf" stroke-width="2"/>
+      <circle cx="65" cy="35" r="14" fill="#ffffff" stroke="#15aabf" stroke-width="2"/>
+      <text x="65" y="39" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#0c8599" text-anchor="middle">IN</text>
+      <text x="65" y="65" class="node-title" fill="#0c8599">Primary Inputs</text>
+      <text x="65" y="75" class="node-desc">Chân nhập chính chip</text>
+    </g>
+
+    <!-- Host Logic Processing Network -->
+    <g transform="translate(240, 45)" filter="url(#card-shadow)">
+      <rect width="260" height="80" rx="8" fill="#e7f5ff" stroke="#228be6" stroke-width="2"/>
+      <text x="130" y="38" class="node-title" fill="#1864ab">Khối Logic Chức Năng Chính</text>
+      <text x="130" y="55" class="node-desc">Mạng cổng tổ hợp &amp; thanh ghi tuần tự</text>
+      <text x="130" y="68" class="node-desc">(ALU, Bộ giải mã, Bộ điều khiển UART...)</text>
+    </g>
+
+    <!-- Normal Signal Flow Arrow -->
+    <path d="M 160 85 L 240 85" fill="none" stroke="#1c7ed6" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+    <text x="200" y="78" class="edge-label">Tín hiệu vào</text>
+
+    <!-- Path from Host Logic to Payload -->
+    <path d="M 500 85 L 685 85" fill="none" stroke="#1c7ed6" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+    <text x="590" y="78" class="edge-label">Tín hiệu bình thường</text>
+
+    <!-- Primary Output (PO) -->
+    <g transform="translate(775, 45)" filter="url(#card-shadow)">
+      <rect width="135" height="80" rx="8" fill="#e3fafc" stroke="#15aabf" stroke-width="2"/>
+      <circle cx="67" cy="35" r="14" fill="#ffffff" stroke="#15aabf" stroke-width="2"/>
+      <text x="67" y="39" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#0c8599" text-anchor="middle">OUT</text>
+      <text x="67" y="65" class="node-title" fill="#0c8599">Primary Outputs</text>
+      <text x="67" y="75" class="node-desc">Chân xuất tín hiệu</text>
+    </g>
+  </g>
+
+  <!-- ================= 2. HARDWARE TROJAN (TRIGGER & PAYLOAD) ================= -->
+  <g transform="translate(30, 245)">
+    <rect width="940" height="125" rx="10" fill="#fff5f5" stroke="#fa5252" stroke-width="2"/>
+    <rect x="15" y="8" width="260" height="24" rx="4" fill="#c92a2a"/>
+    <text x="145" y="24" class="header-text">MÃ ĐỘC PHẦN CỨNG (HARDWARE TROJAN)</text>
+
+    <!-- Monitoring Taps (Rare Nodes) -->
+    <path d="M 370 -40 L 370 45" fill="none" stroke="#f59f00" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow-amber)"/>
+    <rect x="290" y="-12" width="160" height="20" rx="3" fill="#fff3bf" stroke="#f59f00" stroke-width="1"/>
+    <text x="370" y="2" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="bold" fill="#d9480f" text-anchor="middle">Nối trộm vào các dây nội vi</text>
+
+    <!-- KHỐI TRIGGER (KÍCH HOẠT) -->
+    <g transform="translate(240, 42)" filter="url(#card-shadow)">
+      <rect width="260" height="72" rx="8" fill="#fff9db" stroke="#f59f00" stroke-width="2"/>
+      <rect x="10" y="8" width="80" height="18" rx="3" fill="#f59f00"/>
+      <text x="50" y="21" class="box-badge">1. TRIGGER</text>
+      <text x="165" y="32" class="node-title" fill="#d9480f">Khối Kích Hoạt</text>
+      <text x="130" y="48" class="node-desc">• Cổng AND nhiều ngõ vào hoặc bộ đếm chu kỳ</text>
+      <text x="130" y="60" class="node-desc">• <tspan fill="#c92a2a" font-weight="bold">Bình thường: Xuất 0 (Trojan ngủ say, tàng hình)</tspan></text>
+    </g>
+
+    <!-- Trigger Activation Signal Line -->
+    <path d="M 500 78 L 685 78" fill="none" stroke="#e03131" stroke-width="3" stroke-dasharray="5 3" marker-end="url(#arrow-red)"/>
+    <rect x="525" y="60" width="135" height="18" rx="3" fill="#ffe3e3" stroke="#fa5252" stroke-width="1"/>
+    <text x="592" y="73" class="edge-label-red">Kích hoạt: Khi gặp sự kiện hiếm (1)</text>
+
+    <!-- KHỐI PAYLOAD (PHÁ HOẠI) -->
+    <g transform="translate(685, -80)" filter="url(#card-shadow)">
+      <rect width="80" height="180" rx="8" fill="#ffe3e3" stroke="#e03131" stroke-width="2.5"/>
+      <rect x="5" y="8" width="70" height="18" rx="3" fill="#c92a2a"/>
+      <text x="40" y="21" class="box-badge">2. PAYLOAD</text>
+      <circle cx="40" cy="55" r="16" fill="#ff6b6b" stroke="#c92a2a" stroke-width="2"/>
+      <text x="40" y="60" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">MUX</text>
+      <text x="40" y="88" class="trojan-title" font-size="11">Cổng Can Thiệp</text>
+      <text x="40" y="102" class="trojan-desc">XOR hoặc MUX</text>
+      
+      <!-- Inside payload action box -->
+      <rect x="6" y="115" width="68" height="55" rx="4" fill="#fff5f5" stroke="#ffc9c9" stroke-width="1"/>
+      <text x="40" y="130" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#c92a2a" text-anchor="middle" font-weight="bold">KHI BẬT (1):</text>
+      <text x="40" y="143" font-family="Segoe UI, sans-serif" font-size="8" fill="#495057" text-anchor="middle">Tráo đổi dữ liệu</text>
+      <text x="40" y="154" font-family="Segoe UI, sans-serif" font-size="8" fill="#495057" text-anchor="middle">Rò rỉ khóa bí mật</text>
+      <text x="40" y="164" font-family="Segoe UI, sans-serif" font-size="8" fill="#495057" text-anchor="middle">Gây treo chip (DoS)</text>
+    </g>
+
+    <!-- Payload to Primary Output -->
+    <path d="M 765 -40 L 775 -40" fill="none" stroke="#e03131" stroke-width="3" marker-end="url(#arrow-red)"/>
+  </g>
+
+  <!-- ================= 3. BOTTOM SUMMARY NOTE ================= -->
+  <g transform="translate(20, 385)">
+    <rect width="960" height="80" rx="8" fill="#fdf2e9" stroke="#f76707" stroke-width="1.5"/>
+    <text x="30" y="24" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#d9480f">TẠI SAO HARDWARE TROJAN TÀNG HÌNH TRƯỚC KIỂM THỬ TRUYỀN THỐNG NHƯNG BỊ GNN PHÁT HIỆN?</text>
+    <text x="30" y="44" class="note-text">• <tspan font-weight="bold">Kiểm thử chức năng (ATPG) thất bại:</tspan> Do Trigger được thiết kế kích hoạt ở xác suất cực hiếm (ví dụ: <tspan font-style="italic">P &lt; 10⁻⁶</tspan>, chỉ bật khi đúng tổ hợp vector 32-bit hiếm gặp), quá trình test thông thường không thể kích hoạt được Payload để quan sát lỗi.</text>
+    <text x="30" y="64" class="note-text">• <tspan font-weight="bold">Graph Learning (GNN) phát hiện ra:</tspan> Dù Trojan không kích hoạt khi chạy, <tspan font-weight="bold" fill="#c92a2a">cấu trúc đồ thị (Topology) của nó luôn hiện hữu</tspan>: cổng Trigger có độ phức tạp Fan-in cao bất thường, và cổng Payload có đường kết nối xen ngang độc hại vào luồng dữ liệu chính.</text>
+  </g>
+</svg>
