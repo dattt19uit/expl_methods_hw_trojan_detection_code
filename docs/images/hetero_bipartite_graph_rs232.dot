@@ -1,0 +1,347 @@
+digraph HeteroBipartiteGraph {
+    graph [
+        rankdir=LR,
+        splines=spline,
+        nodesep=0.5,
+        ranksep=0.7,
+        bgcolor="#ffffff",
+        fontname="DejaVu Sans",
+        fontsize=13,
+        compound=true,
+        pad="0.3"
+    ];
+    node [fontname="DejaVu Sans", fontsize=10.5];
+    edge [fontname="DejaVu Sans", fontsize=9.5];
+
+    // Main Title
+    labelloc="t";
+    label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+        <TR><TD><FONT POINT-SIZE="16"><B>(b) ĐỒ THỊ HAI PHÍA DỊ THỂ ĐỀ XUẤT (SEMANTIC HETEROGENEOUS BIPARTITE GRAPH IR)</B></FONT></TD></TR>
+        <TR><TD><FONT POINT-SIZE="11" COLOR="#2b8a3e">Trích đoạn mạch RS232-T1000 90nm: Bảo toàn 100% Cổng (Cell) và Dây (Net), Giữ nguyên Ngữ nghĩa Chân cắm (Pin Semantics)</FONT></TD></TR>
+    </TABLE>>;
+
+    // Functional Dataflow Bipartite Chain
+    subgraph cluster_hetero_data {
+        label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">
+            <TR><TD><B>Luồng Dữ Liệu Chức Năng (Bảo Toàn Chuỗi Xen Kẽ Hai Phía: Cell ↔ Net)</B></TD></TR>
+            <TR><TD><FONT COLOR="#2b8a3e" POINT-SIZE="9.5"><B>ĐƯỢC GIỮ NGUYÊN TRONG ĐỒ THỊ DỮ LIỆU G_data ĐỂ TRUYỀN TIN MESSAGE PASSING</B></FONT></TD></TR>
+        </TABLE>>;
+        fontname="DejaVu Sans Bold";
+        fontsize=11;
+        color="#12b886";
+        fillcolor="#e6fcf5";
+        style="filled,rounded";
+
+        h_pi [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#15aabf"><FONT COLOR="#ffffff"><B>Net: Primary Input</B></FONT></TD></TR>
+                <TR><TD><B>xmit_dataH[0]</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#495057">Chân ngõ vào chip</FONT></TD></TR>
+            </TABLE>>,
+            shape=ellipse,
+            style="filled",
+            fillcolor="#ffffff",
+            color="#15aabf",
+            penwidth=2.0
+        ];
+
+        h_u33 [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#1971c2"><FONT COLOR="#ffffff"><B>Cell: U33</B></FONT></TD></TR>
+                <TR><TD><B>AOI22X2</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#1971c2">Cell tổ hợp</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#d0ebff",
+            color="#1971c2",
+            penwidth=2.0
+        ];
+
+        h_n27 [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#495057"><FONT COLOR="#ffffff"><B>Net: n27</B></FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#333333">Dây nội vi logic</FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#2b8a3e"><B>Bảo toàn Fanout</B></FONT></TD></TR>
+            </TABLE>>,
+            shape=ellipse,
+            style="filled",
+            fillcolor="#f8f9fa",
+            color="#495057",
+            penwidth=1.8
+        ];
+
+        h_u32 [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#1971c2"><FONT COLOR="#ffffff"><B>Cell: U32</B></FONT></TD></TR>
+                <TR><TD><B>OAI21X2</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#1971c2">Cell tổ hợp</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#d0ebff",
+            color="#1971c2",
+            penwidth=2.0
+        ];
+
+        h_n190 [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#495057"><FONT COLOR="#ffffff"><B>Net: n190</B></FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#333333">Dây nội vi logic</FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#2b8a3e"><B>Bảo toàn Fanout</B></FONT></TD></TR>
+            </TABLE>>,
+            shape=ellipse,
+            style="filled",
+            fillcolor="#f8f9fa",
+            color="#495057",
+            penwidth=1.8
+        ];
+
+        h_u122 [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#1971c2"><FONT COLOR="#ffffff"><B>Cell: U122</B></FONT></TD></TR>
+                <TR><TD><B>MUX21X1</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#1971c2">Cổng ghép kênh</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#d0ebff",
+            color="#1971c2",
+            penwidth=2.0
+        ];
+
+        h_n118 [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#495057"><FONT COLOR="#ffffff"><B>Net: n118</B></FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#333333">Dây dữ liệu vào FF</FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#2b8a3e"><B>Nối tới chân D</B></FONT></TD></TR>
+            </TABLE>>,
+            shape=ellipse,
+            style="filled",
+            fillcolor="#f8f9fa",
+            color="#495057",
+            penwidth=1.8
+        ];
+
+        h_reg [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#1971c2"><FONT COLOR="#ffffff"><B>Cell: reg_0</B></FONT></TD></TR>
+                <TR><TD><B>DFFARX1 (Flip-Flop)</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#495057">ShiftRegH_reg_0_</FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#2b8a3e"><B>Phân định rõ D, CLK, RST</B></FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#d0ebff",
+            color="#1971c2",
+            penwidth=2.0
+        ];
+    }
+
+    // Decoupled Global Control Network
+    subgraph cluster_hetero_ctrl {
+        label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">
+            <TR><TD><B>Mạng Điều Khiển Toàn Cục Tách Rời (G_ctrl)</B></TD></TR>
+            <TR><TD><FONT COLOR="#862e9c" POINT-SIZE="9.5"><B>Gán nhãn is_control=1 và NGẮT BỎ trong G_data</B></FONT></TD></TR>
+        </TABLE>>;
+        fontname="DejaVu Sans Bold";
+        fontsize=11;
+        color="#be4bdb";
+        fillcolor="#f8f0fc";
+        style="filled,rounded";
+
+        h_clk [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#ae3ec9"><FONT COLOR="#ffffff"><B>Net: sys_clk</B></FONT></TD></TR>
+                <TR><TD><B>Clock Network</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#862e9c"><B>is_control = 1</B></FONT></TD></TR>
+            </TABLE>>,
+            shape=ellipse,
+            style="filled",
+            fillcolor="#ffffff",
+            color="#ae3ec9",
+            penwidth=2.0
+        ];
+
+        h_rst [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#ae3ec9"><FONT COLOR="#ffffff"><B>Net: sys_rst_l</B></FONT></TD></TR>
+                <TR><TD><B>Reset Network</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#862e9c"><B>is_control = 1</B></FONT></TD></TR>
+            </TABLE>>,
+            shape=ellipse,
+            style="filled",
+            fillcolor="#ffffff",
+            color="#ae3ec9",
+            penwidth=2.0
+        ];
+    }
+
+    // Hardware Trojan Subcircuit
+    subgraph cluster_hetero_trojan {
+        label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">
+            <TR><TD><B>Khối Hardware Trojan: Bảo Toàn Dây Kích Hoạt iCTRL</B></TD></TR>
+            <TR><TD><FONT COLOR="#c92a2a" POINT-SIZE="9.5"><B>CẦU NỐI NGỮ NGHĨA GIỮA TRIGGER VÀ PAYLOAD</B></FONT></TD></TR>
+        </TABLE>>;
+        fontname="DejaVu Sans Bold";
+        fontsize=11;
+        color="#e03131";
+        fillcolor="#fff5f5";
+        style="filled,rounded";
+
+        h_trig [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#c92a2a"><FONT COLOR="#ffffff"><B>Cell: U302 (Trigger)</B></FONT></TD></TR>
+                <TR><TD><B>ISOLORX8 (Cổng OR4)</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#c92a2a"><B>Label = 1 (Trojan Cell)</B></FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffe3e3",
+            color="#c92a2a",
+            penwidth=2.5
+        ];
+
+        h_ictrl [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#e03131"><FONT COLOR="#ffffff"><B>Net: iCTRL (Trojan Net)</B></FONT></TD></TR>
+                <TR><TD><B>DÂY KÍCH HOẠT HIẾM</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#c92a2a"><B>Cầu nối Trigger ↔ Payload</B></FONT></TD></TR>
+            </TABLE>>,
+            shape=hexagon,
+            style="filled",
+            fillcolor="#ffc9c9",
+            color="#e03131",
+            penwidth=2.5
+        ];
+
+        h_payl [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#c92a2a"><FONT COLOR="#ffffff"><B>Cell: U303 (Payload)</B></FONT></TD></TR>
+                <TR><TD><B>AND2X4 (Cổng AND2)</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#c92a2a"><B>Label = 1 (Trojan Cell)</B></FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffe3e3",
+            color="#c92a2a",
+            penwidth=2.5
+        ];
+
+        h_po [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#15aabf"><FONT COLOR="#ffffff"><B>Net: Primary Output</B></FONT></TD></TR>
+                <TR><TD><B>xmit_doneH</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#c92a2a">Ngõ ra bị bẻ gãy logic</FONT></TD></TR>
+            </TABLE>>,
+            shape=ellipse,
+            style="filled",
+            fillcolor="#ffffff",
+            color="#15aabf",
+            penwidth=2.0
+        ];
+    }
+
+    // Connections in Heterogeneous Dataflow (Cell <-> Net alternating)
+    h_pi -> h_u33 [
+        label="data_input\n(chân IN1)",
+        color="#2b8a3e",
+        fontcolor="#2b8a3e",
+        penwidth=2.2
+    ];
+    h_u33 -> h_n27 [
+        label="outputs\n(chân QN)",
+        color="#1971c2",
+        fontcolor="#1864ab",
+        penwidth=2.2
+    ];
+    h_n27 -> h_u32 [
+        label="data_input\n(chân IN3)",
+        color="#2b8a3e",
+        fontcolor="#2b8a3e",
+        penwidth=2.2
+    ];
+    h_u32 -> h_n190 [
+        label="outputs\n(chân QN)",
+        color="#1971c2",
+        fontcolor="#1864ab",
+        penwidth=2.2
+    ];
+    h_n190 -> h_u122 [
+        label="data_input\n(chân IN1)",
+        color="#2b8a3e",
+        fontcolor="#2b8a3e",
+        penwidth=2.2
+    ];
+    h_u122 -> h_n118 [
+        label="outputs\n(chân Q)",
+        color="#1971c2",
+        fontcolor="#1864ab",
+        penwidth=2.2
+    ];
+    h_n118 -> h_reg [
+        label="data_input\n(chân dữ liệu D)",
+        color="#2b8a3e",
+        fontcolor="#2b8a3e",
+        penwidth=2.5
+    ];
+
+    // Decoupled Control Connections (is_control=1 filtered in G_data)
+    h_clk -> h_reg [
+        label="control_input (chân CLK)\nis_control=1 [NGẮT KHỎI G_data]\nBảo vệ Dirichlet Energy",
+        style="dashed",
+        color="#ae3ec9",
+        fontcolor="#862e9c",
+        penwidth=2.2
+    ];
+    h_rst -> h_reg [
+        label="control_input (chân RSTB)\nis_control=1 [NGẮT KHỎI G_data]",
+        style="dashed",
+        color="#ae3ec9",
+        fontcolor="#862e9c",
+        penwidth=1.8
+    ];
+
+    // Trojan Bipartite Chain
+    h_trig -> h_ictrl [
+        label="payload_output\n(chân Q)",
+        color="#c92a2a",
+        fontcolor="#c92a2a",
+        penwidth=2.5
+    ];
+    h_ictrl -> h_payl [
+        label="trigger_input\n(chân IN1)",
+        color="#c92a2a",
+        fontcolor="#c92a2a",
+        penwidth=2.5
+    ];
+    h_payl -> h_po [
+        label="payload_output\n(chân Q)",
+        color="#c92a2a",
+        fontcolor="#c92a2a",
+        penwidth=2.5
+    ];
+
+    // Bottom Summary Banner
+    subgraph cluster_hetero_footer {
+        rank=sink;
+        color="#ced4da";
+        fillcolor="#f8f9fa";
+        style="filled,rounded";
+        label="";
+
+        hetero_footer [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="4" CELLPADDING="3">
+                <TR><TD ALIGN="LEFT"><FONT COLOR="#2b8a3e"><B>ƯU THẾ VƯỢT TRỘI CỦA ĐỒ THỊ HAI PHÍA DỊ THỂ TRÊN RS232-T1000 90nm:</B></FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT COLOR="#333333">• <B>Bảo toàn 100% topo Netlist:</B> Phân định rõ 268 Cell (hình chữ nhật xanh) và 312 Net (hình oval xám/đỏ), bảo toàn phân nhánh Fanout.</FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT COLOR="#333333">• <B>Dây kích hoạt iCTRL được giữ nguyên:</B> Đóng vai trò cầu nối truyền tin giữa Trigger và Payload, giúp HeteroTrojanGNN bắt trọn mẫu hình tấn công.</FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT COLOR="#333333">• <B>Tách rời Clock/Reset:</B> Giữ năng lượng Dirichlet không suy giảm theo chiều sâu GNN, tăng LOCO Micro-F1 trên họ ISCAS từ 0.0551 lên 0.7266 (13.2x).</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#e6fcf5",
+            color="#12b886",
+            penwidth=1.5
+        ];
+    }
+}

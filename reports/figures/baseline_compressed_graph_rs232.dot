@@ -1,0 +1,283 @@
+digraph BaselineCompressedGraph {
+    graph [
+        rankdir=LR,
+        splines=spline,
+        nodesep=0.6,
+        ranksep=0.75,
+        bgcolor="#ffffff",
+        fontname="DejaVu Sans",
+        fontsize=13,
+        compound=true,
+        pad="0.3"
+    ];
+    node [fontname="DejaVu Sans", fontsize=10.5];
+    edge [fontname="DejaVu Sans", fontsize=9.5];
+
+    // Main Title
+    labelloc="t";
+    label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+        <TR><TD><FONT POINT-SIZE="16"><B>(a) ĐỒ THỊ NÉN PHẲNG BASELINE (WHITTEN &amp; WOLFF, JETTA 2026 - CIRCUITGRAPH)</B></FONT></TD></TR>
+        <TR><TD><FONT POINT-SIZE="11" COLOR="#495057">Trích đoạn mạch RS232-T1000 90nm: Biến đổi Netlist thành Đồ thị Thuần nhất Cổng-Cổng (Toàn bộ Dây nội vi bị xóa sạch)</FONT></TD></TR>
+    </TABLE>>;
+
+    // Primary Input Group
+    subgraph cluster_pi {
+        label="Ngõ Vào Chính PI";
+        fontname="DejaVu Sans Bold";
+        fontsize=11;
+        color="#15aabf";
+        fillcolor="#e3fafc";
+        style="filled,rounded";
+
+        b_pi [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="3">
+                <TR><TD BGCOLOR="#15aabf"><FONT COLOR="#ffffff"><B>PRIMARY INPUT</B></FONT></TD></TR>
+                <TR><TD><FONT COLOR="#0c8599"><B>xmit_dataH[0]</B></FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#495057">Chân ngõ vào chip</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffffff",
+            color="#15aabf",
+            penwidth=2.0
+        ];
+    }
+
+    // Logic Gate Chain Group
+    subgraph cluster_logic {
+        label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">
+            <TR><TD><B>Chuỗi Cổng Logic Bị Nén Phẳng (Homogeneous Logic Chain)</B></TD></TR>
+            <TR><TD><FONT COLOR="#c92a2a" POINT-SIZE="9.5"><B>CÁC DÂY n27, n190, n118 ĐÃ BỊ XÓA BỎ HOÀN TOÀN KHỎI ĐỒ THỊ</B></FONT></TD></TR>
+        </TABLE>>;
+        fontname="DejaVu Sans Bold";
+        fontsize=11;
+        color="#fa5252";
+        fillcolor="#fff5f5";
+        style="filled,rounded";
+
+        b_u33 [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#228be6"><FONT COLOR="#ffffff"><B>Node gộp: U33.QN</B></FONT></TD></TR>
+                <TR><TD><B>Cổng AOI22X2</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#c92a2a">Đại diện bằng pin QN</FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#868e96">Xóa các pin IN1..4</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffffff",
+            color="#228be6",
+            penwidth=2.0
+        ];
+
+        b_u32 [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#228be6"><FONT COLOR="#ffffff"><B>Node gộp: U32.QN</B></FONT></TD></TR>
+                <TR><TD><B>Cổng OAI21X2</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#c92a2a">Đại diện bằng pin QN</FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#868e96">Xóa các pin IN1..3</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffffff",
+            color="#228be6",
+            penwidth=2.0
+        ];
+
+        b_u122 [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#228be6"><FONT COLOR="#ffffff"><B>Node gộp: U122.Q</B></FONT></TD></TR>
+                <TR><TD><B>Cổng MUX21X1</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#c92a2a">Đại diện bằng pin Q</FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#868e96">Xóa các pin S, IN1..2</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffffff",
+            color="#228be6",
+            penwidth=2.0
+        ];
+
+        b_reg [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#1971c2"><FONT COLOR="#ffffff"><B>Node gộp: reg_0.Q</B></FONT></TD></TR>
+                <TR><TD><B>Flip-Flop DFFARX1</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#495057">ShiftRegH_reg_0_</FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#c92a2a">Mất chân D &amp; CLK</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffffff",
+            color="#1971c2",
+            penwidth=2.0
+        ];
+    }
+
+    // Global Control Network Group
+    subgraph cluster_ctrl {
+        label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">
+            <TR><TD><B>Mạng Điều Khiển Toàn Cục</B></TD></TR>
+            <TR><TD><FONT COLOR="#d9480f" POINT-SIZE="9.5"><B>Đường tắt 1-hop tới 35 FFs</B></FONT></TD></TR>
+        </TABLE>>;
+        fontname="DejaVu Sans Bold";
+        fontsize=11;
+        color="#fab005";
+        fillcolor="#fff9db";
+        style="filled,rounded";
+
+        b_clk [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#fab005"><FONT COLOR="#ffffff"><B>sys_clk</B></FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#d9480f">Primary Input Clock</FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#c92a2a"><B>Bậc ra Out-deg = 76</B></FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffffff",
+            color="#fab005",
+            penwidth=1.8
+        ];
+
+        b_rst [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#fab005"><FONT COLOR="#ffffff"><B>sys_rst_l</B></FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#d9480f">Primary Input Reset</FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="8.5" COLOR="#495057">Nối trực tiếp chân reset</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffffff",
+            color="#fab005",
+            penwidth=1.8
+        ];
+    }
+
+    // Trojan Subcircuit Group
+    subgraph cluster_trojan {
+        label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">
+            <TR><TD><B>Khối Hardware Trojan Bị Nén Phẳng</B></TD></TR>
+            <TR><TD><FONT COLOR="#c92a2a" POINT-SIZE="9.5"><B>DÂY KÍCH HOẠT iCTRL BỊ XÓA BỎ HOÀN TOÀN</B></FONT></TD></TR>
+        </TABLE>>;
+        fontname="DejaVu Sans Bold";
+        fontsize=11;
+        color="#c92a2a";
+        fillcolor="#ffe3e3";
+        style="filled,rounded";
+
+        b_trig [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#c92a2a"><FONT COLOR="#ffffff"><B>U302.Q (Trigger)</B></FONT></TD></TR>
+                <TR><TD><B>Cổng OR4X1</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#c92a2a">Theo dõi trạng thái hiếm</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffffff",
+            color="#c92a2a",
+            penwidth=2.2
+        ];
+
+        b_payl [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#c92a2a"><FONT COLOR="#ffffff"><B>U303.Q (Payload)</B></FONT></TD></TR>
+                <TR><TD><B>Cổng AND2X1</B></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#c92a2a">Bẻ gãy dữ liệu xuất</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffffff",
+            color="#c92a2a",
+            penwidth=2.2
+        ];
+
+        b_po [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2">
+                <TR><TD BGCOLOR="#15aabf"><FONT COLOR="#ffffff"><B>PRIMARY OUTPUT</B></FONT></TD></TR>
+                <TR><TD><FONT COLOR="#0c8599"><B>xmit_doneH</B></FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#495057">Chân ngõ ra chip</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#ffffff",
+            color="#15aabf",
+            penwidth=2.0
+        ];
+    }
+
+    // Connections in Dataflow
+    b_pi -> b_u33 [
+        label="add_edge nhân tạo\n(Xóa chân IN1..4)",
+        color="#fa5252",
+        fontcolor="#c92a2a",
+        penwidth=2.2
+    ];
+    b_u33 -> b_u32 [
+        label="add_edge trực tiếp\n(XÓA BỎ DÂY n27)",
+        color="#fa5252",
+        fontcolor="#c92a2a",
+        penwidth=2.2
+    ];
+    b_u32 -> b_u122 [
+        label="add_edge trực tiếp\n(XÓA BỎ DÂY n190)",
+        color="#fa5252",
+        fontcolor="#c92a2a",
+        penwidth=2.2
+    ];
+    b_u122 -> b_reg [
+        label="add_edge trực tiếp\n(XÓA BỎ DÂY n118)",
+        color="#fa5252",
+        fontcolor="#c92a2a",
+        penwidth=2.2
+    ];
+
+    // Clock and Reset Shortcuts
+    b_clk -> b_reg [
+        label="ĐƯỜNG TẮT 1-HOP TOÀN CỤC\n(Bỏ qua logic & Gây Over-smoothing)",
+        style="dashed",
+        color="#f76707",
+        fontcolor="#d9480f",
+        penwidth=2.2
+    ];
+    b_rst -> b_reg [
+        label="1-hop reset",
+        style="dashed",
+        color="#fab005",
+        fontcolor="#d9480f",
+        penwidth=1.8
+    ];
+
+    // Trojan Connections
+    b_trig -> b_payl [
+        label="NỐI TẮT TRỰC TIẾP\n(XÓA MẤT DÂY iCTRL)",
+        color="#c92a2a",
+        fontcolor="#c92a2a",
+        penwidth=2.5
+    ];
+    b_payl -> b_po [
+        label="add_edge",
+        color="#1971c2",
+        penwidth=2.0
+    ];
+
+    // Bottom Summary Banner
+    subgraph cluster_footer {
+        rank=sink;
+        color="#ced4da";
+        fillcolor="#f8f9fa";
+        style="filled,rounded";
+        label="";
+
+        footer [
+            label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="4" CELLPADDING="3">
+                <TR><TD ALIGN="LEFT"><FONT COLOR="#c92a2a"><B>HẬU QUẢ CỐT LÕI CỦA CƠ CHẾ NÉN PHẲNG BASELINE TRÊN RS232-T1000 90nm:</B></FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT COLOR="#333333">• <B>Mất 61.7% thực thể:</B> Toàn bộ các dây n27, n190, n118 và iCTRL bị xóa sạch; đồ thị chỉ còn lại các nút chân ra cổng gộp.</FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT COLOR="#333333">• <B>Phá vỡ tính hai phía:</B> Triệt tiêu cấu trúc phân nhánh Fanout thực tế của netlist vi mạch.</FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT COLOR="#333333">• <B>Co cụm cấu trúc bởi xung nhịp:</B> sys_clk tạo 76 đường tắt 1-hop làm sụp đổ đường kính đồ thị và gây Over-smoothing nghiêm trọng khi áp dụng GNN.</FONT></TD></TR>
+            </TABLE>>,
+            shape=box,
+            style="filled,rounded",
+            fillcolor="#fff9db",
+            color="#fab005",
+            penwidth=1.5
+        ];
+    }
+}
