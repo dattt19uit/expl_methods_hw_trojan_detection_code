@@ -1,12 +1,17 @@
 # BẢN THẢO NGHIÊN CỨU TOÀN DIỆN LUẬN VĂN THẠC SĨ (RESEARCH STORY)
-## Gate-Level Hardware Trojan Localization Using Control-Aware Heterogeneous Graphs and Relation-Specific Dirichlet Energy
-### Định Vị Hardware Trojan Mức Cổng Bằng Đồ Thị Dị Thể Nhận Biết Điều Khiển Và Năng Lượng Dirichlet Theo Quan Hệ
+## Control-Aware Heterogeneous Graph Learning for Cross-Family Gate-Level Hardware Trojan Localization
+### Học Biểu Diễn Đồ Thị Dị Thể Nhận Biết Quan Hệ Điều Khiển Cho Định Vị Hardware Trojan Mức Cổng Xuyên Họ Mạch
 
 * **Đề tài Luận văn (Định hình chính thức):**  
-  *Tiếng Anh (Luận văn):* **Gate-Level Hardware Trojan Localization Using Control-Aware Heterogeneous Graphs and Relation-Specific Dirichlet Energy**  
-  *Tiếng Việt:* **Định Vị Hardware Trojan Mức Cổng Bằng Đồ Thị Dị Thể Nhận Biết Điều Khiển Và Năng Lượng Dirichlet Theo Quan Hệ**  
-  *Tiếng Anh (Bài báo khoa học khuyến nghị):* **Relation-Specific Dirichlet Non-Conformity on Control-Aware Cell–Net Graphs for Cross-Family Hardware Trojan Localization**  
+  *Tiếng Anh (Luận văn):* **Control-Aware Heterogeneous Graph Learning for Cross-Family Gate-Level Hardware Trojan Localization**  
+  *Tiếng Việt:* **Học Biểu Diễn Đồ Thị Dị Thể Nhận Biết Quan Hệ Điều Khiển Cho Định Vị Hardware Trojan Mức Cổng Xuyên Họ Mạch**  
+  *Tiếng Anh (Bài báo khoa học khuyến nghị):* **Control-Aware Heterogeneous Graph Learning for Cross-Family Gate-Level Hardware Trojan Localization**  
+  *Tiếng Việt (Bài báo khoa học):* **Học Biểu Diễn Đồ Thị Dị Thể Nhận Biết Quan Hệ Điều Khiển Cho Định Vị Hardware Trojan Mức Cổng Xuyên Họ Mạch**  
 * **Học viên thực hiện:** Trần Tấn Đạt  
+* **Mã số học viên:** *(Cập nhật theo hồ sơ thạc sĩ)*  
+* **Người hướng dẫn khoa học:** *(Cập nhật theo quyết định giao đề tài)*  
+* **Cơ sở đào tạo:** *(Cập nhật đơn vị đào tạo sau đại học)*  
+* **Thời điểm hoàn thiện bản thảo:** Tháng 09/2026  
 
 ---
 
@@ -19,7 +24,7 @@
    * 1.3. Cơ chế dựng graph của Baseline trên mạch UART RS232: Từ hiện tượng tắc nghẽn của CircuitGraph đến can thiệp nén thô bạo
    * 1.4. Bốn giới hạn cấu trúc bản chất của biểu diễn nén phẳng
    * 1.5. Thử Nghiệm Kiểm Định Chéo Của Baseline: Từ Hiện Tượng Hai Phân Vùng LOCO (Table 9) Đến Sự Sụp Đổ Toàn Diện Trong LOFO (Table 10)
-   * 1.6. Ba khoảng trống nghiên cứu & Hệ thống câu hỏi nghiên cứu (RQ1, RQ1b, RQ2, RQ3)
+   * 1.6. Ba khoảng trống nghiên cứu, Thu hẹp phạm vi & Hệ thống câu hỏi nghiên cứu (Main RQ & RQ1–RQ3)
 2. [Chương 2: Tổng Quan Tiến Hóa Của Y Văn Quốc Tế (2016 – 2026)](#chương-2-tổng-quan-tiến-hóa-của-y-văn-quốc-tế-2016--2026)
    * 2.1. Kỷ nguyên học máy dạng bảng & Đặc trưng tô-pô thủ công (2016 – 2021)
    * 2.2. Trục chuyển dịch sang biểu diễn đồ thị & Graph Neural Networks (2021 – 2026)
@@ -40,7 +45,7 @@
    * 4.2. Khung đánh giá đóng băng & Quy trình dò ngưỡng quyết định $\tau^*$ độc lập
    * 4.3. Hệ thống các thước đo đánh giá đa chiều & Thước đo vận hành EDA ($\text{FP/1000 gates}$, CRR)
    * 4.4. Đối chuẩn tổng thể 6 thực nghiệm vĩ mô (Exp 1 – Exp 6): Đánh giá trong phân phối & Bước đệm sang LOFO
-5. [Chương 5: Thực Nghiệm Đối Chứng Đầy Đủ & Đánh Giá Bộ Dò Năng Lượng Dirichlet](#chương-5-thực-nghiệm-đối-chứng-đầy-đủ-configs-a-f--câu-chuyện-nghiên-cứu-mới-từ-dữ-liệu)
+5. [Chương 5: Thực Nghiệm Đối Chứng Đầy Đủ & Đánh Giá Khái Quát Hóa Ngoại Suy (LOFO)](#chương-5-thực-nghiệm-đối-chứng-đầy-đủ-configs-a-f--câu-chuyện-nghiên-cứu-mới-từ-dữ-liệu)
    * 5.1. Định nghĩa tường minh & Bản chất kỹ thuật của 6 cấu hình bóc tách (Config A đến Config F)
    * 5.2. Bảng tổng hợp kết quả vĩ mô đa hạt giống (Macro Metrics Across 5 Families, Multi-Seed $\mu \pm \sigma$)
    * 5.2b. Đối chuẩn cùng giao thức với các kiến trúc GNN y văn (GraphSAGE, GAT, GAT-JK SALTY, BiDirectional-GNN, Heuristic LoRD)
@@ -49,7 +54,7 @@
    * 5.3b. Đối chứng nhân quả cắt bỏ cạnh điều khiển (Random Edge, Degree-Matched, Clock vs Reset)
    * 5.3c. Đối chuẩn hệ thống các cơ chế xử lý cạnh điều khiển (Control-ON, Control-OFF, Control-Gated, Degree-Normalized, Counterfactual)
    * 5.4. Bóc tách RQ1: Hiện tượng phủ định trực giác ban đầu (A vs B) & Bản chất của biểu diễn hai phía
-   * 5.5. Bóc tách RQ1b: Lan truyền dị thể phục hồi hiệu năng (B vs C)
+   * 5.5. Bóc tách RQ1 (Tiếp theo): Lan truyền dị thể phục hồi hiệu năng (B vs C)
    * 5.6. Bóc tách RQ2 & RQ3: Động học năng lượng Dirichlet và cơ chế bất thường cấu trúc
    * 5.7. Động học giữa PR-AUC và $F_1$: Phân tích dao động cục bộ vs. Tính vững chắc đa hạt giống
    * 5.8. Phân tích tính ổn định giữa các quy trình công nghệ (Process Node Generalization: 90nm vs. 180nm)
@@ -62,7 +67,7 @@
    * 6.5. Đánh giá định lượng XAI đa tiêu chuẩn (Fidelity, Sparsity, Runtime) & Mô hình Two-Tier EDA Pipeline
 7. [Chương 7: Những Giới Hạn và Hướng Phát Triển (Limitations and Future Work)](#chương-7-những-giới-hạn-và-hướng-phát-triển-limitations-and-future-work)
    * 7.1. Thực nghiệm chuyên sâu kiểm chứng các nghi vấn phương pháp luận
-     - 7.1.1. Định lượng động học năng lượng Dirichlet & Cấu trúc biểu diễn trên toán tử chiếu cố định (RQ2)
+     - 7.1.1. Định lượng động học năng lượng Dirichlet & Cấu trúc biểu diễn trên toán tử chiếu cố định (RQ3)
      - 7.1.2. Khảo sát tính nhạy cảm mẫu dị biệt `RS232-T1800_90nm`
      - 7.1.3. Cân bằng ngữ nghĩa bước nhảy (2-Layer vs 4-Layer Bipartite)
      - 7.1.4. Đánh giá độ ổn định thống kê đa hạt giống
@@ -76,7 +81,7 @@
    * 7.2. Những giới hạn học thuật của nghiên cứu (Academic Limitations)
    * 7.3. Các hướng phát triển mở rộng trong tương lai (Future Research Directions)
 8. [Chương 8: Kết Luận và Đóng Góp Của Luận Văn (Conclusions and Thesis Contributions)](#chương-8-kết-luận-và-đóng-góp-của-luận-văn-conclusions-and-thesis-contributions)
-   * 8.1. Tổng kết các trụ cột đóng góp khoa học cốt lõi
+   * 8.1. Tổng kết 2 đóng góp khoa học cốt lõi & 1 phân tích cơ chế bổ trợ
    * 8.2. Ý nghĩa thực tiễn & Tác động đối với quy trình thiết kế an toàn (EDA Flow)
    * 8.3. Lời kết
 9. [Danh Mục Tài Liệu Tham Khảo (References)](#danh-mục-tài-liệu-tham-khảo-references)
@@ -86,34 +91,52 @@
 ## TÓM TẮT LUẬN VĂN / ABSTRACT
 
 ### Tóm Tắt Luận Văn (Vietnamese Executive Summary)
-Định vị mã độc phần cứng (Hardware Trojan - HT) mức cổng logic (gate-level netlist) đối mặt với hai thách thức kỹ thuật cốt lõi: tỷ lệ mất cân bằng dữ liệu cực đoan ($\approx 0.78\%$ cổng độc hại) và sự trôi lệch phân phối cấu trúc nghiêm trọng giữa các họ vi mạch khác nhau. Các mô hình học máy dạng bảng cơ sở nén cấu trúc mạch thành một số lượng nhỏ các đặc trưng vô hướng cục bộ và sụp đổ hoàn toàn về Macro-$F_1 = 0.0300$ (với Micro-$F_1 \approx 0.033$ công bố trong bài báo cơ sở) khi kiểm thử ngoại suy liên họ (Leave-One-Family-Out - LOFO Cross-Validation) do hiện tượng ghi nhớ tọa độ mạch chủ. Mặt khác, các tiếp cận học đồ thị trong y văn quốc tế đã phát triển nhanh chóng (từ GNN4TJ, TrojanSAINT đến HGAT4TJ, HTOD-BGNN); tuy nhiên, phần lớn đều coi mạng lưới kết nối vi mạch là thuần nhất hoặc chưa phân tách tường minh ngữ nghĩa tín hiệu, vô tình tạo ra các siêu đường tắt (clique-like shortcuts) qua mạng phân phối xung nhịp (clock) và thiết lập lại (reset) toàn cục, gây sụp đổ không gian biểu diễn (representation collapse) qua các nón logic chức năng.
+Định vị mã độc phần cứng (Hardware Trojan - HT) mức cổng logic (gate-level netlist) đối mặt với hai thách thức kỹ thuật cốt lõi: tỷ lệ mất cân bằng dữ liệu cực đoan ($\approx 0.78\%$ cổng độc hại) và sự trôi lệch phân phối cấu trúc nghiêm trọng giữa các họ vi mạch khác nhau. Các mô hình học máy dạng bảng cơ sở nén cấu trúc mạch thành một số lượng nhỏ các đặc trưng vô hướng cục bộ và sụp đổ hoàn toàn về $\text{Macro-}F_1 = 0.0300$ (với $\text{Micro-}F_1 \approx 0.033$ công bố trong Bảng 10 của bài báo cơ sở Whitten & Wolff, JETTA 2026) khi kiểm thử ngoại suy liên họ (Leave-One-Family-Out - LOFO Cross-Validation) do hiện tượng ghi nhớ tọa độ mạch chủ (host coordinate memorization). Ngay cả khi bổ sung 8 đặc trưng tô-pô đồ thị tinh vi (13F: PageRank, Betweenness...), mô hình dạng bảng vẫn bị chặn dưới bức tường $\text{Macro-}F_1 = 0.1637$. Mặt khác, các tiếp cận học sâu đồ thị (GNN) cho bài toán Hardware Trojan đã xuất hiện dày đặc trong y văn quốc tế giai đoạn 2021–2026; do đó, việc chỉ đề xuất thêm một biến thể GNN đơn thuần không còn tạo ra đóng góp phương pháp luận mang tính đột phá.
 
-Luận văn xác lập một định hướng khoa học mới: **không đặt trọng tâm vào việc đơn thuần đề xuất thêm một kiến trúc GNN chung chung, mà tập trung vào việc mô hình hóa quan hệ đồ thị nhận biết điều khiển (Control-Aware Relational Graph Modeling) kết hợp với phân tích độ bất tương đồng cấu trúc qua năng lượng Dirichlet theo quan hệ (Relation-Specific Dirichlet Structural Non-Conformity)** nhằm định vị Hardware Trojan trên các họ vi mạch chưa từng thấy. Trục nghiên cứu xuyên suốt vận hành theo chuỗi luận chứng chặt chẽ:
-$$\text{Semantic Circuit Graph} \longrightarrow \text{Control-Aware Relational Modeling} \longrightarrow \text{Relation-Specific Dirichlet Structural Non-Conformity} \longrightarrow \text{Cross-Family Trojan Localization}$$
+Luận văn thu hẹp và xác lập một trục nghiên cứu trọng tâm duy nhất: **Làm thế nào biểu diễn và học quan hệ trên gate-level netlist để cải thiện khả năng định vị Hardware Trojan trên các họ vi mạch chưa từng thấy (LOFO)?** Toàn bộ công trình được tinh gọn thành chuỗi luận chứng nhân quả tự nhiên:
+$$\text{Handcrafted Features (5F/13F)} \longrightarrow \text{Structural Representation (Cell–Net IR)} \longrightarrow \text{Relational Learning (HeteroTrojanGNN)} \longrightarrow \text{Cross-Family Generalization (LOFO)}$$
+$$\Downarrow$$
+$$\text{Mechanism Analysis: Relation-Specific Dirichlet Energy } R_r(H) \text{ + SVD Effective Rank } \operatorname{erank}(H)$$
 
-Mô hình đồ thị hai phía (`Cell–Net Bipartite IR`) bảo toàn nguyên vẹn bản sắc tế bào logic (`Cell`), đường liên kết (`Net`), chiều truyền tín hiệu và phân tách tường minh quan hệ dữ liệu với quan hệ điều khiển. Trên cơ sở toán tử chiếu 2-hop trên nút Cell ($L_{\text{data}}^{\text{cell}}, L_{\text{ctrl}}^{\text{cell}}$), luận văn chỉ ra rằng các mạng điều khiển dùng chung tạo ra các đồ thị con dạng clique ($A_{\text{co-ctrl}} = M_{\text{in, ctrl}}^\top M_{\text{in, ctrl}}$) gây ra các siêu đường tắt $O(k^2)$ cạnh, trong khi luồng dữ liệu ($A_{\text{data}} = M_{\text{out}} M_{\text{in, data}}$) có tính thưa và định hướng. Việc kiểm soát cạnh điều khiển giúp duy trì thứ hạng hiệu dụng ($\operatorname{erank}$) cao hơn từ $+17.8\%$ đến $+36.4\%$, ngăn ngừa sụp đổ không gian đặc trưng về không gian con thứ hạng thấp, đồng thời tăng cường độ kết dính biểu diễn dọc luồng dữ liệu logic.
+Luận văn đóng góp **hai phát hiện/phương pháp cốt lõi** và **một phân tích cơ chế bổ trợ**:
+1. **Đóng góp phương pháp cốt lõi (Core Method):** Xây dựng mô hình học quan hệ dị thể trên đồ thị hai phía Cell–Net (`HeteroTrojanGNN` sử dụng `HeteroConv`). Trước hết, đề tài thiết lập hạ tầng biểu diễn Semantic Cell–Net Bipartite IR bảo toàn chính xác $100\%$ thực thể tế bào logic vật lý ($47,464$ cells và toàn bộ $370$ cổng Trojan, sửa lỗi làm mất $12$ cổng Trojan của `circuitgraph`). Kết quả phủ định kinh điển (Negative Result: Config A $\to$ Config B, $F_1 = 0.3518 \to 0.2151$) chứng minh rằng *độ trung thực đồ thị tự nó là chưa đủ* nếu mô hình học trộn lẫn ngữ nghĩa Cổng–Dây. Việc áp dụng `HeteroConv` phân tách độc lập các ma trận trọng số theo từng quan hệ vật lý đã phục hồi hiệu năng ($F_1 = 0.3258, +51.5\%$).
+2. **Phát hiện thực nghiệm trung tâm (Core Empirical Finding):** Các quan hệ điều khiển toàn cục (mạng phân phối xung nhịp `clk` và `reset`) tạo ra hàng triệu siêu đường tắt nhân tạo, gây sụp đổ chiều không gian biểu diễn (subspace collapse). Việc can thiệp cấu trúc bằng cách **ngắt bỏ hoàn toàn các cạnh điều khiển (Control-OFF)** chỉ cho phép GNN lan truyền dọc luồng dữ liệu logic ($G_{\text{data}}$) đã tạo nên bước đột phá vượt bậc dưới giao thức LOFO: nâng $F_1$ từ $0.3258$ lên $0.4032$ (tăng $+23.8\%$), và đạt đỉnh cao **$\text{Macro-}F_1 = 0.5239 \pm 0.0454$**, **$\text{PR-AUC} = 0.5731 \pm 0.0195$** dưới cơ chế dò ngưỡng thích nghi miền.
+3. **Phân tích cơ chế bổ trợ (Supporting Mechanism Analysis):** Ứng dụng Năng lượng Dirichlet theo quan hệ $R_r(H)$ và Thứ hạng hiệu dụng $\operatorname{erank}(H)$ trên các toán tử chiếu cố định để giải thích định lượng cơ chế thành công của Control-OFF. Kết quả chứng minh Control-OFF duy trì $\operatorname{erank}(H)$ cao hơn từ $+17.8\%$ đến $+36.4\%$ trên cả 5 họ vi mạch, ngăn chặn triệt để sự co cụm không gian nhúng. Đồng thời, số dư Dirichlet địa phương thể hiện tính bổ trợ phụ thuộc họ mạch, giúp tăng vọt PR-AUC từ $+28.7\%$ đến $+49.0\%$ trên các họ vi mạch tuần tự quy mô lớn khó nhất (`s38417`: $0.2885 \to 0.4300$; `s38584`: $0.2606 \to 0.3353$).
 
-Đặc biệt, năng lượng Dirichlet không chỉ dừng lại ở vai trò chẩn đoán hiện tượng làm mượt (smoothing diagnostic), mà được chuyển hóa thành một **thước đo bất thường cấu trúc (Structural Non-Conformity Anomaly Score)**. Dưới giao thức chuẩn hóa nghiêm ngặt không rò rỉ nhãn (Zero-Label Leakage: các tham số median/MAD chỉ được khớp trên tập huấn luyện rồi đóng băng tuyệt đối cho tập kiểm thử ngoại suy), số dư năng lượng Dirichlet địa phương ($z_{i, \text{data}}, z_{i, \text{ctrl}}$) đóng vai trò như một tín hiệu cấu trúc trực giao bổ trợ cho xác suất dự đoán của mô hình nơ-ron quan hệ.
+Về mặt giao thức thẩm định, luận văn phân định minh bạch hai cấp độ:
+- **Giao thức chuẩn mực nghiêm ngặt tuyệt đối không rò rỉ nhãn (Strict Zero-Label Leakage Multi-Seed LOFO - Chỉ số Báo cáo Chính):** Toàn bộ các tham số chuẩn hóa $(\mu, \text{MAD})$ và ngưỡng quyết định $\tau^*$ được khóa cứng từ tập huấn luyện/validation của 4 họ và áp nguyên trạng sang họ kiểm thử thứ 5 qua 15 lượt chạy (5 Folds $\times$ 3 Seeds). Mô hình đạt:
+  $$\mathbf{\text{Macro-}F_1 = 0.2738 \pm 0.0292 (\sigma_{\text{seed}}) \pm 0.2232 (\sigma_{\text{family}}), \quad \text{PR-AUC} = 0.4237 \pm 0.0683 \pm 0.2789}$$
+  (Phương sai khởi tạo $\sigma_{\text{seed}} \approx 0.029$ rất nhỏ so với phương sai trôi lệch miền $\sigma_{\text{family}} \approx 0.223$).
+- **Cực hạn phân tách nội tại có thích nghi miền (Domain-Adaptive Upper-Bound - Chỉ số Báo cáo Thứ Cấp):** Khi có cơ chế thích nghi ngưỡng theo miền vi mạch đích, mô hình đạt $\mathbf{\text{Macro-}F_1 = 0.5239 \pm 0.0454}$, $\text{PR-AUC} = 0.5731 \pm 0.0195$, và $\text{MCC} = 0.5473 \pm 0.0336$.
 
-Đánh giá thực nghiệm LOFO đa hạt giống trên toàn bộ 30 vi mạch Trust-Hub (thuộc 5 họ vi mạch) khẳng định mô hình mạng nơ-ron quan hệ nhận thức điều khiển đạt Macro-$F_1 = 0.5239 \pm 0.0454$ (trong đó phương sai giữa các hạt giống khởi tạo $\sigma_{\text{seed}} \approx 0.029$ rất nhỏ so với phương sai trôi lệch miền liên họ $\sigma_{\text{family}} \approx 0.222$), PR-AUC $= 0.5731 \pm 0.0195$, và MCC $= 0.5473 \pm 0.0336$, vượt trội rõ rệt các mô hình dạng bảng và đồ thị thuần nhất dưới cùng giao thức. Khi tích hợp hiệu chuẩn hậu nghiệm với số dư Dirichlet ($M_3$), bộ dò đạt sự cải thiện nhất quán trên các họ vi mạch tuần tự khó nhất (`s15850`: $F_1 = 0.8000$, `s38417`: $F_1 = 0.2838$, `s38584`: $F_1 = 0.0571$). Cuối cùng, phương pháp Graph XAI chuyển đổi dự đoán thành đồ thị con tính toán liên quan mô hình (Model-Relevant Computational Subgraph), hỗ trợ đắc lực kỹ sư EDA khoanh vùng chính xác cơ chế kích hoạt và tải trọng Trojan.
+Cuối cùng, phương pháp Graph XAI trích xuất đồ thị con tính toán liên quan mô hình (Model-Relevant Computational Subgraph) đạt độ thưa $80.1\%$ cạnh và độ chính xác cổng Trojan $30.7\%$ (làm giàu $\approx 40$ lần), hỗ trợ đắc lực kỹ sư EDA trong quy trình sửa đổi kỹ thuật (ECO).
 
-*Từ khóa:* An ninh Vi mạch, Hardware Trojan, Định Vị Mức Cổng, Biểu Diễn Đồ Thị Hai Phía Cell–Net, Mô Hình Hóa Quan Hệ Nhận Biết Điều Khiển, Năng Lượng Dirichlet Theo Quan Hệ, Bất Tương Đồng Cấu Trúc (Structural Non-Conformity), Đánh Giá LOFO Đa Hạt Giống, Zero-Label Leakage, Graph XAI.
+*Từ khóa:* An ninh Vi mạch, Hardware Trojan, Định Vị Mức Cổng, Biểu Diễn Đồ Thị Hai Phía Cell–Net, Mạng Nơ-ron Đồ Thị Dị Thể, Nhận Biết Quan Hệ Điều Khiển (Control-Aware GNN), Năng Lượng Dirichlet Theo Quan Hệ, Thứ Hạng Hiệu Dụng (Effective Rank), Đánh Giá LOFO Đa Hạt Giống, Zero-Label Leakage, Graph XAI.
 
 ---
 
 ### Abstract (English Executive Summary)
-Gate-level hardware Trojan (HT) localization is severely impeded by extreme class imbalance ($\approx 0.78\%$ malicious gates) and severe structural distribution shifts across heterogeneous circuit families. Existing tabular ML baselines compress circuit topology into a handful of local scalar metrics, suffering catastrophic performance collapse (Macro-$F_1 = 0.0300$, published Micro-$F_1 \approx 0.033$) under Leave-One-Family-Out (LOFO) evaluation due to host coordinate memorization. While graph learning for hardware security has advanced significantly across recent international literature (ranging from GNN4TJ and TrojanSAINT to HGAT4TJ and HTOD-BGNN), existing graph detectors predominantly treat circuit connectivity as semantically uniform, permitting indiscriminate message propagation across high-fanout global clock and reset distribution networks, which induces severe representation collapse across functional logic cones.
+Gate-level hardware Trojan (HT) localization is severely challenged by extreme class imbalance ($\approx 0.78\%$ malicious gates) and severe structural distribution shifts across heterogeneous circuit families. Existing tabular ML baselines compress circuit topology into a handful of local scalar metrics, suffering catastrophic performance collapse (Macro-$F_1 = 0.0300$, published Micro-$F_1 \approx 0.033$ in Table 10 of Whitten & Wolff, JETTA 2026) under Leave-One-Family-Out (LOFO) evaluation due to host coordinate memorization. Even when augmented with 8 advanced graph centrality metrics (13F), tabular models plateau at $\text{Macro-}F_1 = 0.1637$. Meanwhile, generic graph neural networks (GNNs) for hardware security have proliferated across recent literature (2021–2026), making the proposal of yet another generic GNN architecture an incremental contribution.
 
-This thesis establishes a new scientific direction: **rather than merely introducing another generic GNN architecture, we focus on control-aware relational graph modeling coupled with relation-specific Dirichlet structural non-conformity analysis** for cross-family gate-level hardware Trojan localization. The methodological foundation follows a rigorous scientific pipeline:
-$$\text{Semantic Circuit Graph} \longrightarrow \text{Control-Aware Relational Modeling} \longrightarrow \text{Relation-Specific Dirichlet Structural Non-Conformity} \longrightarrow \text{Cross-Family Trojan Localization}$$
+This thesis establishes a single overarching research axis: **How can relations on gate-level netlists be represented and learned to improve Hardware Trojan localization across unseen circuit families (LOFO)?** The entire research journey is synthesized into a rigorous causal chain:
+$$\text{Handcrafted Features (5F/13F)} \longrightarrow \text{Structural Representation (Cell–Net IR)} \longrightarrow \text{Relational Learning (HeteroTrojanGNN)} \longrightarrow \text{Cross-Family Generalization (LOFO)}$$
+$$\Downarrow$$
+$$\text{Mechanism Analysis: Relation-Specific Dirichlet Energy } R_r(H) \text{ + SVD Effective Rank } \operatorname{erank}(H)$$
 
-We formalize a cell–net bipartite intermediate representation that explicitly preserves logic cells, interconnect nets, signal directions, and typed data/control semantics. Using 2-hop cell-level projection operators ($L_{\text{data}}^{\text{cell}}, L_{\text{ctrl}}^{\text{cell}}, L_{\text{clock}}^{\text{cell}}, L_{\text{reset}}^{\text{cell}}$), we demonstrate that shared control networks form dense clique-like subgraphs ($A_{\text{co-ctrl}} = M_{\text{in, ctrl}}^\top M_{\text{in, ctrl}}$) with $O(k^2)$ edges that induce harmful non-functional shortcuts, in sharp contrast to sparse, directed functional dataflows ($A_{\text{data}} = M_{\text{out}} M_{\text{in, data}}$). Controlling for these control edges preserves effective representation rank ($\operatorname{erank}$) by $+17.8\%$ to $+36.4\%$, preventing subspace collapse while enhancing intra-datapath representation coherence.
+The thesis delivers **two core contributions** and **one supporting analytical contribution**:
+1. **Core Method Contribution:** Semantic relation-aware Cell–Net graph learning for cross-family Trojan localization (`HeteroTrojanGNN` using `HeteroConv`). We establish a rigorous Semantic Cell–Net Bipartite Graph IR preserving $100\%$ of physical logic cells ($47,464$ cells and all $370$ Trojan gates, rectifying a $12$-Trojan omission flaw in `circuitgraph`). A pivotal negative result (Config A $\to$ Config B, $F_1 = 0.3518 \to 0.2151$) proves that *better graph fidelity alone does not yield better prediction* when homogeneous message passing mixes Cell and Net semantics. Decoupling relation-specific transformations via `HeteroConv` restores performance ($F_1 = 0.3258, +51.5\%$).
+2. **Core Empirical Finding:** Global control relations (clock and reset distribution trees) act as harmful shortcuts that collapse representation subspace. Architecturally suppressing control edges (**Control-OFF**) to restrict message passing strictly along functional dataflow paths ($G_{\text{data}}$) yields a decisive breakthrough under LOFO: boosting $F_1$ from $0.3258$ to $0.4032$ ($+23.8\%$), reaching an upper-bound of **$\text{Macro-}F_1 = 0.5239 \pm 0.0454$** and **$\text{PR-AUC} = 0.5731 \pm 0.0195$** with domain-adaptive threshold calibration.
+3. **Supporting Analytical Contribution:** Relation-specific Dirichlet energy $R_r(H)$ and SVD Effective Rank $\operatorname{erank}(H)$ on fixed projection operators mathematically explain why Control-OFF succeeds. Empirical measurements confirm Control-OFF maintains $+17.8\%$ to $+36.4\%$ higher effective rank across all five circuit families, preventing subspace collapse. Moreover, local Dirichlet residuals exhibit family-dependent complementarity, driving massive PR-AUC improvements on the most challenging large-scale sequential circuits (`s38417`: $0.2885 \to 0.4300, +49.0\%$; `s38584`: $0.2606 \to 0.3353, +28.7\%$).
 
-Crucially, Dirichlet energy is elevated from an auxiliary oversmoothing diagnostic into an actionable **structural non-conformity anomaly detector**. Under a strict zero-label leakage protocol (where median and MAD normalization parameters are fitted exclusively on training folds and frozen for evaluation), relation-specific Dirichlet residuals ($z_{i, \text{data}}, z_{i, \text{ctrl}}$) provide an orthogonal structural signal reflecting topological deviation from benign normal manifolds.
+Performance reporting is transparently bifurcated into two protocols:
+- **Strict Zero-Label Leakage Multi-Seed LOFO Protocol (Primary Headline Metric):** All normalization statistics $(\mu, \text{MAD})$ and decision thresholds $\tau^*$ are strictly fitted on training/validation folds and frozen for blind evaluation on the held-out family across 15 independent runs (5 Folds $\times$ 3 Seeds). The model achieves:
+  $$\mathbf{\text{Macro-}F_1 = 0.2738 \pm 0.0292 (\sigma_{\text{seed}}) \pm 0.2232 (\sigma_{\text{family}}), \quad \text{PR-AUC} = 0.4237 \pm 0.0683 \pm 0.2789}$$
+  (Demonstrating low initialization variance $\sigma_{\text{seed}} \approx 0.029$ relative to domain divergence $\sigma_{\text{family}} \approx 0.223$).
+- **Domain-Adaptive / Calibrated Upper-Bound (Secondary Metric):** Under domain-adaptive threshold calibration, the representation achieves $\mathbf{\text{Macro-}F_1 = 0.5239 \pm 0.0454}$, $\text{PR-AUC} = 0.5731 \pm 0.0195$, and $\text{MCC} = 0.5473 \pm 0.0336$.
 
-Extensive multi-seed LOFO evaluations across all 30 Trust-Hub benchmarks demonstrate that our control-aware relational GNN achieves Macro-$F_1 = 0.5239 \pm 0.0454$ (with low initialization variance $\sigma_{\text{seed}} \approx 0.029$ compared to cross-family macro shift $\sigma_{\text{family}} \approx 0.222$), PR-AUC $= 0.5731 \pm 0.0195$, and MCC $= 0.5473 \pm 0.0336$, substantially outperforming matched tabular and homogeneous GNN baselines under an identical protocol. Furthermore, calibrated late fusion with relation-specific Dirichlet residuals ($M_3$) yields consistent gains on challenging sequential Trojan families (`s15850`: $F_1 = 0.8000$, `s38417`: $F_1 = 0.2838$, `s38584`: $F_1 = 0.0571$). Finally, model-relevant computational subgraph extraction provides EDA engineers with compact, actionable explanations bridging trigger and payload mechanisms.
+Finally, model-relevant computational subgraph extraction via Graph XAI achieves $80.1\%$ edge sparsity with $30.7\%$ Trojan gate precision ($\approx 40\times$ enrichment), offering actionable, localized blueprints for EDA engineers in Engineering Change Order (ECO) triage.
 
-*Keywords:* Hardware Security, Hardware Trojan Localization, Gate-Level Netlist, Heterogeneous Cell–Net Graph, Control-Aware Relational Modeling, Relation-Specific Dirichlet Energy, Structural Non-Conformity, Multi-Seed LOFO Generalization, Zero-Label Leakage Protocol, Graph XAI.
+*Keywords:* Hardware Security, Hardware Trojan Localization, Gate-Level Netlist, Heterogeneous Cell–Net Graph, Control-Aware Graph Learning, Relation-Specific Dirichlet Energy, SVD Effective Rank, Multi-Seed LOFO Generalization, Zero-Label Leakage Protocol, Graph XAI.
 
 ---
 
@@ -459,46 +482,74 @@ Một câu hỏi học thuật then chốt khi đối chuẩn giữa các công 
 
 ---
 
-### 1.6. Ba Khoảng Trống Nghiên Cứu & Hệ Thống Câu Hỏi Nghiên Cứu
+### 1.6. Ba Khoảng Trống Nghiên Cứu, Thu Hẹp Phạm Vi & Hệ Thống Câu Hỏi Nghiên Cứu
 
-Từ phân tích giải phẫu phương pháp cơ sở và hiện tượng sụp đổ LOFO, đề tài xác lập 3 khoảng trống nghiên cứu cốt lõi:
-* **Khoảng trống 1 (Về khả năng ngoại suy sang chip mới):** Mô hình dạng bảng chỉ học vẹt tọa độ và sụp đổ hoàn toàn khi gặp họ chip mới (ngay cả khi được tối ưu ngưỡng $\tau^*$). Cần một cơ chế học biểu diễn nắm bắt được các mẫu hình kết nối logic bất biến giữa các vi mạch.
-* **Khoảng trống 2 (Về biểu diễn đồ thị & Ngữ nghĩa chân cắm):** Cách nén phẳng cũ xóa bỏ toàn bộ dây dẫn và chân cắm, làm mất cấu trúc hai phía và gây nhiễu loạn đường đi logic. Cần một đồ thị trung gian chuẩn hóa bảo tồn đầy đủ linh kiện và bản chất liên kết.
-* **Khoảng trống 3 (Về tính ứng dụng thực tế của lời giải thích XAI):** Các công cụ XAI hiện tại trong y văn (gồm cả luật thuộc tính tĩnh M1, tra cứu ca điển hình M2, và gán trọng số đặc trưng M3–M5) đều không cung cấp được một đồ thị con cấu trúc liên hoàn (interconnected computational subgraph) để kỹ sư EDA nhìn thấy luồng tín hiệu từ Trigger đến Payload.
+Từ phân tích giải phẫu phương pháp cơ sở, sự bùng nổ của y văn GNN (2021–2026), và hiện tượng sụp đổ ngoại suy LOFO, đề tài xác lập 3 khoảng trống nghiên cứu cốt lõi:
+* **Khoảng trống 1 (Về giới hạn của biểu diễn vô hướng & Ngộ nhận về GNN):** Các mô hình học máy dạng bảng dựa vào đặc trưng vô hướng thủ công (Hasegawa 5F, tô-pô 13F) sụp đổ khi gặp họ mạch mới do "học vẹt tọa độ mạch chủ". Trong khi đó, các công trình GNN quốc tế (2021–2026) chủ yếu cạnh tranh thuần túy về việc "xây dựng kiến trúc GNN phức tạp hơn" mà chưa giải quyết được câu hỏi cốt lõi: *Biểu diễn đồ thị và việc học quan hệ bản địa trên vi mạch khác biệt ra sao so với đặc trưng vô hướng dưới thử thách ngoại suy liên họ (LOFO)?*
+* **Khoảng trống 2 (Về ngữ nghĩa quan hệ vật lý & Tác động của mạng điều khiển):** Việc nén phẳng đồ thị làm mất mát thực thể linh kiện và đường dây dẫn, trong khi việc đưa trực tiếp mạng xung nhịp/reset vào GNN thuần nhất tạo ra hàng triệu siêu đường tắt $O(k^2)$, gây sụp đổ thứ hạng không gian biểu diễn (subspace collapse). Làm thế nào phân định tường minh quan hệ dữ liệu và điều khiển để giải phóng mô hình?
+* **Khoảng trống 3 (Về phân tích cơ chế biểu diễn & Thước đo bất tương đồng):** Các nghiên cứu hiện tại thiếu một công cụ toán học giải thích *tại sao* một kiến trúc biểu diễn lại thành công hay thất bại trên vi mạch mới. Cần một thước đo hình học/phổ đồ thị (như Năng lượng Dirichlet theo quan hệ và Thứ hạng hiệu dụng) để định lượng động học biểu diễn và đo lường sự bất tương đồng cấu trúc của cụm Trojan.
 
-#### Hệ Thống Câu Hỏi Nghiên Cứu Trọng Tâm:
+#### Thu Hẹp Phạm Vi & Xác Lập Trục Nghiên Cứu Trọng Tâm Duy Nhất:
+Thay vì biến tất cả các kết quả thực nghiệm thành các "trụ cột đóng góp ngang hàng" gây loãng câu chuyện khoa học, luận văn **thu hẹp toàn bộ phạm vi về ĐÚNG MỘT CÂU HỎI TRỌNG TÂM DUY NHẤT**:
 
-Để trả lời có hệ thống cho 3 khoảng trống trên, luận văn thiết kế 4 câu hỏi nghiên cứu chính (RQ1, RQ1b, RQ2, RQ3) và 1 câu hỏi mở rộng về tính giải thích (Secondary Question), được cấu trúc theo đúng các bước thử nghiệm trong phòng thí nghiệm:
+$$\boxed{\begin{aligned}
+&\textbf{Main RQ: Làm thế nào biểu diễn và học quan hệ trên gate-level netlist để cải thiện}\\
+&\textbf{khả năng định vị Hardware Trojan trên các họ vi mạch chưa từng thấy (Cross-Family Generalization)?}
+\end{aligned}}$$
 
-* **RQ1 (Hiệu ứng giữ lại dây dẫn - Giữ dây hay Xóa dây?):**  
-  * *Bản chất câu hỏi:* **Nếu ta giữ lại các đường dây liên kết (Net) đúng như cấu trúc mạch thực tế thay vì xóa bỏ chúng đi như phương pháp cũ, thì độ chính xác phát hiện Trojan của mô hình GNN thay đổi như thế nào?**  
-  * *Thực nghiệm kiểm chứng:* So sánh **Config A** (Xóa sạch dây, chỉ giữ cổng logic) với **Config B** (Giữ cả cổng và dây, cùng chạy trên mô hình GNN thuần nhất).
+Toàn bộ công trình được tinh gọn thành chuỗi luận chứng nhân quả tự nhiên, khép kín:
+$$\boxed{\begin{aligned}
+&\textbf{Đặc Trưng Vô Hướng Thủ Công (5F } \to \textbf{ 13F)} \quad \implies \quad \textbf{[Đóng vai trò: Motivation / Evidence]}\\
+&\quad \text{Chứng minh các vector số học tĩnh thất bại khi chuyển giao ngoại suy liên họ vi mạch (LOFO).}\\
+&\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad \Downarrow\\
+&\textbf{Biểu Diễn Cấu Trúc Đồ Thị (Semantic Cell--Net IR)} \quad \implies \quad \textbf{[Đóng vai trò: Representation Infrastructure]}\\
+&\quad \text{Hạ tầng dữ liệu chuẩn mực bảo toàn 100\% linh kiện và quan hệ có kiểu.}\\
+&\quad \text{Negative Result } (0.3518 \to 0.2151) \text{ chứng minh: độ trung thực đồ thị tự nó là chưa đủ!}\\
+&\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad \Downarrow\\
+&\textbf{Học Quan Hệ Bản Địa (HeteroTrojanGNN \& Control-OFF)} \quad \implies \quad \textbf{[Đóng vai trò: Core Method \& Core Finding]}\\
+&\quad \text{Học nơ-ron quan hệ bản địa vượt trội đặc trưng vô hướng (F1 = 0.5239, PR-AUC = 0.5731).}\\
+&\quad \text{Phát hiện cốt lõi: Mạng điều khiển (clock/reset) tạo siêu đường tắt có hại; ngắt Control-OFF giúp bứt phá.}\\
+&\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad \Downarrow\\
+&\textbf{Năng Lượng Dirichlet Theo Quan Hệ \& Effective Rank} \quad \implies \quad \textbf{[Đóng vai trò: Supporting Mechanism Analysis]}\\
+&\quad \text{Công cụ toán học giải thích TẠI SAO Control-OFF thắng: ngăn chặn sụp đổ thứ hạng (erank cao hơn +36.4\%).}
+\end{aligned}}$$
 
-* **RQ1b (Hiệu ứng phân loại quan hệ - Coi mọi kết nối như nhau hay Dạy AI phân biệt từng loại liên kết?):**  
-  * *Bản chất câu hỏi:* **Khi đã giữ lại cả Cổng và Dây, việc dạy cho AI phân biệt rõ từng loại liên kết (chiều truyền tín hiệu, chân ngõ vào/ngõ ra) bằng GNN dị thể (Hetero-GNN) có giúp cải thiện độ chính xác so với việc xem mọi kết nối là như nhau hay không?**  
-  * *Thực nghiệm kiểm chứng:* So sánh **Config B** (Coi mọi nút và cạnh như nhau) với **Config C** (Phân loại rõ 6 loại quan hệ Cổng–Dây bằng Hetero-GNN).
+---
 
-* **RQ2 (Cơ Chế Lan Truyền Nhận Biết Điều Khiển & Năng Lượng Dirichlet Theo Quan Hệ - Control-Aware Propagation & Relation-Specific Dirichlet Dynamics):**  
-  * *Bản chất câu hỏi:* **Các đường dây điều khiển dùng chung toàn chip (như xung nhịp CLK và reset RSTB) tác động như thế nào đến độ kết dính biểu diễn theo luồng dữ liệu logic và hiện tượng sụp đổ biểu diễn toàn cục? Làm thế nào để lượng hóa một cách chặt chẽ hiệu ứng này thông qua các dạng năng lượng Dirichlet trên toán tử cố định ($L_{\text{data}}^{\text{cell}}, L_{\text{ctrl}}^{\text{cell}}$) và chỉ số Effective Rank?**  
-  * *Thực nghiệm kiểm chứng:* So sánh mô hình giữ nguyên dây điều khiển (**Config C, E**) với mô hình ngắt bỏ/lọc dây điều khiển (**Config D, F**, `Control-Gated`), đồng thời đo lường thương số Rayleigh $R_{\text{data}}(H), R_{\text{ctrl}}(H)$, Effective Rank $\operatorname{erank}(H)$ và khoảng cách Cosine qua các tầng $L \in \{0, 1, 2, 4\}$ trên các toán tử chiếu 2-hop cố định.
+#### Hệ Thống 3 Câu Hỏi Nghiên Cứu Thành Phần (3 Research Questions - RQs):
 
-* **RQ3 (Năng Lượng Dirichlet Như Một Thước Đo Bất Thường Cấu Trúc Cho Định Vị Trojan Ngoại Suy - Structural Non-Conformity & Detector Fusion):**  
-  * *Bản chất câu hỏi:* **Liệu số dư năng lượng Dirichlet địa phương ($z_{i, \text{data}}, z_{i, \text{ctrl}}$) có cung cấp tín hiệu bất thường cấu trúc bổ trợ độc lập với xác suất của GNN để giúp tăng cường định vị Trojan trên các họ vi mạch chưa từng thấy (unseen families) hay không? Việc kết hợp bộ phát hiện không qua huấn luyện (Training-Free Dirichlet Non-Conformity Detector $M_1$) với mô hình GNN ($M_3$) mang lại lợi ích gì trong bài toán định vị mức cổng?**  
-  * *Thực nghiệm kiểm chứng:* Đối chuẩn 4 cấu hình bộ dò: **$M_0$** (GNN Baseline), **$M_1$** (Dirichlet Anomaly Detector thuần túy không qua huấn luyện), **$M_2$** (GNN bổ sung đặc trưng DE địa phương), **$M_3$** (Calibrated Late Fusion GNN + DE) trên 5 nếp gấp LOFO; phân tích ma trận giai thừa $2 \times 2$ (Control $\times$ Features) và các phép đo vận hành EDA.
+Để giải quyết trọn vẹn Main RQ, đề tài xác lập 3 câu hỏi nghiên cứu thành phần:
 
-* **Secondary Question (Khác biệt bản chất giữa Graph XAI với các trường phái M1, M2 và M3–M5):**  
-  * *Bản chất câu hỏi:* **Vì sao đồ thị con giải thích tính toán (computational subgraph) trích xuất từ Graph XAI lại vượt trội hơn các luật thuộc tính tĩnh (M1), phép tra cứu ca tiền lệ rời rạc (M2), và vector độ quan trọng số học (M3–M5) trong việc cung cấp bằng chứng cấu trúc phục vụ sửa mạch (ECO)?**  
-  * *Thực nghiệm kiểm chứng:* Đối chuẩn trực tiếp giữa GNNExplainer và M1–M5 trên các tiêu chuẩn định lượng khắt khe: Fidelity+ (độ cần thiết), Fidelity- (độ đầy đủ), Sparsity (độ thưa), Hardware Localization Precision, và độ trễ thực thi (runtime latency).
+* **RQ1 — Representation & Generalization (Biểu diễn & Khái quát hóa):**  
+  *Các đặc trưng nút thủ công (5F, 13F), đặc trưng đồ thị dạng bảng, và việc học quan hệ bản địa trên đồ thị (Graph-native relational learning) khái quát hóa như thế nào cho bài toán định vị Hardware Trojan mức cổng dưới giao thức LOFO?*  
+  - *Thực nghiệm kiểm chứng:* Đối chuẩn Tabular 5F vs. 13F; Config A (Đồ thị nén phẳng) vs. Config B (Đồ thị hai phía Cell–Net thuần nhất) vs. Config C (Đồ thị hai phía dị thể `HeteroConv`). Phân tích Negative Result ($0.3518 \to 0.2151$) và sự phục hồi của lan truyền dị thể ($0.3258$).
 
-#### Bảng Tóm Tắt Ý Nghĩa Thực Tế Của Các Câu Hỏi Nghiên Cứu:
+* **RQ2 — Relation Modeling (Mô hình hóa quan hệ điều khiển):**  
+  *Các quan hệ điều khiển toàn cục (clock, reset) tác động như thế nào đến khả năng khái quát hóa xuyên họ vi mạch của mạng GNN dị thể Cell–Net, và việc can thiệp ngắt bỏ chúng (Control-OFF) tác động ra sao đến hiệu năng?*  
+  - *Thực nghiệm kiểm chứng:* Ma trận bóc tách quan hệ điều khiển: Config C, E (Control-ON) vs. Config D, F (Control-OFF), các kịch bản đối chứng nhân quả (`Random Edge Removal`, `Degree-Matched Removal`), và cơ chế cổng khả học (`HeteroTrojanGNN-Gate`).
 
-| Câu Hỏi | Tên Khoa Học | Vấn Đề Thực Tế Cần Trả Lời Trong Mạch Điện | Cặp Đối Chứng Thực Nghiệm |
-| :---: | :--- | :--- | :---: |
-| **RQ1** | *Representation Effect* | Giữ lại các đường dây dẫn (Net) hay xóa bỏ để nén phẳng? | Config A vs Config B |
-| **RQ1b** | *Relation Modeling Effect* | Dạy AI phân biệt từng loại dây/chân cắm (Hetero) hay coi như nhau (Homo)? | Config B vs Config C |
-| **RQ2** | *Control Relations & Dirichlet Dynamics* | Xung nhịp/reset gây sụp đổ biểu diễn toàn cục ra sao? Lượng hóa bằng thương số Rayleigh & Effective Rank cố định? | (C, E) vs (D, F), Gated; $R_{\text{data}}(H), \text{erank}(H)$ |
-| **RQ3** | *Dirichlet Non-Conformity & Detector Fusion* | Số dư Dirichlet địa phương có đo lường bất thường Trojan ngoại suy? Tích hợp GNN + DE ($M_0 \to M_3$) hiệu quả ra sao? | $M_0$ vs $M_1$ vs $M_2$ vs $M_3$; Ma trận $2 \times 2$ (C, D, E, F) |
-| **XAI** | *Explainability Modality* | AI chỉ đưa luật tĩnh/tiền lệ/số điểm (M1–M5) hay khoanh vùng mạch con kết nối cụ thể? | M1–M5 vs Graph XAI (GNNExplainer) |
+* **RQ3 — Mechanism Analysis (Phân tích cơ chế động học biểu diễn):**  
+  *Sự biến thiên biểu diễn theo quan hệ, được đo lường qua Năng lượng Dirichlet $R_r(H)$ và Thứ hạng hiệu dụng $\operatorname{erank}(H)$ trên các toán tử chiếu cố định, giải thích cơ chế đằng sau tác động của quan hệ điều khiển như thế nào? Liệu năng lượng Dirichlet có cung cấp tín hiệu bổ trợ cho các họ mạch tuần tự phức tạp?*  
+  - *Thực nghiệm kiểm chứng:* Đo đạc động học $\operatorname{erank}(H^{(\ell)})$ và $R_{\text{data}}(H), R_{\text{ctrl}}(H)$ qua các tầng; kiểm định bộ dò Dirichlet độc lập ($M_1$) và bộ tích hợp ($M_2, M_3$) dưới giao thức Zero-Label Leakage; phân tích hiệu ứng bổ trợ trên `s38417` ($+49.0\%$ PR-AUC) và `s38584` ($+28.7\%$ PR-AUC).
+
+---
+
+#### Bảng Phân Định Vai Trò Rạch Ròi Của Các Thành Phần Trong Luận Văn:
+
+| Thành Phần Trong Đề Tài | Vai Trò Học Thuật Mới | Vị Trí Trong Luận Văn |
+| :--- | :--- | :--- |
+| **5 Đặc Trưng Hasegawa** | Baseline / Motivation ban đầu | Chương 1 (Bối cảnh bài toán) |
+| **13 Đặc Trưng Tô-pô Bổ Sung** | Bằng chứng về giới hạn của biểu diễn vô hướng thủ công | Chương 2 (Motivation) |
+| **Semantic Cell–Net Bipartite IR** | Hạ tầng biểu diễn dữ liệu (Infrastructure) | Chương 3 (Biểu diễn đồ thị) |
+| **Negative Result ($A \to B$)** | Bằng chứng: *Better graph fidelity $\not\Rightarrow$ better prediction* | Chương 3 \& 5 (Động lực chuyển sang GNN) |
+| **HeteroTrojanGNN (`HeteroConv`)** | **Phương Pháp Cốt Lõi (Core Method)** | Chương 4 \& 5 (Phương pháp luận) |
+| **Leave-One-Family-Out (LOFO)** | **Mục Tiêu Đánh Giá Trung Tâm (Core Evaluation Objective)** | Chương 4 \& 5 (Giao thức thực nghiệm) |
+| **Can Thiệp Cắt Lọc Control-OFF** | **Phát Hiện Thực Nghiệm Trung Tâm (Core Empirical Finding)** | Chương 4 \& 5 (Kết quả chính) |
+| **Năng Lượng Dirichlet $R_r(H)$** | **Phân Tích Cơ Chế Bổ Trợ (Supporting Mechanism Analysis)** | Chương 5 \& 7 (Giải thích cơ chế) |
+| **SVD Effective Rank $\operatorname{erank}(H)$** | Phân tích cơ chế chống sụp đổ không gian nhúng | Chương 5 \& 7 (Giải thích cơ chế) |
+| **Bộ Dò Độc Lập $M_1$ ($F_1 = 0$)** | Thực nghiệm bóc tách / Kết quả phủ định (Negative Result) | Chương 5 (Secondary Analysis) |
+| **Bộ Tích Hợp $M_2, M_3$** | Tín hiệu bổ trợ phụ thuộc họ mạch (`s38417`, `s38584`) | Chương 5 (Secondary Analysis) |
+| **Giải Thích Đồ Thị (Graph XAI)** | Khảo sát thực tiễn hỗ trợ kỹ sư EDA trong quy trình ECO | Chương 6 (Ứng dụng thực tiễn EDA) |
 
 ---
 
@@ -557,9 +608,11 @@ Khảo cứu toàn diện các công trình quốc tế từ 2016 đến tháng 
 * **Toán tử p-Laplacian & Đồ thị có hướng (Shi et al., 2023 [[54]](#ref-54); Maskey et al., 2023 [[55]](#ref-55)):**  
   Shi et al. mở rộng lý thuyết sang năng lượng $p$-Dirichlet phi tuyến, trong khi Maskey et al. chứng minh rằng trên các đồ thị có hướng (directed graphs), việc định nghĩa toán tử Laplacian chuẩn hóa có hướng đòi hỏi sự phân tách chặt chẽ giữa toán tử truyền tin (propagation operator) và toán tử chẩn đoán đối xứng (diagnostic operator).
 * **Phát hiện bất thường phổ tần số cao (Tang et al., ICML 2022 - BWGNN) [[56]](#ref-56):**  
-  Tang et al. chứng minh rằng trong bài toán phát hiện bất thường đồ thị (graph anomaly detection), các nút dị biệt thường gây ra hiện tượng "dịch chuyển phổ sang tần số cao" (spectral right-shift), khiến các bộ lọc thông thấp (low-pass filters) truyền thống của GNN làm nhòe mất tín hiệu bất thường. Điều này hoàn toàn tương thích với giả thuyết về Hardware Trojan: mạch Trojan là cấu trúc ký sinh không có lý do lý thuyết nào bắt buộc phải đồng nhất biểu diễn với mạch chủ benign xung quanh.
-* **Năng lượng Laplacian như một thước đo bất thường cấu trúc không qua huấn luyện (Seo et al., CVPR 2026 - ANoCo) [[57]](#ref-57):**  
-  Công trình đột phá ANoCo của Seo et al. (CVPR 2026) mở ra một góc nhìn lý thuyết mới về năng lượng Laplacian đồ thị: thay vì chỉ xem nó như một tiên nghiệm làm mượt (smoothing prior) hoặc công cụ chẩn đoán thụ động, năng lượng Laplacian có thể được sử dụng như một **thước đo mức độ không phù hợp cấu trúc (Structural Non-Conformity Metric)**. Lấy cảm hứng từ nguyên lý này, đề tài không dừng lại ở việc quan sát năng lượng Dirichlet để giải thích oversmoothing, mà phát triển **số dư năng lượng Dirichlet theo quan hệ (Relation-Specific Dirichlet Residuals)**: đo lường mức độ lệch pha cục bộ của từng cổng logic so với phân phối hình thái bình thường trên từng toán tử chiếu ($L_{\text{data}}^{\text{cell}}, L_{\text{ctrl}}^{\text{cell}}$). Tuy nhiên, khác với ANoCo (vốn tối ưu hóa biến dạng đặc trưng trên một đồ thị neo manifold bình thường liên tục), đề tài định nghĩa trực tiếp số dư Dirichlet địa phương rời rạc kết hợp chuẩn hóa vững chắc không rò rỉ nhãn (Zero-Label Leakage Robust Normalization), đưa năng lượng Dirichlet thành một tín hiệu phát hiện bất thường độc lập và bổ trợ cho mô hình học sâu quan hệ.
+  Tang et al. chứng minh rằng trong bài toán phát hiện bất thường đồ thị (graph anomaly detection), các nút dị biệt thường gây ra hiện tượng "dịch chuyển phổ sang tần số cao" (spectral right-shift), khiến các bộ lọc thông thấp (low-pass filters) truyền thống của GNN làm nhòe mất tín hiệu bất thường. Khác với BWGNN (vốn thiết kế các bộ lọc sóng con phổ band-pass phức tạp bên trong kiến trúc nơ-ron), nghiên cứu của chúng tôi sử dụng GNN không gian quan hệ chuẩn để học biểu diễn ngữ cảnh và trực tiếp công thức hóa năng lượng Dirichlet theo quan hệ như một chẩn đoán cấu trúc trực giao.
+* **Năng lượng Laplacian như một thước đo bất thường cấu trúc (Seo et al., CVPR 2026 - ANoCo) [[57]](#ref-57):**  
+  Công trình ANoCo của Seo et al. (CVPR 2026) cung cấp bằng chứng khái niệm (conceptual evidence) quan trọng: toán tử Laplacian đồ thị có thể được chuyển hóa từ một hàm điều hòa làm mượt (smoothing regularizer) thành một **cơ chế đo độ bất tương đồng (non-conformity mechanism)**. Tuy nhiên, ranh giới phương pháp luận giữa ANoCo và luận văn này là hoàn toàn rạch ròi:
+  - *ANoCo* giải bài toán tối ưu hóa lồi năng lượng Laplacian trên một đồ thị hai phía truy vấn–mẫu chuẩn (query–normal graph) với các nút bình thường được neo cố định (anchored normal nodes), và đo độ bất thường bằng độ dịch chuyển đặc trưng (feature displacement) sinh ra từ quá trình tối ưu hóa.
+  - *Luận văn đề xuất* không giải bài toán tối ưu hóa lồi neo mẫu, mà công thức hóa trực tiếp **độ biến thiên tín hiệu đồ thị cục bộ theo từng quan hệ vật lý (relation-specific local graph-signal variation)** trên đồ thị vi mạch Cell–Net có hướng, sau đó hiệu chuẩn số dư bền vững so với hình thái vi mạch lành tính ($z_{i, r}$). Cách tiếp cận này bảo tồn ngữ nghĩa phần cứng và tính toán tức thời mà không cần quá trình lặp tối ưu hóa đặc trưng.
 
 ### 2.5. Ma Trận Đối Chuẩn Đề Tài Với Y Văn Quốc Tế
 
@@ -571,7 +624,7 @@ Khảo cứu toàn diện các công trình quốc tế từ 2016 đến tháng 
 | **GAT + JK** *(SALTY [[46]](#ref-46))* | Dày | Vừa | ⚠️ Đánh giá TPR/TNR trên tập riêng | ⚠️ Hậu xử lý XAI đơn giản | ❌ Thuần nhất | ⚠️ Không phân tách cạnh điều khiển | ❌ Chỉ dùng JK chống over-smooth |
 | **Heterogeneous Graph** *(HGAT4TJ [[51]](#ref-51))* | Dày | Mức Tranzito | ⚠️ Chưa đánh giá LOFO 5 họ | ❌ Hộp đen | ✅ Gate/Transistor | ⚠️ Không tách data/control | ❌ Không có |
 | **Structural Heuristics** *(LoRD [[49]](#ref-49))* | Dày | RTL-origin | ⚠️ Phụ thuộc template Trojan | ⚠️ Cung cấp luật tĩnh | ❌ Không có graph learning | ⚠️ Cần tinh chỉnh theo từng họ | ❌ Heuristic tĩnh |
-| **ĐỀ TÀI LUẬN VĂN (Control-Aware Graph + Dirichlet Non-Conformity)** | **Dày (Cell–Net Bipartite IR)** | Netlist-native (AST chuẩn) | ✅ **LOFO Macro F1 = 0.5239 $\pm$ 0.0454** *(Đỉnh: 0.5759)* | ✅ **Model-Relevant Computational Subgraph** | ✅ **6 quan hệ canonical** | ✅ **Cô lập $G_{\text{data}}$ qua BFS & ngắt/lọc cạnh điều khiển** | ✅ **Relation-Specific Dirichlet Structural Non-Conformity ($M_1 \to M_3$)** |
+| **ĐỀ TÀI LUẬN VĂN (Control-Aware Heterogeneous Graph Learning & Dirichlet Analysis)** | **Dày (Cell–Net Bipartite IR)** | Netlist-native (AST chuẩn) | ✅ **Primary LOFO: $F_1 = 0.2738$, PR-AUC $= 0.4237$**<br/>*(Upper-Bound: $F_1 = 0.5239$, PR-AUC $= 0.5731$)* | ✅ **Model-Relevant Computational Subgraph (Ứng dụng EDA)** | ✅ **6 quan hệ canonical** | ✅ **Cô lập $G_{\text{data}}$ qua BFS & ngắt/lọc cạnh điều khiển (Control-OFF)** | ✅ **Đo động học phổ $R_r(H)$, giải thích cơ chế $\operatorname{erank}$ & bộ dò bổ trợ ($M_2/M_3$)** |
 
 ---
 
@@ -966,58 +1019,62 @@ Một thách thức toán học cố hữu khi phân tích năng lượng Dirich
    - Tách biệt ma trận ngõ vào xung nhịp $M_{\text{in, clock}}$ (chân `CLK`, `CK`) và thiết lập lại $M_{\text{in, reset}}$ (chân `RSTB`, `SETB`, `RESET`).
 
 2. **Phân biệt hai ngữ nghĩa toán tử kề 2-hop trên nút cổng (Cell-Level Adjacencies):**
-   - **Luồng dữ liệu logic (Directed Data Flow):**  
-     $$A_{\text{data}}^{\text{cell}} = M_{\text{out}} M_{\text{in, data}} \in \mathbb{R}^{N_{\text{cell}} \times N_{\text{cell}}}$$  
-     Phần tử $A_{\text{data}}^{\text{cell}}(i, j) > 0$ khi và chỉ khi cổng $i$ lái một đường dây dữ liệu cấp nguồn trực tiếp cho cổng $j$ (driver $\to$ receiver flow). Để phục vụ chẩn đoán phổ đối xứng chuẩn mực [[53]](#ref-53), ma trận kề được đối xứng hóa:  
-     $$A_{\text{data, sym}}^{\text{cell}} = \frac{1}{2} \left( A_{\text{data}}^{\text{cell}} + (A_{\text{data}}^{\text{cell}})^\top \right), \quad \text{diag}(A_{\text{data, sym}}^{\text{cell}}) = 0$$
-   - **Mạng chia sẻ điều khiển dạng Clique (Co-Control / Shared-Control Co-membership):**  
-     $$A_{\text{co-ctrl}}^{\text{cell}} = M_{\text{in, ctrl}}^\top M_{\text{in, ctrl}} \in \mathbb{R}^{N_{\text{cell}} \times N_{\text{cell}}}, \quad \text{diag}(A_{\text{co-ctrl}}^{\text{cell}}) = 0$$  
-     *Bản chất tô-pô:* Phần tử $A_{\text{co-ctrl}}^{\text{cell}}(i, j)$ đo lường số lượng đường dây điều khiển dùng chung giữa cổng $i$ và cổng $j$. Đáng chú ý, nếu một mạng xung nhịp `sys_clk` cấp cho $k$ Flip-Flops, toán tử này tạo thành một **đồ thị con đầy đủ ($k$-clique) với $O(k^2)$ liên kết** giữa tất cả các phần tử tuần tự. Đây chính là nguồn gốc tạo nên các "siêu đường tắt phi chức năng" nối tắt các nón logic hoàn toàn xa lạ nhau. Tương tự, ta xây dựng các toán tử co-membership riêng cho xung nhịp $A_{\text{clock}}^{\text{cell}}$ và reset $A_{\text{reset}}^{\text{cell}}$.
+   - **Luồng dữ liệu logic (Directed Data Flow vs. Symmetric Diagnostic):**  
+     Trong quá trình truyền tin nơ-ron (message passing), mô hình sử dụng toán tử luồng dữ liệu có hướng:
+     $$A_{\text{data}}^{\rightarrow} = M_{\text{out}} M_{\text{in, data}} \in \mathbb{R}^{N_{\text{cell}} \times N_{\text{cell}}}$$  
+     Phần tử $A_{\text{data}}^{\rightarrow}(i, j) > 0$ khi và chỉ khi cổng $i$ lái một đường dây dữ liệu cấp nguồn trực tiếp cho cổng $j$ (driver $\to$ receiver flow). Để phục vụ chẩn đoán phổ đối xứng chuẩn mực [[53]](#ref-53), ma trận kề chẩn đoán đối xứng được xác lập:  
+     $$A_{\text{data, sym}}^{\text{cell}} = \frac{1}{2} \left( A_{\text{data}}^{\rightarrow} + (A_{\text{data}}^{\rightarrow})^\top \right), \quad \text{diag}(A_{\text{data, sym}}^{\text{cell}}) = 0$$
+   - **Mạng chia sẻ điều khiển dạng Clique Chuẩn Hóa Trọng Số (Degree-Normalized Co-Control):**  
+     Khi phân tích cấu trúc chia sẻ điều khiển (chẳng hạn các Flip-Flops dùng chung xung nhịp hoặc reset), toán tử đồng thuộc (co-membership) dạng unweighted $M_{\text{in, ctrl}}^\top M_{\text{in, ctrl}}$ tạo ra các clique đầy đủ với $O(k^2)$ cạnh. Để ngăn chặn các mạng xung nhịp lớn làm nổ biên độ năng lượng Dirichlet, đề tài áp dụng chuẩn hóa trọng số theo bậc của dây:
+     $$A_{\text{co-ctrl}}^{\text{cell}} = M_{\text{in, ctrl}}^\top W_{\text{ctrl}} M_{\text{in, ctrl}} - \operatorname{diag}(\cdot), \quad (W_{\text{ctrl}})_{ee} = \frac{1}{\max(d_e - 1, 1)}$$
+     trong đó $d_e$ là số lượng cổng mà đường dây $e$ cấp tới. Nhờ chuẩn hóa này, tổng trọng số các cạnh sinh ra từ một mạng xung nhịp fanout $k$ chỉ tỷ lệ tuyến tính $O(k)$, ngăn ngừa hiện tượng lấn át phổ của các siêu mạng điều khiển. Tương tự, ta xây dựng các toán tử co-membership riêng cho xung nhịp $A_{\text{clock}}^{\text{cell}}$ và reset $A_{\text{reset}}^{\text{cell}}$.
    - **Luồng điều khiển có hướng (Directed Control Flow):**  
-     $$A_{\text{ctrl-flow}}^{\text{cell}} = M_{\text{out}} M_{\text{in, ctrl}} \in \mathbb{R}^{N_{\text{cell}} \times N_{\text{cell}}}$$  
-     Toán tử này phản ánh chiều truyền từ cổng lái tín hiệu điều khiển (như clock buffer hoặc FSM controller) vào các cổng nhận điều khiển, có tính thưa và định hướng tương tự $A_{\text{data}}$.
+     $$A_{\text{ctrl-flow}}^{\rightarrow} = M_{\text{out}} M_{\text{in, ctrl}} \in \mathbb{R}^{N_{\text{cell}} \times N_{\text{cell}}}$$  
+     Toán tử này phản ánh chiều truyền từ cổng lái tín hiệu điều khiển (như clock buffer hoặc FSM controller) vào các cổng nhận điều khiển, có tính thưa và định hướng tương tự $A_{\text{data}}^{\rightarrow}$.
 
 3. **Toán tử Laplacian chuẩn hóa đối xứng & Thương số Rayleigh chuẩn mực:**
-   Với mỗi ma trận kề $A_r \in \{A_{\text{data, sym}}, A_{\text{co-ctrl}}, A_{\text{ctrl-flow}}, A_{\text{clock}}, A_{\text{reset}}\}$, ma trận bậc $D_r = \operatorname{diag}(\sum_j A_r(i, j))$, toán tử Laplacian chuẩn hóa đối xứng được xác lập:
+   Với mỗi ma trận kề chẩn đoán đối xứng $A_r \in \{A_{\text{data, sym}}, A_{\text{co-ctrl}}, A_{\text{ctrl-flow, sym}}, A_{\text{clock}}, A_{\text{reset}}\}$, ma trận bậc $D_r = \operatorname{diag}(\sum_j A_r(i, j))$, toán tử Laplacian chuẩn hóa đối xứng được xác lập:
    $$L_{r, \text{sym}} = I - D_r^{-1/2} A_r D_r^{-1/2}$$
    Với ma trận biểu diễn nút $H \in \mathbb{R}^{N_{\text{cell}} \times d}$ tại bất kỳ tầng ẩn nào, **thương số Rayleigh chuẩn hóa (Rayleigh Quotient)** được định nghĩa chính xác theo Cai & Wang (2020 [[53]](#ref-53)):
    $$\boxed{R_r(H) = \frac{\operatorname{Tr}(H^\top L_{r, \text{sym}} H)}{\|H\|_F^2} = \frac{\frac{1}{2} \sum_{i, j} A_r(i, j) \left\| \frac{h_i}{\sqrt{d_{i, r}}} - \frac{h_j}{\sqrt{d_{j, r}}} \right\|_2^2}{\sum_i \|h_i\|_2^2} \in [0, 2]}$$
-   *(Lưu ý phương pháp luận: Nếu sử dụng toán tử Laplacian chưa chuẩn hóa $L_r = D_r - A_r$, thương số Rayleigh tổng quát tương ứng là $R_r^{\text{gen}}(H) = \frac{\operatorname{Tr}(H^\top L_r H)}{\operatorname{Tr}(H^\top D_r H)}$. Trong luận văn này, chúng tôi tuân thủ nhất quán toán tử $L_{r, \text{sym}}$ chuẩn hóa của Cai & Wang để đảm bảo tính khả quy của phổ trên khoảng $[0, 2]$).*  
+   *(Lưu ý phương pháp luận: Luận văn tuân thủ nhất quán toán tử $L_{r, \text{sym}}$ chuẩn hóa của Cai & Wang để đảm bảo tính khả quy của phổ trên khoảng $[0, 2]$).*  
    *Ý nghĩa toán học:* $R_{\text{data}}(H)$ lượng hóa độ mượt của biểu diễn dọc theo luồng dữ liệu chức năng, trong khi $R_{\text{ctrl}}(H)$ đo lường độ đồng nhất qua mạng điều khiển toàn cục.
 
 ---
 
 ### 3.2c. Năng Lượng Dirichlet Địa Phương Như Một Thước Đo Bất Thường Cấu Trúc & Giao Thức Chuẩn Hóa Không Rò Rỉ Nhãn (Zero-Label Leakage)
 
-Vượt ra khỏi vai trò chẩn đoán toàn cục (global diagnostic), năng lượng Dirichlet có thể được chuyển hóa thành một bộ phát hiện Trojan nguyên bản dựa trên nguyên lý bất thường cấu trúc (ANoCo, Seo et al. 2026 [[57]](#ref-57); BWGNN, Tang et al. 2022 [[56]](#ref-56)). Mạch Hardware Trojan vốn là một cấu trúc nhân tạo cấy ghép trái phép, thường sở hữu các kết nối luồng dữ liệu bất thường (ví dụ: các cổng logic hiếm khi lật trạng thái, các đường kích hoạt không tương thích với chu trình dữ liệu thông thường) hoặc có cấu hình kết nối điều khiển lệch pha so với các cổng lành tính cùng loại.
+Bên cạnh vai trò chẩn đoán động học phổ toàn cục (global spectral dynamics), năng lượng Dirichlet theo quan hệ còn được mở rộng để lượng hóa độ bất tương đồng cấu trúc cục bộ (Local Structural Non-Conformity) tại từng cổng logic, cung cấp góc nhìn hình học bổ trợ để giải thích cơ chế phân tách và hỗ trợ tăng cường độ sắc nét cho việc định vị Trojan trên các họ mạch tuần tự phức tạp.
 
-1. **Biến thiên nhúng địa phương theo quan hệ (Relation-Specific Local Dirichlet Variation):**
-   Với mỗi cổng logic $i \in \mathcal{V}_{\text{cell}}$ và quan hệ $r \in \{\text{data}, \text{ctrl\_co}, \text{ctrl\_flow}, \text{clock}, \text{reset}\}$:
+1. **Đóng góp Dirichlet chuẩn hóa đối xứng & Biến thiên nhúng địa phương:**
+   Để đảm bảo sự nhất quán toán học giữa năng lượng Dirichlet toàn cục $\mathcal{E}_r(H) = \operatorname{Tr}(H^\top L_r H)$ và năng lượng Dirichlet địa phương tại từng cổng, ta định nghĩa phần đóng góp chuẩn hóa đối xứng của cổng $i$:
+   $$\varepsilon_{i, r}^{\text{sym}} = \frac{1}{2} \sum_{j \in \mathcal{N}_r(i)} A_{ij}^{(r)} \left\| \frac{h_i}{\sqrt{d_{i, r}}} - \frac{h_j}{\sqrt{d_{j, r}}} \right\|_2^2, \quad \text{thỏa mãn } \sum_{i=1}^{N_{\text{cell}}} \varepsilon_{i, r}^{\text{sym}} = \operatorname{Tr}(H^\top L_r H) = \mathcal{E}_r(H)$$
+   Đồng thời, để đo lường mức độ biến thiên biểu diễn cục bộ so với các láng giềng kề trực tiếp, đại lượng biến thiên địa phương $e_{i, r}$ được tính:
    $$e_{i, r} = \frac{\sum_{j \in \mathcal{N}_r(i)} A_r(i, j) \|h_i - h_j\|_2^2}{\sum_{j \in \mathcal{N}_r(i)} A_r(i, j) + \epsilon}$$
-   Đại lượng $e_{i, r}$ đo lường mức độ biến thiên biểu diễn cục bộ của cổng $i$ so với láng giềng theo quan hệ $r$.
 
 2. **Giao thức chuẩn hóa đóng băng không rò rỉ nhãn (Strict Zero-Label Leakage Protocol):**  
-   Nhằm loại trừ tuyệt đối nguy cơ rò rỉ thông tin kiểm thử (Test Information Leakage) khi đánh giá ngoại suy liên họ (LOFO), nghiên cứu thiết lập nguyên tắc: **toàn bộ các tham số thống kê chuẩn hóa $(\mu_{c, r}^{\text{train}}, \text{MAD}_{c, r}^{\text{train}})$ chỉ được ước lượng trên các vi mạch thuộc tập huấn luyện (Training Folds) rồi ĐÓNG BĂNG TUYỆT ĐỐI khi áp dụng lên tập Validation và tập Test**:
+   Nhằm loại trừ tuyệt đối nguy cơ rò rỉ thông tin kiểm thử khi đánh giá ngoại suy liên họ (LOFO), nghiên cứu thiết lập nguyên tắc: **toàn bộ các tham số thống kê chuẩn hóa $(\mu_{c, r}^{\text{train}}, \text{MAD}_{c, r}^{\text{train}})$ chỉ được ước lượng trên các vi mạch thuộc tập huấn luyện (Training Folds) rồi ĐÓNG BĂNG TUYỆT ĐỐI khi áp dụng lên tập Validation và tập Test**:
    - **Biến thể 1: Chuẩn hóa Lành tính Có Giám sát ($M_1^S$ - Supervised-Normal Calibration):**  
-     Sử dụng các cổng lành tính đã biết trên tập huấn luyện để ước lượng tâm và độ phân tán chuẩn:
      $$\mu_{c, r}^{\text{train}} = \operatorname{median}_{j \in \mathcal{D}_{\text{train}}^{\text{benign}} \cap \mathcal{B}_c} \log(e_{j, r} + \epsilon), \quad \text{MAD}_{c, r}^{\text{train}} = \operatorname{median}_{j \in \mathcal{D}_{\text{train}}^{\text{benign}} \cap \mathcal{B}_c} \left| \log(e_{j, r} + \epsilon) - \mu_{c, r}^{\text{train}} \right|$$
    - **Biến thể 2: Chuẩn hóa Vững Bền Không Giám Sát ($M_1^U$ - Contamination-Robust Unsupervised Calibration):**  
-     Tận dụng thực tế là tỷ lệ ô nhiễm Trojan trong vi mạch cực thấp ($< 1\%$), các tham số trung vị (median) và độ lệch tuyệt đối trung vị (MAD) có độ bền chống gãy vỡ (breakdown point) lên tới $50\%$. Do đó, ta ước lượng trực tiếp trên **toàn bộ các cổng của tập huấn luyện mà không cần nhãn**:
+     Tận dụng tỷ lệ ô nhiễm Trojan cực thấp ($< 1\%$), ước lượng trên toàn bộ cổng tập huấn luyện mà không cần nhãn:
      $$\mu_{c, r}^{\text{train}} = \operatorname{median}_{j \in \mathcal{D}_{\text{train}} \cap \mathcal{B}_c} \log(e_{j, r} + \epsilon), \quad \text{MAD}_{c, r}^{\text{train}} = \operatorname{median}_{j \in \mathcal{D}_{\text{train}} \cap \mathcal{B}_c} \left| \log(e_{j, r} + \epsilon) - \mu_{c, r}^{\text{train}} \right|$$
-     Cách tiếp cận này loại trừ hoàn toàn sự phụ thuộc vào nhãn ngay cả trong tập huấn luyện, nâng cao tính khả thi khi triển khai công nghiệp.
+   - **Cơ chế dự phòng phân nhóm bền vững (Robust Bucket Fallback):**  
+     Nếu một loại cell $c$ xuất hiện ít hơn $N_{\text{min}} = 10$ lần trên tập huấn luyện (không đủ mẫu để ước lượng median/MAD tin cậy), tham số chuẩn hóa sẽ tự động lùi về phân nhóm bậc tô-pô $b(i) = \min(\lfloor \log_2(d_i + 1) \rfloor, B-1)$ để đảm bảo tính ổn định tuyệt đối.
 
 3. **Số dư Dirichlet địa phương (Relation-Specific Dirichlet Residuals):**
    - **Số dư Tuyệt đối (Absolute Residual - Mặc định):**
      $$\boxed{z_{i, r} = \frac{\left| \log(e_{i, r} + \epsilon) - \mu_{c_i, r}^{\text{train}} \right|}{1.4826 \cdot \text{MAD}_{c_i, r}^{\text{train}} + \epsilon}}$$
-     Dấu giá trị tuyệt đối $|\cdot|$ cho phép phát hiện đồng thời cả hai dạng bất thường:
-     - *Bất thường tần số cao ($z_{i, r} \gg 0$ do $e_{i, r} > \mu$):* Cổng Trojan lệch pha gay gắt so với láng giềng bình thường (hiện tượng ranh giới Trojan–Benign).
-     - *Bất thường cô lập giả mạo ($z_{i, r} \gg 0$ do $e_{i, r} < \mu$):* Cụm cổng Trojan liên kết nội bộ quá chặt chẽ, tạo thành một tiểu đồ thị "cứng" bất thường so với mức độ động học tự nhiên của mạch chủ.
+     Dấu giá trị tuyệt đối $|\cdot|$ phát hiện đồng thời cả hai dạng bất thường:
+     - *Bất thường tần số cao ($z_{i, r} \gg 0$ do $e_{i, r} > \mu$):* Cổng Trojan lệch pha gay gắt so với láng giềng bình thường.
+     - *Bất thường cô lập giả mạo ($z_{i, r} \gg 0$ do $e_{i, r} < \mu$):* Cụm Trojan liên kết nội bộ quá chặt chẽ, tạo thành một tiểu đồ thị "cứng" bất thường so với mức độ động học tự nhiên của mạch chủ.
    - **Số dư Có Dấu (Signed Residual - Dùng trong phân tích bóc tách):**
      $$z_{i, r}^{\text{signed}} = \frac{\log(e_{i, r} + \epsilon) - \mu_{c_i, r}^{\text{train}}}{1.4826 \cdot \text{MAD}_{c_i, r}^{\text{train}} + \epsilon}$$
 
-4. **Bộ dò không qua huấn luyện ($M_1$) & Khung tích hợp hiệu chuẩn hậu nghiệm ($M_3$):**
-   - Điểm bất thường độc lập không qua huấn luyện ($M_1$):
+4. **Phép thử bộ dò không qua huấn luyện ($M_1$) & Khung tích hợp hiệu chuẩn hậu nghiệm ($M_3$):**
+   - Khảo sát điểm bất thường độc lập không qua huấn luyện ($M_1$):
      $$s_i^{\text{DE}} = \max\left(z_{i, \text{data}}, \; z_{i, \text{ctrl\_co}}\right)$$
+     *(Đóng vai trò mốc đối chứng để kiểm chứng xem năng lượng thô tự nó có thể định vị Trojan mà không cần mô hình học nơ-ron hay không; kết quả thực nghiệm ở Chương 5 sẽ chỉ ra đây là một negative result có giá trị do hiện tượng trôi dạt biên độ năng lượng giữa các chip chênh lệch quy mô).*
    - Tích hợp hiệu chuẩn hậu nghiệm ($M_3$ Calibrated Late Fusion):
      $$\boxed{S_i = \sigma\left(\alpha \cdot \operatorname{logit}(p_i^{\text{GNN}}) + \beta z_{i, \text{data}} + \gamma z_{i, \text{ctrl\_co}}\right)}$$
      trong đó toàn bộ các hệ số hiệu chuẩn $(\alpha, \beta, \gamma)$ và ngưỡng quyết định $\tau^*$ được tối ưu hóa duy nhất trên tập Validation của từng Fold và **đóng băng tuyệt đối khi đánh giá trên họ kiểm thử ngoại suy (Zero Test Contamination)**.
@@ -1110,7 +1167,7 @@ Mô hình gồm 3 khối chức năng thực thi trên PyTorch Geometric (PyG 2.
 
 ### 4.1b. Quy Trình Định Vị Tích Hợp Năng Lượng Dirichlet & Bốn Cấu Hình Bộ Dò ($M_0 \to M_3$)
 
-Để đưa năng lượng Dirichlet từ một công cụ phân tích hậu nghiệm thành một thành phần cốt lõi của hệ thống định vị Trojan, luận văn đề xuất quy trình tích hợp đa góc nhìn (Multi-View Localization Pipeline) kết hợp giữa xác suất học sâu và số dư bất thường phổ:
+Để khảo sát vai trò phân tích cơ chế và tiềm năng bổ trợ của năng lượng Dirichlet theo quan hệ bên cạnh mô hình nơ-ron đồ thị, nghiên cứu thiết lập quy trình phân tích và tích hợp đa góc nhìn (Multi-View Analysis & Fusion Pipeline):
 
 ```mermaid
 flowchart TD
@@ -1150,7 +1207,7 @@ flowchart TD
 1. **$M_0$ (HeteroGNN Baseline):**  
    Mô hình phân loại nút GNN dị thể tiêu chuẩn (Config F) thực thi lan truyền tin nhận biết quan hệ trên đồ thị hai phía không có cạnh điều khiển. Điểm nghi vấn: $\hat{y}_i = p_i^{\text{GNN}} = \sigma(z_{v, i})$.
 2. **$M_1$ (Training-Free Dirichlet Anomaly Detector):**  
-   Bộ phát hiện bất thường cấu trúc **hoàn toàn không qua huấn luyện** (lấy cảm hứng từ ANoCo [[57]](#ref-57)). Tính toán trực tiếp số dư năng lượng $z_{i, \text{data}}$ và $z_{i, \text{ctrl}}$ trên đặc trưng đầu vào $X_{\text{cell}}$ thông qua toán tử chiếu $L_{\text{data}}^{\text{cell}}$ và $L_{\text{ctrl}}^{\text{cell}}$. Điểm số bất thường: $s_i^{\text{DE}} = \max(\tilde{z}_{i, \text{data}}, \tilde{z}_{i, \text{ctrl}})$, với ngưỡng quyết định tối ưu $\tau_{\text{DE}}^*$ được chọn độc lập trên tập Validation.
+   Bộ phát hiện bất thường cấu trúc **hoàn toàn không qua huấn luyện** (lấy cảm hứng từ ANoCo [[57]](#ref-57)). Tính toán trực tiếp số dư năng lượng $z_{i, \text{data}}$ và $z_{i, \text{ctrl}}$ trên đặc trưng đầu vào $X_{\text{cell}}$ thông qua toán tử chiếu $L_{\text{data}}^{\text{cell}}$ và $L_{\text{ctrl}}^{\text{cell}}$. Điểm số bất thường: $s_i^{\text{DE}} = \max(\tilde{z}_{i, \text{data}}, \tilde{z}_{i, \text{ctrl}})$, với ngưỡng quyết định tối ưu $\tau_{\text{DE}}^*$ được chọn độc lập trên tập Validation. Cấu hình này đóng vai trò mốc đối chứng phủ định (Negative Baseline Control) nhằm kiểm chứng liệu phép đo năng lượng phổ thuần túy có thể thay thế được mạng nơ-ron học biểu diễn hay không.
 3. **$M_2$ (HeteroGNN + Local Dirichlet Features):**  
    Bổ sung trực tiếp vector số dư năng lượng $[z_{i, \text{data}}, z_{i, \text{ctrl}}]$ vào không gian đặc trưng đầu vào của nút Cell ($34 \to 36$ chiều), cho phép mạng nơ-ron học cách kết hợp tín hiệu biến thiên phổ ngay từ tầng chiếu đầu vào.
 4. **$M_3$ (Calibrated Late Fusion Detector):**  
@@ -1279,32 +1336,36 @@ Tuy nhiên, việc chỉ dừng lại ở kết quả vĩ mô của Exp 6 là ch
 THIẾT KẾ ĐỐI CHỨNG A–F:
 Config A: Compressed Homogeneous GNN (5 Base Feats)
    │
-   ├── [RQ1: Đổi sang Bipartite, giữ nguyên Homogeneous GNN]
+   ├── [RQ1: Đổi sang Bipartite, giữ nguyên Homogeneous GNN (Negative Result: 0.3518 -> 0.2151)]
    ▼
 Config B: Explicit Cell-Net Homogeneous GNN (5 Base Feats)
    │
-   ├── [RQ1b: Áp dụng tích chập dị thể HeteroConv phân tách quan hệ]
+   ├── [RQ1: Áp dụng tích chập dị thể HeteroConv phân tách quan hệ (Phục hồi: 0.2151 -> 0.3258)]
    ▼
 Config C: Hetero-GNN + Control Edges (5 Base Feats)
    │
-   ├── MA TRẬN FACTORIAL 2x2 (RQ2 & RQ3):
-   │   • Basic 5 Feats:     Control ON (Config C)  vs.  Control OFF (Config D)
-   │   • Full 13 Feats:      Control ON (Config E)  vs.  Control OFF (Config F)
+   ├── [RQ2: MA TRẬN FACTORIAL 2x2 CẮT LỌC CẠNH ĐIỀU KHIỂN (Control-OFF Breakthrough)]
+   │   • Basic 5 Feats:     Control ON (Config C: 0.3258)  vs.  Control OFF (Config D: 0.4032)
+   │   • Full 13 Feats:      Control ON (Config E: 0.4570)  vs.  Control OFF (Config F: 0.5239)
+   ▼
+[RQ3: PHÂN TÍCH CƠ CHẾ ĐỘNG HỌC BIỂU DIỄN]
+   • Năng lượng Dirichlet R_r(H) & Effective Rank erank(H): Lý giải tại sao Control-OFF thắng (+36.4% erank)
+   • Đối chuẩn bộ dò M_0 (GNN) vs M_1 (DE-only) vs M_2/M_3 (Fusion) dưới Zero-Label Leakage
 ```
 
 ### 5.1. Định Nghĩa Tường Minh & Bản Chất Kỹ Thuật Của 6 Cấu Hình Bóc Tách (Config A đến Config F)
 
-Để trả lời có hệ thống các câu hỏi nghiên cứu (RQ1, RQ1b, RQ2, RQ3) và phân giải rõ ràng nguồn gốc sức mạnh của `HeteroTrojanGNN` đã được ghi nhận tại Exp 6 ở Mục 4.4, nghiên cứu thiết kế **6 Cấu hình Bóc tách vi mô (Ablation Configurations A đến F)**. Mỗi cấu hình đại diện cho một can thiệp kỹ thuật có kiểm soát (controlled technical intervention) vào 4 trục thiết kế cốt lõi: (1) Biểu diễn đồ thị, (2) Kiến trúc lan truyền thông điệp, (3) Xử lý cạnh điều khiển toàn cục, và (4) Không gian đặc trưng đầu vào:
+Để trả lời có hệ thống các câu hỏi nghiên cứu (RQ1, RQ2, RQ3) và phân giải rõ ràng nguồn gốc sức mạnh của `HeteroTrojanGNN` đã được ghi nhận tại Exp 6 ở Mục 4.4, nghiên cứu thiết kế **6 Cấu hình Bóc tách vi mô (Ablation Configurations A đến F)**. Mỗi cấu hình đại diện cho một can thiệp kỹ thuật có kiểm soát (controlled technical intervention) vào 4 trục thiết kế cốt lõi: (1) Biểu diễn đồ thị, (2) Kiến trúc lan truyền thông điệp, (3) Xử lý cạnh điều khiển toàn cục, và (4) Không gian đặc trưng đầu vào:
 
 | Cấu Hình | Biểu Diễn Đồ Thị (Graph IR) | Kiến Trúc Mô Hình GNN | Cạnh Điều Khiển (Clock/Reset) | Không Gian Đặc Trưng | Mục Tiêu Khoa Học (Research Questions) | Ánh Xạ Với Macro Exp (Chương 4) | Macro $F_1$ (LOFO Multi-Seed $\mu \pm \sigma$) |
 | :---: | :--- | :--- | :---: | :---: | :--- | :--- | :---: |
 | **Config A** | Đồ thị nén phẳng (Compressed Gate Graph) | Thuần nhất (Homogeneous GraphSAGE 2L) | N/A (Đã bị nén tắt) | Basic (5 Feats) | **Mô hình đối chứng cơ sở (Reference Baseline)**: Tái hiện tiếp cận của Whitten & Wolff (2026) | Biến thể 5 đặc trưng của Exp 5 | $0.3518$ *(Seed 42)* |
 | **Config B (2L)** | Đồ thị hai phía Cell–Net (Explicit Bipartite) | Thuần nhất (Homogeneous GraphSAGE 2L) | BẬT *(Control ON)* | Basic (5 Feats) | **Kiểm chứng RQ1 (Representation Effect)**: Cô lập thuần túy ảnh hưởng của biểu diễn hai phía khi giữ nguyên mô hình học thuần nhất | Đồ thị hai phía thuần nhất (1 hop logic) | $0.2151$ *(Seed 42)* |
 | **Config B (4L)** | Đồ thị hai phía Cell–Net (Explicit Bipartite) | Thuần nhất (Homogeneous GraphSAGE 4L) | BẬT *(Control ON)* | Basic (5 Feats) | **Kiểm chứng bước nhảy (Hop Semantics)**: Cân bằng trường tiếp nhận 2 hops logic ($\text{Cell} \to \text{Net} \to \text{Cell}$) | Mở rộng 4 tầng có Residual & LayerNorm | $0.2589$ *(Seed 42)* |
-| **Config C** | Đồ thị hai phía Cell–Net (Explicit Bipartite) | Dị thể (`HeteroConv` SAGE 2L) | BẬT *(Control ON)* | Basic (5 Feats) | **Kiểm chứng RQ1b (Relation Modeling Effect)**: Đo lường tác động của cơ chế lan truyền dị thể phân tách quan hệ; Gốc của ma trận $2 \times 2$ | Dị thể cơ sở có cạnh điều khiển | $0.3258 \pm 0.0629$ |
+| **Config C** | Đồ thị hai phía Cell–Net (Explicit Bipartite) | Dị thể (`HeteroConv` SAGE 2L) | BẬT *(Control ON)* | Basic (5 Feats) | **Kiểm chứng RQ1 (Relational Modeling Effect)**: Đo lường tác động của cơ chế lan truyền dị thể phân tách quan hệ; Gốc của ma trận $2 \times 2$ | Dị thể cơ sở có cạnh điều khiển | $0.3258 \pm 0.0629$ |
 | **Config D** | Đồ thị hai phía Cell–Net (Explicit Bipartite) | Dị thể (`HeteroConv` SAGE 2L) | TẮT *(Control OFF)* | Basic (5 Feats) | **Kiểm chứng RQ2 (Control Relations Effect)**: Khảo sát hiệu ứng ngắt bỏ mạng dây điều khiển xung nhịp/reset trên không gian 5 đặc trưng | Cắt tỉa siêu nút điều khiển (Basic) | **0.4032 $\pm$ 0.0462** |
 | **Config E** | Đồ thị hai phía Cell–Net (Explicit Bipartite) | Dị thể (`HeteroConv` SAGE 2L) | BẬT *(Control ON)* | Full (13 Feats) | **Kiểm chứng RQ3 (Factorial $2 \times 2$ Cell 1,2)**: Khảo sát tương tác giữa làm giàu đặc trưng tô-pô khi giữ nguyên cạnh điều khiển | Phiên bản LOFO chuẩn hóa của Exp 6 | $0.4570 \pm 0.0248$ |
-| **Config F** | Đồ thị hai phía Cell–Net (Explicit Bipartite) | Dị thể (`HeteroConv` SAGE 2L) | TẮT *(Control OFF)* | Full (13 Feats) | **Mô hình đề xuất toàn diện (Full Proposed Method)**: Kết hợp cả 4 đóng góp; Đạt đỉnh cao hiệu năng OOD LOFO | Đề xuất tối ưu (Toàn diện) | **0.5239 $\pm$ 0.0454** |
+| **Config F** | Đồ thị hai phía Cell–Net (Explicit Bipartite) | Dị thể (`HeteroConv` SAGE 2L) | TẮT *(Control OFF)* | Full (13 Feats) | **Mô hình đề xuất toàn diện (Full Proposed Method)**: Kết hợp hai đóng góp cốt lõi (HeteroConv + Control-OFF); Đạt đỉnh cao hiệu năng OOD LOFO | Đề xuất tối ưu (Toàn diện) | **0.5239 $\pm$ 0.0454** |
 
 ---
 
@@ -1314,17 +1375,26 @@ Config C: Hetero-GNN + Control Edges (5 Base Feats)
 2. **Config B (Cell–Net Homogeneous GNN - 5 Base Feats):**  
    Chuyển đổi hoàn toàn sang biểu diễn đồ thị hai phía Semantic Graph IR (bảo toàn toàn bộ các nút đường dây dẫn Net và cổng logic Cell). Tuy nhiên, để **cô lập duy nhất biến số biểu diễn đồ thị (RQ1)** mà không làm xáo trộn bởi thuật toán học, Config B cố tình ép đồ thị hai phía này về dạng thuần nhất (Homogeneous) bằng cách coi mọi loại nút và mọi loại cạnh (`data_in`, `ctrl_in`, `out`...) đều như nhau, chia sẻ chung một ma trận trọng số $W$. Kết quả thực nghiệm cho thấy sự suy giảm mạnh của Config B ($F_1 = 0.2151$) so với Config A ($F_1 = 0.3518$), làm nảy sinh phát hiện phản trực giác sâu sắc: *Biểu diễn tường minh tự nó là chưa đủ nếu kiến trúc học máy không có khả năng phân biệt ngữ nghĩa quan hệ.*
 3. **Config C (Hetero-GNN + Control Edges - 5 Base Feats):**  
-   Khắc phục điểm nghẽn của Config B bằng cách đưa vào toán tử tích chập dị thể `HeteroConv` với các ma trận trọng số độc lập cho từng quan hệ vật lý ($W_{\text{data\_in}} \neq W_{\text{ctrl\_in}} \neq W_{\text{out}}$). Tại cấu hình này, các cạnh điều khiển xung nhịp và reset toàn cục vẫn được **BẬT (Control ON)**. Sự phục hồi mạnh mẽ từ $0.2151$ lên $0.3258$ trả lời trọn vẹn cho **RQ1b**.
+   Khắc phục điểm nghẽn của Config B bằng cách đưa vào toán tử tích chập dị thể `HeteroConv` với các ma trận trọng số độc lập cho từng quan hệ vật lý ($W_{\text{data\_in}} \neq W_{\text{ctrl\_in}} \neq W_{\text{out}}$). Tại cấu hình này, các cạnh điều khiển xung nhịp và reset toàn cục vẫn được **BẬT (Control ON)**. Sự phục hồi mạnh mẽ từ $0.2151$ lên $0.3258$ trả lời trọn vẹn cho **RQ1 (khía cạnh mô hình hóa quan hệ dị thể)**.
 4. **Config D (Hetero-GNN - No Control Edges - 5 Base Feats):**  
    Giữ nguyên mô hình `HeteroConv` và 5 đặc trưng cơ sở của Config C, nhưng thực hiện can thiệp cấu trúc: **ngắt bỏ hoàn toàn các cạnh thuộc mạng phân phối xung nhịp và reset toàn cục (Control OFF)**. Việc $F_1$ tăng vọt từ $0.3258$ lên $0.4032$ ($+23.8\%$) chứng minh rằng việc ngắt các siêu nút điều khiển đã giải phóng mô hình khỏi hiện tượng Over-smoothing (chứng minh toán học bằng Năng lượng Dirichlet tại Mục 7.1.1), trả lời cho **RQ2**.
 5. **Config E (Hetero-GNN + Control Edges - 13 Graph IR Feats):**  
    Giữ nguyên cạnh điều khiển (Control ON) như Config C nhưng làm giàu không gian đặc trưng từ 5 lên 13 đặc trưng tô-pô trích xuất từ Semantic Graph IR (bổ sung PageRank, Betweenness, Closeness, Clustering, Core Number...). Cấu hình này tương ứng với phiên bản chuẩn hóa trong LOFO của `Exp 6 (GIR-HeteroGNN)` ở Chương 4, đóng vai trò là một ô trong ma trận phân tích giai thừa $2 \times 2$.
 6. **Config F (Hetero-GNN - No Control Edges - 13 Graph IR Feats):**  
-   **Mô hình đề xuất toàn diện của luận văn (Full Proposed Architecture)**, tích hợp đồng thời cả 4 cải tiến: (1) Biểu diễn hai phía Cell–Net bảo toàn đường dây, (2) Lan truyền dị thể phân tách quan hệ `HeteroConv`, (3) Ngắt bỏ cạnh điều khiển xung nhịp/reset (Control OFF), và (4) Không gian 13 đặc trưng tô-pô. Config F đạt đỉnh cao hiệu năng với Macro-$F_1 = 0.5239 \pm 0.0454$ và PR-AUC $= 0.5731 \pm 0.0195$, vượt trội hoàn toàn tất cả các cấu hình đối chứng.
+   **Mô hình đề xuất toàn diện của luận văn (Full Proposed Architecture)**, tích hợp đồng thời hai đóng góp cốt lõi: (1) Lan truyền dị thể phân tách quan hệ `HeteroConv` trên hạ tầng Cell–Net, và (2) Can thiệp ngắt bỏ cạnh điều khiển xung nhịp/reset (Control-OFF) trên không gian 13 đặc trưng tô-pô. Config F đạt đỉnh cao hiệu năng với Macro-$F_1 = 0.5239 \pm 0.0454$ và PR-AUC $= 0.5731 \pm 0.0195$, vượt trội hoàn toàn tất cả các cấu hình đối chứng.
 
 ---
 
 ### 5.2. Bảng Tổng Hợp Kết Quả Vĩ Mô Đa Hạt Giống (Macro Metrics Across 5 Families, Multi-Seed $\mu \pm \sigma$)
+
+> [!IMPORTANT]
+> **Quy Chuẩn Báo Cáo Hai Giao Thức Đánh Giá Ngoại Suy (Two-Tier Evaluation Protocols):**
+> 1. **Giao Thức Khóa Validation Tuyệt Đối (Strict Zero-Label Leakage Multi-Seed LOFO - Chỉ Số Báo Cáo Chính):**  
+>    Toàn bộ các tham số tiền xử lý, hệ số kết hợp và ngưỡng quyết định $\tau^*$ được tối ưu duy nhất trên tập validation của 4 họ huấn luyện và đóng băng tuyệt đối khi áp dụng sang họ kiểm thử thứ 5 chưa từng thấy qua 15 lượt chạy độc lập (5 Folds $\times$ 3 Seeds). Dưới giao thức này, mô hình đề xuất đạt:  
+>    $$\mathbf{\text{Macro-}F_1 = 0.2738 \pm 0.0292 (\sigma_{\text{seed}}) \pm 0.2232 (\sigma_{\text{family}}), \quad \text{PR-AUC} = 0.4237 \pm 0.0683 \pm 0.2789}$$
+>    (Xem chi tiết phân rã phương sai và đối chuẩn bộ dò tại [Mục 5.2c](#52c-đối-chuẩn-5-cấu-hình-bộ-dò-trojan-m_0----m_3-dưới-giao-thức-khóa-validation-tuyệt-đối-zero-label-leakage-multi-seed-lofo)).
+> 2. **Cực Hạn Biểu Diễn Thích Nghi Miền (Domain-Adaptive / Calibrated Upper-Bound - Bảng 5.2 Dưới Đây):**  
+>    Phản ánh năng lực phân tách nội tại cực đại của không gian nhúng dị thể khi có bộ hiệu chuẩn ngưỡng thích nghi theo từng miền vi mạch đích, đạt $\mathbf{\text{Macro-}F_1 = 0.5239 \pm 0.0454}$ và $\text{PR-AUC} = 0.5731 \pm 0.0195$.
 
 Để đảm bảo tính khách quan và loại bỏ hoàn toàn các sai số ngẫu nhiên do khởi tạo trọng số, các cấu hình mạng nơ-ron đồ thị quan hệ cốt lõi (Configs C, D, E, F) được đánh giá thông qua quy trình **Đa Hạt Giống (Multi-Seed Evaluation: Seeds 42, 123, 456)** với tổng cộng 60 lượt huấn luyện và kiểm thử liên họ (LOFO) độc lập, kết hợp với các kết quả đối chứng bước đầu của Config A và B:
 
@@ -1443,7 +1513,7 @@ Một trong những yêu cầu phản biện học thuật khắt khe nhất là
    - *Cơ chế hoạt động:* Trên các mạch tuần tự, xác suất dự đoán của GNN đối với các Flip-Flop ngụy trang thường mấp mé xung quanh ngưỡng quyết định $\tau^*$. Tín hiệu bất thường cấu trúc từ số dư Dirichlet đóng vai trò "cú hích quyết định" (tie-breaker), kéo các cổng Trojan tiềm ẩn vượt qua ngưỡng phân loại mà không làm bùng phát báo động giả.
 
 4. **Định Vị Lại Đóng Góp Học Thuật Then Chốt Của Luận Văn:**  
-   Luận văn không đưa ra tuyên bố thiếu căn cứ rằng "Năng lượng Dirichlet đơn độc tốt hơn GNN". Thay vào đó, luận văn xác lập một đóng góp phương pháp luận chuẩn xác: **Biểu diễn đồ thị dị thể nhận biết điều khiển (Control-Aware Heterogeneous Graph) kết hợp với phép phân tích bất thường cấu trúc Dirichlet theo quan hệ (Relation-Specific Dirichlet Non-Conformity) thiết lập một cơ chế hiệp đồng hoàn chỉnh: GNN học bất biến quan hệ ngữ nghĩa, trong khi năng lượng Dirichlet cung cấp tín hiệu căn chỉnh độ bất thường hình thái học cục bộ, mang lại khả năng định vị Hardware Trojan vượt trội và bền vững trong điều kiện trôi dạt phân phối liên họ vi mạch.**
+   Luận văn không đưa ra tuyên bố thiếu căn cứ rằng "Năng lượng Dirichlet đơn độc tốt hơn GNN", và thực nghiệm đối chuẩn đã chỉ rõ bộ dò Dirichlet thuần túy $M_1$ sụp đổ ($F_1 = 0$) khi chuyển giao mù do trôi dạt thang đo năng lượng thô. Thay vào đó, vị thế khoa học của năng lượng Dirichlet được đặt đúng chỗ: (1) Ở cấp độ vĩ mô, nó là công cụ toán học giải thích cơ chế đằng sau sự thành công của Control-OFF (ngăn chặn sụp đổ thứ hạng hiệu dụng $\operatorname{erank}$); và (2) Ở cấp độ vi mô, số dư Dirichlet cục bộ đóng vai trò là một tín hiệu bổ trợ trực giao (auxiliary structural cue) giúp tăng vọt PR-AUC ($+49.0\%$ trên `s38417`, $+28.7\%$ trên `s38584`) và hỗ trợ bộ tích hợp $M_3$ giải cứu các cổng Trojan tuần tự bị mấp mé ngưỡng phân loại.
 
 ---
 
@@ -1559,7 +1629,7 @@ $$\Delta_{\text{representation}} = F_1(B_{2L}) - F_1(A) = 0.2151 - 0.3518 = \mat
 
 ---
 
-### 5.5. Bóc Tách RQ1b: Lan Truyền Dị Thể Phục Hồi Hiệu Năng (B vs C)
+### 5.5. Bóc Tách RQ1 (Tiếp Theo): Lan Truyền Dị Thể Phục Hồi Hiệu Năng (B vs C)
 $$\Delta_{\text{relation\_model}} = F_1(C) - F_1(B_{2L}) = 0.3258 - 0.2151 = \mathbf{+0.1107} \quad (+51.5\%)$$
 * **Phân tích Thực nghiệm:** Khi thay thế mô hình thuần nhất bằng kiến trúc tích chập dị thể (`HeteroConv`) với các ma trận tham số độc lập theo từng quan hệ vật lý ($W_{\text{data\_in}} \neq W_{\text{ctrl\_in}} \neq W_{\text{out}} \neq W_{\text{rev\_*}}$), Macro-$F_1$ lập tức phục hồi mạnh mẽ từ $0.2151$ lên $0.3258$.
 * **Ý nghĩa:** Kết quả này chứng minh rằng: **Để khai thác được đồ thị hai phía Cell–Net, mô hình học máy bắt buộc phải phân biệt được kiểu quan hệ cạnh.**
@@ -1647,6 +1717,10 @@ Theo định hướng đánh giá vận hành của Whitten, Wolff & Papachristo
 ---
 
 ## Chương 6: Bản Chất Phương Pháp Luận Của XAI & Vai Trò Hỗ Trợ Kỹ Sư EDA
+
+> [!NOTE]
+> **Định vị phương pháp luận của Chương 6:** Phân tích giải thích đồ thị (Graph XAI) và quy trình Two-Tier EDA trong chương này không phải là một trụ cột đóng góp ngang hàng với bài toán học máy định vị Trojan xuyên họ mạch (Cross-Family Localization). Thay vào đó, nó đóng vai trò là một **khảo sát ứng dụng thực tiễn (Practical EDA Exploration)**, minh họa cách thức chuyển hóa đầu ra của mô hình `HeteroTrojanGNN` thành các đồ thị con liên quan mô hình (Model-Relevant Computational Subgraphs) có thể hành động được, hỗ trợ kỹ sư EDA trong quy trình sửa đổi kỹ thuật (ECO).
+
 
 ### 6.1. Khác Biệt Bản Chất Về Modality & Ranh Giới Học Thuật: Graph XAI vs. M1, M2 và M3–M5
 
@@ -1861,11 +1935,11 @@ flowchart TD
 
 Để nâng cao tính chặt chẽ học thuật và giải quyết triệt để các nghi vấn tiềm tàng về mặt phương pháp luận, nghiên cứu đã tiến hành 4 thực nghiệm bổ trợ chuyên sâu trên hệ thống dữ liệu vi mạch:
 
-#### 7.1.1. Định Lượng Động Học Năng Lượng Dirichlet & Cấu Trúc Biểu Diễn Trên Toán Tử Chiếu Cố Định (RQ2)
+#### 7.1.1. Định Lượng Động Học Năng Lượng Dirichlet & Cấu Trúc Biểu Diễn Trên Toán Tử Chiếu Cố Định (RQ3)
 
 Trong các mô hình GNN xử lý vi mạch, giả thuyết cốt lõi thường được viện dẫn là: *Mạng phân phối xung nhịp (Clock) và thiết lập lại (Reset) toàn cục hoạt động như những siêu nút liên kết (super-hubs), gây ra sự khuếch tán tắt (shortcut diffusion) làm suy biến biểu diễn*. Tuy nhiên, trong y văn trước đây, khái niệm "oversmoothing" thường bị lạm dụng một cách trực giác mà thiếu vắng các phép đo toán tử phổ chuẩn mực.
 
-Để định lượng chính xác động học biểu diễn của các tầng nơ-ron và bóc tách câu hỏi nghiên cứu **RQ2**, nghiên cứu đã thiết lập khung đánh giá phổ hai cấp độ (Dual-Scale Spectral Dynamics):
+Để định lượng chính xác động học biểu diễn của các tầng nơ-ron và bóc tách câu hỏi nghiên cứu **RQ3**, nghiên cứu đã thiết lập khung đánh giá phổ hai cấp độ (Dual-Scale Spectral Dynamics):
 1. **Đo trên Toán tử Tham chiếu Cố định (Fixed Projection Operators):** Để việc so sánh giữa các mô hình có ý nghĩa toán học nghiêm ngặt, mọi phép đo năng lượng Dirichlet và thương số Rayleigh đều được chiếu lên **toán tử cố định 2-hop của nút Cell ($L_{\text{data}}^{\text{cell}}, L_{\text{ctrl}}^{\text{cell}}, L_{\text{clock}}^{\text{cell}}, L_{\text{reset}}^{\text{cell}}$)** được tính toán duy nhất từ tô-pô mạch gốc, độc lập hoàn toàn với việc mô hình có sử dụng cạnh điều khiển trong quá trình lan truyền hay không. Thương số Rayleigh được chuẩn hóa:
    $$R_r(H) = \frac{\operatorname{Tr}\left(H^T L_r^{\text{cell}} H\right)}{\operatorname{Tr}\left(H^T D_r^{\text{cell}} H\right)} \in [0, 1]$$
 2. **Đo Thứ Hạng Hiệu Dụng Toàn Cục (Effective Rank - $\operatorname{erank}(H)$):** Nhằm đo lường trực tiếp mức độ sụp đổ không gian đặc trưng toàn chip (representation collapse), nghiên cứu tính toán entropy của phân phối giá trị suy biến:
@@ -2199,31 +2273,41 @@ Từ các giới hạn đã được chỉ rõ, đề tài mở ra 6 hướng ng
 
 ## Chương 8: Kết Luận và Đóng Góp Của Luận Văn (Conclusions and Thesis Contributions)
 
-### 8.1. Tổng Kết Các Trụ Cột Đóng Góp Khoa Học Cốt Lõi
+### 8.1. Tổng Kết 2 Đóng Góp Khoa Học Cốt Lõi & 1 Phân Tích Cơ Chế Bổ Trợ
 
-Luận văn đã giải quyết toàn diện bài toán định vị Hardware Trojan mức cổng logic trong bối cảnh trôi lệch phân phối cấu trúc liên họ vi mạch (Cross-Family OOD) và mất cân bằng nhãn cực đoan ($\approx 0.78\%$ cổng độc hại). Thay vì theo đuổi các kiến trúc học sâu hộp đen đơn thuần hay lặp lại các công bố đồ thị thuần nhất trước đây, nghiên cứu đã xây dựng một chuỗi luận chứng khoa học chặt chẽ và đóng góp 5 trụ cột then chốt:
+Luận văn đã giải quyết toàn diện bài toán định vị Hardware Trojan mức cổng logic trong bối cảnh trôi lệch phân phối cấu trúc liên họ vi mạch (Cross-Family OOD) và mất cân bằng nhãn cực đoan ($\approx 0.78\%$ cổng độc hại). Thay vì theo đuổi các kiến trúc học sâu hộp đen đơn thuần hay lặp lại các công bố đồ thị thuần nhất trước đây, nghiên cứu đã thu hẹp câu chuyện về đúng một trục trọng tâm: **Làm thế nào biểu diễn và học quan hệ trên gate-level netlist để cải thiện khả năng định vị Hardware Trojan trên các họ vi mạch chưa từng thấy (LOFO)?**
 
-$$\text{Semantic Circuit Graph} \longrightarrow \text{Control-Aware Relational Propagation} \longrightarrow \text{Relation-Specific Dirichlet Structural Non-Conformity} \longrightarrow \text{Cross-Family Trojan Localization}$$
+Chuỗi luận chứng của luận văn xác lập **hai đóng góp cốt lõi (Core Contributions)** và **một đóng góp phân tích cơ chế bổ trợ (Supporting Analytical Contribution)**:
 
-1. **Trụ Cột 1 — Biểu Diễn Đồ Thị Ngữ Nghĩa Hai Phía (Semantic Cell–Net Bipartite IR):**  
-   - Phát hiện và giải trình nguyên nhân gốc rễ dẫn tới sự sụp đổ của các mô hình cơ sở: mô hình dạng bảng bị "nhiễm độc tọa độ mạch chủ" do nén thông tin tô-pô thành các đại lượng vô hướng cục bộ; trong khi mô hình đồ thị nén phẳng (`circuitgraph`) làm mất mát $12$ cổng Trojan thật qua các thao tác gộp/xóa nút tùy tiện.
-   - Xây dựng biểu diễn đồ thị hai phía Cell–Net bảo tồn trọn vẹn $100\%$ thực thể tế bào logic vật lý ($47,464/47,464$ cells, $370/370$ Trojans), phân định tường minh bản sắc tế bào logic (`Cell`), đường liên kết (`Net`), chiều truyền tín hiệu logic, và gắn nhãn ngữ nghĩa chức năng cho từng loại cạnh.
+$$\boxed{\begin{aligned}
+&\textbf{ĐÓNG GÓP 1 (PHƯƠNG PHÁP CỐT LÕI — METHOD CONTRIBUTION):}\\
+&\quad \textbf{Học biểu diễn đồ thị dị thể nhận biết quan hệ trên đồ thị hai phía Cell--Net}\\
+&\quad \textbf{(Semantic relation-aware Cell--Net graph learning) cho bài toán định vị Hardware Trojan xuyên họ mạch.}\\
+&\quad \text{Chứng minh rằng việc học quan hệ bản địa trên đồ thị khái quát hóa vượt trội hoàn toàn}\\
+&\quad \text{các bộ đặc trưng vô hướng thủ công dưới giao thức LOFO } (F_1 = 0.5239 \text{ vs. } 0.033 / 0.1637).\\
+&\quad \text{Hạ tầng Semantic Cell--Net Bipartite IR bảo tồn trọn vẹn 100\% thực thể cổng logic vật lý (47,464 cells, 370 Trojans),}\\
+&\quad \text{đồng thời kết quả phủ định kinh điển (Config A } \to \text{ Config B: } 0.3518 \to 0.2151 \text{) làm sáng tỏ nguyên lý:}\\
+&\quad \textit{Độ trung thực đồ thị tự nó là chưa đủ; mô hình bắt buộc phải phân tách ngữ nghĩa quan hệ qua HeteroConv.}\\
+&\\
+&\textbf{ĐÓNG GÓP 2 (PHÁT HIỆN THỰC NGHIỆM TRUNG TÂM — CORE EMPIRICAL FINDING):}\\
+&\quad \textbf{Các quan hệ điều khiển toàn cục (clock/reset) tạo ra các siêu đường tắt có hại gây suy thoái biểu diễn;}\\
+&\quad \textbf{việc phân tách ngữ nghĩa và can thiệp loại bỏ chúng (Control-OFF) cải thiện vượt bậc khả năng LOFO.}\\
+&\quad \text{Khẳng định việc xử lý đúng đắn mạng xung nhịp là chìa khóa quyết định thành bại của GNN trên mạch số tuần tự.}\\
+&\quad \text{Dưới can thiệp Control-OFF, mô hình đạt đỉnh cao } \mathbf{\text{Macro-}F_1 = 0.5239 \pm 0.0454} \text{ và } \mathbf{\text{PR-AUC} = 0.5731 \pm 0.0195}\\
+&\quad \text{với ngưỡng thích nghi miền, và } \mathbf{F_1 = 0.2738 \pm 0.0292 \pm 0.2232} \text{ dưới giao thức Zero-Label Leakage mù tuyệt đối.}\\
+&\\
+&\textbf{ĐÓNG GÓP PHÂN TÍCH BỔ TRỢ (SUPPORTING ANALYTICAL CONTRIBUTION):}\\
+&\quad \textbf{Ứng dụng Năng lượng Dirichlet theo quan hệ } R_r(H) \textbf{ và Thứ hạng hiệu dụng } \operatorname{erank}(H)\\
+&\quad \textbf{để giải thích định lượng động học biểu diễn đằng sau hiện tượng can thiệp điều khiển.}\\
+&\quad \text{Chứng minh bằng toán học rằng Control-OFF duy trì thứ hạng hiệu dụng cao hơn từ } +17.8\% \text{ đến } +36.4\%,\\
+&\quad \text{chống lại sự co sụp không gian nhúng và bộc lộ sự lệch pha cấu trúc của Trojan.}\\
+&\quad \text{Đồng thời, số dư Dirichlet địa phương cung cấp tín hiệu bổ trợ phụ thuộc họ mạch, giúp tăng vọt PR-AUC}\\
+&\quad \text{từ } +28.7\% \text{ đến } +49.0\% \text{ trên các họ vi mạch tuần tự quy mô lớn khó nhất (s38417: } 0.2885 \to 0.4300\text{; s38584: } 0.2606 \to 0.3353\text{).}
+\end{aligned}}$$
 
-2. **Trụ Cột 2 — Học Biểu Diễn Nhận Biết Quan Hệ Điều Khiển (Control-Aware Relational Propagation):**  
-   - Làm sáng tỏ nghịch lý biểu diễn: việc chuyển sang đồ thị hai phía thuần nhất (Config B) làm giảm hiệu năng ($F_1 = 0.2151$) do các đường dây biến thành trung tâm khuếch tán đồng đều; chỉ khi áp dụng mạng nơ-ron dị thể (`HeteroConv`) với ma trận trọng số riêng biệt cho từng loại quan hệ, sức mạnh của biểu diễn hai phía mới được khai phóng.
-   - Chứng minh nhân quả thực nghiệm: việc ngắt bỏ cạnh điều khiển (Clock và Reset) không phải là thao tác làm thưa đồ thị ngẫu nhiên hay cắt tỉa bậc đỉnh (các kịch bản đối chứng nhân quả `Random Edge Removal` và `Degree-Matched Removal` đều làm suy giảm hoặc phá hủy mô hình), mà là sự can thiệp ngữ nghĩa vi mạch chính xác nhằm triệt tiêu các siêu đường tắt truyền thông tin phi dữ liệu.
-
-3. **Trụ Cột 3 — Định Lượng Động Học Dirichlet & Đo Lường Bất Thường Cấu Trúc (Relation-Specific Dirichlet Non-Conformity):**  
-   - Thiết lập khung toán tử chiếu 2-hop trên nút Cell ($L_{\text{data}}^{\text{cell}}, L_{\text{ctrl}}^{\text{cell}}, L_{\text{clock}}^{\text{cell}}, L_{\text{reset}}^{\text{cell}}$) và định lượng động học phổ trên toán tử cố định. Kết quả khẳng định: `Control-OFF` duy trì thứ hạng hiệu dụng ($\operatorname{erank}$) cao hơn từ $+17.8\%$ đến $+36.4\%$ tại tầng suy luận chuẩn $L=2$, ngăn chặn triệt để sự sụp đổ không gian đặc trưng về không gian con thứ hạng thấp; đồng thời giảm thương số Rayleigh $R_{\text{data}}$ dọc theo luồng dữ liệu, tăng cường tính kết dính nội vi của các chuỗi tính toán hợp lệ.
-   - Nâng tầm năng lượng Dirichlet từ một công cụ chẩn đoán lan truyền thành **thước đo bất thường cấu trúc trực giao (orthogonal structural non-conformity cue)**. Phân tích thực nghiệm đa hạt giống chứng minh rằng số dư Dirichlet địa phương giúp tăng vọt PR-AUC từ $+28.7\%$ đến $+49.0\%$ trên các vi mạch tuần tự quy mô lớn khó nhất (`s38417, s38584`), khẳng định giá trị bổ trợ then chốt của toán tử Laplacian theo quan hệ.
-
-4. **Trụ Cột 4 — Khung Tích Hợp Hiệu Chuẩn Hậu Nghiệm (Calibrated Multi-View Detector Fusion):**  
-   - Xây dựng bộ dò tích hợp hiệu chuẩn hậu nghiệm ($M_3$) dung hòa giữa xác suất suy luận GNN và số dư bất thường năng lượng Dirichlet địa phương. Toàn bộ quy trình chuẩn hóa và lựa chọn ngưỡng $\tau^*$ được đóng băng tuyệt đối trên tập validation nội bộ của các họ huấn luyện (Zero Test Contamination & Zero-Label Leakage) trên 15 lượt chạy độc lập (5 Folds $\times$ 3 Seeds).
-   - $M_3$ duy trì hiệu năng tổng quát hóa vững chắc: Macro-$F_1 = \mathbf{0.2732} \pm 0.0304 (\sigma_{\text{seed}}) \pm 0.2213 (\sigma_{\text{fam}})$, PR-AUC $= 0.4236$ (so với cực hạn biểu diễn nội suy $0.5239 \pm 0.0454$ của Config F), đồng thời tạo bước tiến cứu vãn các cổng Trojan tuần tự then chốt trên các nếp gấp khó mà không làm gia tăng báo động giả.
-
-5. **Trụ Cột 5 — Giải Thích Đồ Thị Thực Nghiệm Hỗ Trợ Kỹ Sư EDA (Actionable Computational Subgraph XAI):**  
-   - Vượt qua các giới hạn của phương pháp giải thích dạng bảng (chỉ cung cấp các đại lượng vô hướng trừu tượng mà không thể tái tạo mạch), phương pháp Graph XAI trích xuất đồ thị con liên quan mô hình và được xác thực qua can thiệp (model-relevant & intervention-validated explanatory subgraph).
-   - Đồ thị con giải thích đạt độ thưa $80.1\%$ cạnh, bảo toàn độ đầy đủ dự đoán ($\text{Fidelity}^- = 0.0000$), và nâng mật độ cổng Trojan thật lên $30.7\%$ (làm giàu gấp $\approx 40$ lần so với mật độ $0.78\%$ ban đầu). Đề xuất mô hình phối hợp **Two-Tier Pipeline** tối ưu hóa sự đánh đổi giữa tốc độ sàng lọc toàn chip ($\sim 1.2 \; \mu\text{s}/\text{cổng}$) và độ chính xác khoanh vùng cấu trúc vi mô ($\sim 192.6$ ms/ứng viên).
+Ngoài ra, luận văn còn đóng góp hai giá trị thực nghiệm và ứng dụng quan trọng:
+- **Chuẩn mực đánh giá & Kiểm toán dữ liệu:** Thiết lập giao thức Strict Zero-Label Leakage Multi-Seed LOFO (15 lượt chạy, khóa cứng toàn bộ tham số trên validation nội bộ) loại bỏ hoàn toàn nguy cơ rò rỉ nhãn; đồng thời công bố tệp kiểm toán thực thể cấp cổng [`outputs/audit/trojan_instance_reconciliation.csv`](file:///home/dat_ttan/thesis/expl_methods_hw_trojan_detection_code/outputs/audit/trojan_instance_reconciliation.csv) chuẩn hóa $370$ cổng Trojan trên Trust-Hub.
+- **Tính hành động được trong EDA:** Kết hợp phương pháp Graph XAI trích xuất đồ thị con liên quan mô hình (Model-Relevant Computational Subgraph) đạt độ thưa $80.1\%$ cạnh, nâng mật độ cổng Trojan lên $30.7\%$ (làm giàu $\approx 40$ lần), mang lại giá trị hỗ trợ trực quan thiết thực cho kỹ sư EDA trong quy trình sửa đổi kỹ thuật (ECO).
 
 ---
 
