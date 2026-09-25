@@ -32,7 +32,7 @@
    * 2.4. Trục chuyển dịch về tính hành động được & Graph XAI
    * 2.4b. Cơ sở lý thuyết năng lượng Dirichlet & Độ bất tương đồng cấu trúc (Structural Non-Conformity)
    * 2.5. Ma trận đối chuẩn đề tài với y văn quốc tế
-3. [Chương 3: Đề Xuất Biểu Diễn Đồ Thị Hai Phía Dị Thể & Năng Lượng Dirichlet Theo Quan Hệ](#chương-3-đề-xuất-biểu-diễn-đồ-thị-hai-phía-dị-thể-heterogeneous-bipartite-graph-ir)
+3. [Chương 3: Hạ Tầng Biểu Diễn Đồ Thị Hai Phía Dị Thể (Cell–Net Bipartite IR) & Phép Chiếu Quan Hệ](#chương-3-hạ-tầng-biểu-diễn-đồ-thị-hai-phía-dị-thể-cellnet-bipartite-ir--phép-chiếu-quan-hệ)
    * 3.1. Hình thức hóa toán học Heterogeneous Bipartite Graph IR
    * 3.1b. Quy trình phân tích cú pháp Verilog AST, Đặc tả schema thực thể: `nodes.csv` và `edges.csv`
    * 3.2. Phân loại chân điều khiển & Đồ thị luồng dữ liệu $G_{\text{data}}$
@@ -45,7 +45,7 @@
    * 4.2. Khung đánh giá đóng băng & Quy trình dò ngưỡng quyết định $\tau^*$ độc lập
    * 4.3. Hệ thống các thước đo đánh giá đa chiều & Thước đo vận hành EDA ($\text{FP/1000 gates}$, CRR)
    * 4.4. Đối chuẩn tổng thể 6 thực nghiệm vĩ mô (Exp 1 – Exp 6): Đánh giá trong phân phối & Bước đệm sang LOFO
-5. [Chương 5: Thực Nghiệm Đối Chứng Đầy Đủ & Đánh Giá Khái Quát Hóa Ngoại Suy (LOFO)](#chương-5-thực-nghiệm-đối-chứng-đầy-đủ-configs-a-f--câu-chuyện-nghiên-cứu-mới-từ-dữ-liệu)
+5. [Chương 5: Thực Nghiệm Đối Chứng Đầy Đủ (Configs A–F) & Đánh Giá Khái Quát Hóa Ngoại Suy (LOFO)](#chương-5-thực-nghiệm-đối-chứng-đầy-đủ-configs-af--đánh-giá-khái-quát-hóa-ngoại-suy-lofo)
    * 5.1. Định nghĩa tường minh & Bản chất kỹ thuật của 6 cấu hình bóc tách (Config A đến Config F)
    * 5.2. Bảng tổng hợp kết quả vĩ mô đa hạt giống (Macro Metrics Across 5 Families, Multi-Seed $\mu \pm \sigma$)
    * 5.2b. Đối chuẩn cùng giao thức với các kiến trúc GNN y văn (GraphSAGE, GAT, GAT-JK SALTY, BiDirectional-GNN, Heuristic LoRD)
@@ -600,7 +600,7 @@ Khảo cứu toàn diện các công trình quốc tế từ 2016 đến tháng 
   GNNExplainer không chứng minh quan hệ nhân quả vật lý (physical causality) của phần cứng nếu không có mô phỏng SPICE; thay vào đó, nó cung cấp **đồ thị con giải thích liên quan tới dự đoán của mô hình (Model-Relevant Computational Subgraph)**, giúp kỹ sư an ninh khoanh vùng chính xác khu vực nghi vấn gồm khối Trigger và Payload.
 
 ### 2.4b. Cơ Sở Lý Thuyết Năng Lượng Dirichlet & Phát Hiện Bất Thường Trên Phổ Đồ Thị
-Để xây dựng nền tảng toán học vững chắc cho cơ chế lan truyền và bộ dò Trojan, đề tài kết nối bài toán an ninh phần cứng với các bước tiến mới nhất trong lý thuyết phổ đồ thị (spectral graph theory):
+Để xây dựng nền tảng toán học vững chắc cho việc phân tích động học biểu diễn (representation dynamics) và giải thích cơ chế thành công của can thiệp điều khiển, đề tài kết nối bài toán an ninh phần cứng với các bước tiến mới nhất trong lý thuyết phổ đồ thị (spectral graph theory):
 * **Năng lượng Dirichlet & Hiện tượng làm mượt trong GNN (Cai & Wang, 2020) [[53]](#ref-53):**  
   Cai & Wang hình thức hóa năng lượng Dirichlet của ma trận biểu diễn $H \in \mathbb{R}^{N \times d}$ trên toán tử Laplacian chuẩn hóa $L_{\text{sym}} = I - D^{-1/2} A D^{-1/2}$:
   $$\mathcal{E}_D(H) = \frac{1}{2} \operatorname{Tr}(H^\top L_{\text{sym}} H) = \frac{1}{2} \sum_{(u, v) \in \mathcal{E}} \left\| \frac{h_u}{\sqrt{d_u}} - \frac{h_v}{\sqrt{d_v}} \right\|_2^2$$
@@ -628,7 +628,12 @@ Khảo cứu toàn diện các công trình quốc tế từ 2016 đến tháng 
 
 ---
 
-## Chương 3: Đề Xuất Biểu Diễn Đồ Thị Hai Phía Dị Thể (Heterogeneous Bipartite Graph IR)
+## Chương 3: Hạ Tầng Biểu Diễn Đồ Thị Hai Phía Dị Thể (Cell–Net Bipartite IR) & Phép Chiếu Quan Hệ
+
+> [!NOTE]
+> **Định vị phương pháp luận của Chương 3 (Hạ tầng biểu diễn dữ liệu - Representation Infrastructure):**  
+> Biểu diễn đồ thị hai phía Cell–Net trong chương này không được tuyên bố như một đóng góp phương pháp luận độc lập. Thay vào đó, nó đóng vai trò là **hạ tầng biểu diễn bắt buộc** nhằm giải quyết triệt để lỗi mất mát linh kiện của các công cụ nén đồ thị phẳng trước đây (bảo toàn 100% linh kiện: 47,464 cells và 370 Trojans), đồng thời cung cấp cấu trúc hai phía có kiểu quan hệ để phục vụ việc học quan hệ bản địa trên đồ thị ở Chương 4 và Chương 5.  
+> Đặc biệt, kết quả thực nghiệm phủ định kinh điển (Negative Result: Config A $\to$ Config B, $F_1 = 0.3518 \to 0.2151$) sẽ chứng minh một bài học phương pháp luận đắt giá: *Độ trung thực đồ thị tự nó là chưa đủ nếu mô hình học downstream không phân tách được ngữ nghĩa quan hệ.*
 
 ### 3.1. Hình Thức Hóa Toán Học Heterogeneous Bipartite Graph IR
 Mỗi Netlist vi mạch được mô hình hóa thành đồ thị có hướng dị thể:
@@ -1150,6 +1155,11 @@ Cần phân biệt rõ hai bài toán an ninh phần cứng thường bị nhầ
 
 ## Chương 4: Kiến Trúc Học Máy Quan Hệ `HeteroTrojanGNN` & Quy Trình Thực Nghiệm
 
+> [!NOTE]
+> **Định vị phương pháp luận của Chương 4 (Phương pháp cốt lõi - Core Method):**  
+> Thay vì đề xuất một kiến trúc GNN phức tạp để cạnh tranh thuần túy về mặt thuật toán nơ-ron với y văn quốc tế, mô hình `HeteroTrojanGNN` được thiết kế như một **công cụ học quan hệ bản địa (Graph-Native Relational Learning)** nhằm khai phóng sức mạnh của hạ tầng Cell–Net. Mô hình cấp các kênh trọng số chuyển đổi độc lập cho từng loại quan hệ vật lý qua `HeteroConv`.  
+> Đồng thời, quy trình tích hợp và đối chuẩn 4 cấu hình bộ dò ($M_0 \to M_3$) được thiết lập nhằm kiểm chứng khách quan vai trò của năng lượng Dirichlet: không phải là một bộ dò độc lập thay thế GNN, mà là công cụ phân tích động học biểu diễn và tín hiệu bổ trợ cho các vi mạch tuần tự khó.
+
 ### 4.1. Thiết Kế Kiến Trúc `HeteroTrojanGNN`
 Mô hình gồm 3 khối chức năng thực thi trên PyTorch Geometric (PyG 2.6.1), được chuyển đổi từ cấu trúc `nodes.csv` và `edges.csv` thông qua module `CircuitPyGConverter` ([`packages/shared/xai_shared/graph_data/pyg_converter.py`](file:///home/dat_ttan/thesis/expl_methods_hw_trojan_detection_code/packages/shared/xai_shared/graph_data/pyg_converter.py)):
 1. **Tầng Chiếu Đầu Vào (Projection):** Chiếu vector $x_{\text{cell}} \in \mathbb{R}^{34}$ và $x_{\text{net}} \in \mathbb{R}^{20}$ về không gian ẩn 64 chiều:
@@ -1323,7 +1333,15 @@ Ba kết luận khoa học nền tảng được rút ra:
 
 ---
 
-## Chương 5: Thực Nghiệm Đối Chứng Đầy Đủ (Configs A–F) & Câu Chuyện Nghiên Cứu Mới Từ Dữ Liệu
+## Chương 5: Thực Nghiệm Đối Chứng Đầy Đủ (Configs A–F) & Đánh Giá Khái Quát Hóa Ngoại Suy (LOFO)
+
+> [!NOTE]
+> **Định vị câu hỏi khoa học của Chương 5 (Trục đánh giá trung tâm LOFO & Phát hiện thực nghiệm cốt lõi):**  
+> Chương này giải quyết trực diện câu hỏi trọng tâm duy nhất của luận văn: *Làm thế nào biểu diễn và học quan hệ để cải thiện khả năng định vị Hardware Trojan trên các họ vi mạch chưa từng thấy (LOFO)?*  
+> Thông qua hệ thống 6 cấu hình bóc tách vi mô (Config A đến Config F), chương này kiểm chứng nhân quả:  
+> 1. **RQ1:** Phủ định giả thuyết *"đồ thị trung thực hơn tự động cho kết quả tốt hơn"* qua kết quả phủ định A $\to$ B ($0.3518 \to 0.2151$), và chứng minh vai trò cứu cánh của lan truyền quan hệ dị thể qua B $\to$ C ($0.2151 \to 0.3258$).  
+> 2. **RQ2 (Phát hiện thực nghiệm cốt lõi):** Khám phá hiện tượng mạng điều khiển xung nhịp/reset tạo siêu đường tắt gây sụp đổ chiều không gian biểu diễn; chứng minh việc can thiệp ngắt bỏ cạnh điều khiển (Control-OFF) giúp mô hình bứt phá toàn diện từ $0.3258$ lên $0.4032$ (và cực hạn $0.5239 \pm 0.0454$ với PR-AUC $= 0.5731 \pm 0.0195$).  
+> 3. **RQ3 (Phân tích cơ chế bổ trợ):** Sử dụng Năng lượng Dirichlet theo quan hệ và Effective Rank để lý giải tại sao Control-OFF thắng (duy trì $\operatorname{erank}$ cao hơn $+36.4\%$), đồng thời đối chuẩn khách quan bộ dò $M_1$ ($F_1 = 0$) và chứng minh vai trò bổ trợ đắc lực của $M_2/M_3$ trên các vi mạch tuần tự phức tạp.
 
 ### Đoạn Nối Phương Pháp Luận: Từ Đối Chuẩn Vĩ Mô (Exp 1–6) Đến Bóc Tách Vi Mô Kiến Trúc GNN (Configs A–F)
 Trong Chương 4 (Mục 4.4), các thực nghiệm vĩ mô ghi nhận từ [`comparison_6_experiments.json`](file:///home/dat_ttan/thesis/expl_methods_hw_trojan_detection_code/data/models/comparison_6_experiments.json) đã xác lập một bằng chứng thực nghiệm then chốt: các mô hình học máy dạng bảng (Exp 1–4) và GNN thuần nhất nén phẳng (Exp 5) đều sụp đổ hoàn toàn trong kịch bản kiểm thử ngoại suy LOFO ($F_1 \le 0.1637$), trong khi mô hình mạng nơ-ron đồ thị quan hệ `HeteroTrojanGNN` (Exp 6) tạo nên bước đột phá vượt bậc với Macro $F_1 = 0.4205$. 
@@ -2182,6 +2200,9 @@ Một tiêu chuẩn vàng trong nghiên cứu an ninh phần cứng quốc tế 
 ---
 
 #### 7.1.11. Thực Nghiệm Kiểm Định Chéo Từng Vi Mạch (LOCO 30 Folds) & Đột Phá Phục Hồi ISCAS Của `HeteroTrojanGNN`
+
+> [!NOTE]
+> **Thứ bậc phương pháp luận:** Kiểm định ngoại suy liên họ (Leave-One-Family-Out - LOFO) là **giao thức đánh giá trung tâm** của toàn bộ luận văn. Thí nghiệm LOCO 30-folds trong mục này đóng vai trò **thực nghiệm thứ cấp** nhằm đối chuẩn trực tiếp với Bảng 9 trong bài báo cơ sở của Whitten, Wolff & Papachristou (JETTA 2026 [[30]](#ref-30)), chứng minh khả năng phục hồi đột phá của `HeteroTrojanGNN` trên các họ vi mạch lạ ISCAS.
 
 Một câu hỏi phương pháp luận lớn được đặt ra từ công trình cơ sở của Whitten, Wolff & Papachristou (JETTA 2026 [[30]](#ref-30)): *Tại Bảng 9, mô hình dạng bảng XGBoost bị sụp đổ nghiêm trọng trên nhóm vi mạch ISCAS (Micro-$F_1 = 0.06$). Tác giả đã giả thuyết rằng các mô hình học đồ thị phong phú hơn sẽ có vị thế tốt hơn để xử lý thách thức này. Liệu mạng nơ-ron đồ thị quan hệ `HeteroTrojanGNN` có thực sự giải quyết được điểm nghẽn này trên 30 folds LOCO hay không?*
 
